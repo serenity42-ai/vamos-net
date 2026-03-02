@@ -29,24 +29,26 @@ export default function MatchCard({ match }: { match: Match }) {
       match.status === "live" ? "border-red-200 shadow-sm" : "border-gray-100"
     }`}>
       {/* Header */}
-      <div className="px-4 py-2.5 bg-gray-50 flex items-center justify-between border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[#0F1F2E]">{match.tournament}</span>
-          <span className="text-xs text-gray-400">/ {match.round}</span>
+      <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-50 flex items-center justify-between border-b border-gray-100 gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <span className="text-xs font-semibold text-[#0F1F2E] truncate">{match.tournament}</span>
+          <span className="text-xs text-gray-400 shrink-0">/ {match.round}</span>
         </div>
-        <StatusBadge status={match.status} />
+        <div className="shrink-0">
+          <StatusBadge status={match.status} />
+        </div>
       </div>
 
       {/* Teams */}
-      <div className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className={`text-sm font-semibold ${match.status === "live" ? "text-[#0F1F2E]" : "text-[#0F1F2E]"}`}>
+      <div className="p-3 sm:p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-[#0F1F2E] truncate">
               {match.team1.player1} / {match.team1.player2}
             </p>
           </div>
           {match.score && (
-            <span className="text-sm font-bold text-[#0F1F2E] tabular-nums ml-4">
+            <span className="text-sm font-bold text-[#0F1F2E] tabular-nums shrink-0 ml-2">
               {match.status === "finished"
                 ? match.score.split(",")[0]?.trim()
                 : match.score.split(",").pop()?.trim().split("-")[0]}
@@ -54,14 +56,14 @@ export default function MatchCard({ match }: { match: Match }) {
           )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-[#0F1F2E]">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-[#0F1F2E] truncate">
               {match.team2.player1} / {match.team2.player2}
             </p>
           </div>
           {match.score && (
-            <span className="text-sm font-bold text-[#0F1F2E] tabular-nums ml-4">
+            <span className="text-sm font-bold text-[#0F1F2E] tabular-nums shrink-0 ml-2">
               {match.status === "finished"
                 ? match.score.split(",")[0]?.trim()
                 : match.score.split(",").pop()?.trim().split("-")[1]}
@@ -71,7 +73,7 @@ export default function MatchCard({ match }: { match: Match }) {
 
         {/* Full score line */}
         {match.score && (
-          <p className="text-xs text-gray-400 pt-1 border-t border-gray-50">
+          <p className="text-xs text-gray-400 pt-1 border-t border-gray-50 truncate">
             {match.score}
           </p>
         )}

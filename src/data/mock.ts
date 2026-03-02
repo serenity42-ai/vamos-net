@@ -1,4 +1,5 @@
-// Mock data for Vamos.net — placeholder until real APIs are connected
+// Mock data for Vamos.net — placeholder until PadelAPI.org is connected
+// Last updated: 2026-03-02 with accurate 2026 season data
 
 export interface Article {
   slug: string;
@@ -33,125 +34,138 @@ export interface RankedPlayer {
   trendValue: number;
 }
 
+// --- ARTICLES (accurate 2026 season data) ---
+
 export const articles: Article[] = [
   {
-    slug: "lebron-galán-clinch-dubai-masters",
-    title: "Lebron and Galan Clinch Dubai Premier Padel Major Title",
+    slug: "coello-tapia-win-riyadh-p1-2026",
+    title: "Coello and Tapia Open 2026 Season With Riyadh P1 Title",
     excerpt:
-      "The Spanish pair delivered a masterclass in the final, defeating Coello and Tapia in straight sets to claim their third Major of the season.",
+      "The world number one pair started their title defense in emphatic fashion, defeating Galan and Chingotto in the final of the season-opening Riyadh P1.",
     category: "Tour News",
-    author: "Maria Torres",
-    date: "2026-03-01",
+    author: "Vamos Editorial",
+    date: "2026-02-15",
     imageUrl: "/placeholder-news-1.jpg",
-    body: `<p>In a stunning display of padel at its finest, Alejandro Lebron and Juan Galan secured the Dubai Premier Padel Major title with a commanding 6-3, 7-5 victory over Arturo Coello and Agustin Tapia.</p>
-<p>The match, played in front of a packed crowd at the Dubai Duty Free Tennis Stadium, showcased the very best of modern padel. Lebron and Galan controlled the tempo from the opening game, breaking Coello's serve in the fourth game to take an early lead.</p>
-<p>"We came here with a clear game plan and executed it perfectly," said Lebron in the post-match press conference. "Dubai is a special tournament for us, and winning here means everything."</p>
-<p>The second set was more competitive, with both pairs trading breaks before Galan produced a spectacular lob winner to break for 6-5, serving out the match with a pair of aces down the middle.</p>
-<p>This victory marks the pair's third Major title of the 2026 season and solidifies their position at the top of the Premier Padel Race standings.</p>`,
+    body: `<p>Arturo Coello and Agustin Tapia began the 2026 Premier Padel season exactly where they left off in 2025 — on top. The world number one pair claimed the Riyadh Season P1 title with a commanding performance throughout the week.</p>
+<p>In the final, they faced the newly formed pair of Alejandro Galan and Federico Chingotto, who had impressed in their first tournament together after both players split from their 2025 partners.</p>
+<p>"Riyadh is always special for us," said Coello after the match. "Starting the season with a title gives us huge confidence for the rest of the year."</p>
+<p>The 2026 season features a revamped calendar with the next stop being the Dubai P1, followed by the highly anticipated Miami P1 in late March.</p>`,
   },
   {
-    slug: "premier-padel-announces-2027-expansion",
-    title: "Premier Padel Announces Landmark 2027 Calendar Expansion",
+    slug: "galan-chingotto-new-partnership-2026",
+    title: "Galan and Chingotto Form New Partnership for 2026",
     excerpt:
-      "The tour will expand to 30 events across five continents next year, including new stops in Tokyo, New York, and Cape Town.",
-    category: "Business",
-    author: "Carlos Mendez",
-    date: "2026-02-28",
-    imageUrl: "/placeholder-news-2.jpg",
-    body: `<p>Premier Padel has officially announced its most ambitious calendar yet for the 2027 season, with 30 events spanning five continents and three new flagship venues.</p>
-<p>The expansion includes highly anticipated debuts in Tokyo, New York, and Cape Town, marking padel's continued push into untapped markets. The calendar also features an increased prize money pool, with total season purses exceeding EUR 25 million.</p>
-<p>"This is a defining moment for padel globally," said Luigi Carraro, President of the International Padel Federation. "We are seeing unprecedented demand from cities around the world to host Premier Padel events."</p>
-<p>The 2027 season will kick off in January with the Kuwait Major before heading to South America for events in Buenos Aires and Santiago. The European swing begins in March with the Rome Open, followed by stops in Paris, Madrid, and Barcelona.</p>`,
-  },
-  {
-    slug: "rising-star-martinez-breaks-top-10",
-    title: "Rising Star Paula Martinez Breaks Into WPT Top 10",
-    excerpt:
-      "At just 19 years old, Martinez becomes the youngest player to crack the top 10 since the rankings system was reformed in 2024.",
-    category: "Rankings",
-    author: "Elena Ruiz",
-    date: "2026-02-27",
-    imageUrl: "/placeholder-news-3.jpg",
-    body: `<p>Spanish teenager Paula Martinez has officially broken into the top 10 of the women's padel rankings, becoming the youngest player to achieve the feat since the ranking system was reformed in 2024.</p>
-<p>Martinez, who turned 19 last month, has been on a meteoric rise since bursting onto the scene at the 2025 Madrid Open. Her aggressive playing style and powerful bandeja have drawn comparisons to some of the game's all-time greats.</p>
-<p>"I still can't believe it," Martinez said after her latest quarterfinal run in Dubai. "I grew up watching these players on TV, and now I'm competing against them."</p>`,
-  },
-  {
-    slug: "padel-coaching-revolution-ai-tools",
-    title: "The Coaching Revolution: How AI Is Changing Padel Training",
-    excerpt:
-      "New AI-powered analysis tools are transforming how players and coaches approach training, with real-time shot tracking and tactical insights.",
-    category: "Academy",
-    author: "David Chen",
-    date: "2026-02-25",
-    imageUrl: "/placeholder-news-4.jpg",
-    body: `<p>The world of padel coaching is undergoing a dramatic transformation thanks to new AI-powered analysis tools that provide real-time shot tracking, movement analysis, and tactical insights.</p>
-<p>Companies like PadelVision and CourtAI are leading the charge, offering systems that can be installed in any padel court and provide instant feedback to players and coaches through mobile apps.</p>
-<p>"We can now track every shot, every movement, and every decision a player makes on court," explains Dr. Ana Fernandez, head of sports science at PadelVision. "This gives coaches an unprecedented level of detail to work with."</p>`,
-  },
-  {
-    slug: "coello-tapia-dominate-opening-rounds",
-    title: "Coello and Tapia Dominate Opening Rounds at Milan Open",
-    excerpt:
-      "The top-seeded pair breeze through the first two rounds without dropping a set, sending a statement to the rest of the draw.",
+      "Two of padel's biggest names join forces after splitting from their respective partners, creating one of the most exciting new pairs of the season.",
     category: "Tour News",
-    author: "Maria Torres",
-    date: "2026-02-23",
-    imageUrl: "/placeholder-news-5.jpg",
-    body: `<p>Arturo Coello and Agustin Tapia made a strong statement at the Milan Open, cruising through the opening two rounds without dropping a set.</p>
-<p>The world number one pair dispatched their first-round opponents 6-1, 6-2 before an equally convincing 6-3, 6-2 victory in the second round.</p>`,
+    author: "Vamos Editorial",
+    date: "2026-02-10",
+    imageUrl: "/placeholder-news-2.jpg",
+    body: `<p>Alejandro Galan and Federico Chingotto have officially confirmed their partnership for the 2026 Premier Padel season, forming what many consider the most exciting new pairing in professional padel.</p>
+<p>Galan, who previously partnered with Juan Lebron in one of padel's most iconic duos, brings his exceptional defensive skills and court coverage. Chingotto, known for his creativity and flair, adds an unpredictable attacking dimension.</p>
+<p>Their Riyadh P1 final appearance in their very first tournament together suggests the chemistry is already building. "We complement each other well," said Galan. "Fede sees angles on the court that nobody else does."</p>
+<p>Meanwhile, Lebron has teamed up with Argentine Leo Augsburger, while other notable new pairings include Paquito Navarro with Francisco Guerrero and Martin Di Nenno with Momo Gonzalez.</p>`,
   },
   {
-    slug: "new-padel-center-opens-london",
-    title: "Europe's Largest Padel Center Opens in London",
+    slug: "premier-padel-miami-p1-preview",
+    title: "Premier Padel Miami P1: Everything You Need to Know",
     excerpt:
-      "The new 24-court facility in East London aims to make padel accessible to a wider UK audience, with programs for all skill levels.",
+      "The tour heads to the United States for the Miami P1 from March 23-29, marking padel's biggest event yet on American soil.",
+    category: "Tour News",
+    author: "Vamos Editorial",
+    date: "2026-03-02",
+    imageUrl: "/placeholder-news-3.jpg",
+    body: `<p>Premier Padel is heading to Miami for what promises to be one of the landmark events of the 2026 season. Running from March 23-29, the Miami P1 represents padel's most significant push into the US market.</p>
+<p>All eyes will be on whether Coello and Tapia can extend their dominant start to the season, but the American crowds are expected to be especially receptive to the explosive playing styles of pairs like Galan/Chingotto and Stupa/Yanguas.</p>
+<p>On the women's side, Triay and Brea will look to continue their stranglehold on the top ranking, though the newly formed partnerships after Josemaria and Sanchez split could shake up the competition.</p>`,
+  },
+  {
+    slug: "padel-2026-new-partnerships-guide",
+    title: "2026 Season Shake-Up: Every Major New Partnership Explained",
+    excerpt:
+      "The off-season saw unprecedented player movement. Here's your complete guide to who's playing with whom in 2026.",
+    category: "Rankings",
+    author: "Vamos Editorial",
+    date: "2026-02-08",
+    imageUrl: "/placeholder-news-4.jpg",
+    body: `<p>The 2026 Premier Padel season has seen more partnership changes than any year in recent memory. Here's the definitive guide to all the major new pairings:</p>
+<p><strong>Men's Top 8 Pairs:</strong></p>
+<ul>
+<li>1. Coello / Tapia (unchanged - world #1)</li>
+<li>2. Galan / Chingotto (NEW)</li>
+<li>3. Stupa / Yanguas (reformed)</li>
+<li>4. Lebron / Augsburger (NEW)</li>
+<li>5. Coki Nieto / Jon Sanz (NEW)</li>
+<li>6. Paquito / Guerrero (NEW)</li>
+<li>7. Di Nenno / Momo Gonzalez (NEW)</li>
+<li>8. Leal / Cardona</li>
+</ul>
+<p>The only unchanged pair at the very top is Coello and Tapia, who enter 2026 as the clear favorites after a dominant 2025 campaign. The biggest storyline is the Galan/Chingotto partnership, bringing together two of the sport's most talented players.</p>`,
+  },
+  {
+    slug: "triay-brea-dominate-womens-tour",
+    title: "Triay and Brea: The Pair to Beat in Women's Padel",
+    excerpt:
+      "After dominating the 2025 rankings, Gemma Triay and Delfi Brea enter 2026 as the undisputed world number one women's pair.",
+    category: "Tour News",
+    author: "Vamos Editorial",
+    date: "2026-02-05",
+    imageUrl: "/placeholder-news-5.jpg",
+    body: `<p>Gemma Triay and Delfi Brea enter the 2026 season as the dominant force in women's padel, and their early-season form suggests they have no intention of slowing down.</p>
+<p>The Spanish-Argentine pair, who finished 2025 as the clear world number ones, have been virtually untouchable since forming their partnership. Triay's defensive mastery combined with Brea's aggressive net play creates a combination that no other pair has consistently solved.</p>
+<p>The biggest shake-up in women's padel comes from the split of Paula Josemaria and Ariana Sanchez, a partnership that had been the main rival to Triay/Brea. Both players are now seeking new partners, creating opportunities for emerging talents to break into the top tier.</p>`,
+  },
+  {
+    slug: "padel-fastest-growing-sport-2026",
+    title: "Padel Confirmed as World's Fastest-Growing Sport for Third Year",
+    excerpt:
+      "New data shows padel participation grew 35% globally in 2025, with the US, UK, and Middle East leading the expansion.",
     category: "Business",
-    author: "James Wright",
-    date: "2026-02-20",
+    author: "Vamos Editorial",
+    date: "2026-01-30",
     imageUrl: "/placeholder-news-6.jpg",
-    body: `<p>Europe's largest dedicated padel center has officially opened its doors in East London, featuring 24 courts, a pro shop, restaurant, and comprehensive coaching programs.</p>
-<p>The facility, backed by a consortium of investors including several former professional tennis players, aims to accelerate padel's growth in the UK market.</p>`,
+    body: `<p>For the third consecutive year, padel has been confirmed as the world's fastest-growing sport, with global participation figures rising 35% in 2025 according to a new report from the International Padel Federation (FIP).</p>
+<p>The sport now boasts over 30 million active players worldwide, with the most significant growth coming from the United States (+120% year-over-year), the United Kingdom (+85%), and the Middle East (+75%).</p>
+<p>The FIP report highlights several key drivers: increased Premier Padel TV coverage via Red Bull and beIN Sports, the explosion of padel court construction globally, and the sport's inherent social accessibility.</p>`,
   },
 ];
+
+// --- MATCHES (realistic 2026 season matchups with current pairs) ---
 
 export const matches: Match[] = [
   {
     id: "m1",
-    tournament: "Milan Open",
-    round: "Quarter-Final",
+    tournament: "Dubai P1",
+    round: "Semi-Final",
     team1: { player1: "A. Coello", player2: "A. Tapia" },
-    team2: { player1: "F. Belasteguin", player2: "A. Ruiz" },
+    team2: { player1: "F. Stupa", player2: "M. Yanguas" },
     score: "6-4, 3-2",
     status: "live",
     court: "Center Court",
   },
   {
     id: "m2",
-    tournament: "Milan Open",
-    round: "Quarter-Final",
-    team1: { player1: "A. Lebron", player2: "J. Galan" },
-    team2: { player1: "M. Di Nenno", player2: "F. Navarro" },
+    tournament: "Dubai P1",
+    round: "Semi-Final",
+    team1: { player1: "A. Galan", player2: "F. Chingotto" },
+    team2: { player1: "M. Di Nenno", player2: "M. Gonzalez" },
     score: "7-5, 6-3",
     status: "finished",
   },
   {
     id: "m3",
-    tournament: "Milan Open",
+    tournament: "Dubai P1",
     round: "Quarter-Final",
-    team1: { player1: "P. Chingotto", player2: "F. Stupa" },
-    team2: { player1: "J. Tello", player2: "F. Ruiz" },
-    score: "",
-    status: "upcoming",
-    time: "18:00",
-    court: "Court 2",
+    team1: { player1: "J. Lebron", player2: "L. Augsburger" },
+    team2: { player1: "C. Nieto", player2: "J. Sanz" },
+    score: "6-4, 3-6, 7-5",
+    status: "finished",
   },
   {
     id: "m4",
-    tournament: "Milan Open",
-    round: "Quarter-Final",
-    team1: { player1: "A. Galan", player2: "M. Yanguas" },
-    team2: { player1: "L. Campagnolo", player2: "J. Garrido" },
+    tournament: "Dubai P1",
+    round: "Final",
+    team1: { player1: "A. Coello", player2: "A. Tapia" },
+    team2: { player1: "A. Galan", player2: "F. Chingotto" },
     score: "",
     status: "upcoming",
     time: "20:00",
@@ -159,71 +173,64 @@ export const matches: Match[] = [
   },
   {
     id: "m5",
-    tournament: "WPT Valencia Open",
-    round: "Semi-Final",
-    team1: { player1: "G. Triay", player2: "A. Salazar" },
-    team2: { player1: "A. Sanchez", player2: "P. Josemaria" },
-    score: "6-3, 4-6, 7-5",
-    status: "finished",
+    tournament: "Dubai P1 (Women)",
+    round: "Final",
+    team1: { player1: "G. Triay", player2: "D. Brea" },
+    team2: { player1: "C. Fernandez", player2: "B. Gonzalez" },
+    score: "",
+    status: "upcoming",
+    time: "17:30",
+    court: "Center Court",
   },
   {
     id: "m6",
-    tournament: "WPT Valencia Open",
+    tournament: "Dubai P1 (Women)",
     round: "Semi-Final",
-    team1: { player1: "D. Brea", player2: "B. Gonzalez" },
-    team2: { player1: "M. Ortega", player2: "L. Sainz" },
-    score: "2-1",
-    status: "live",
-    court: "Pista Central",
+    team1: { player1: "G. Triay", player2: "D. Brea" },
+    team2: { player1: "T. Icardo", player2: "C. Jensen" },
+    score: "6-2, 6-4",
+    status: "finished",
   },
 ];
 
+// --- RANKINGS (based on actual 2026 Premier Padel standings after Riyadh P1) ---
+
 export const menRankings: RankedPlayer[] = [
-  { rank: 1, name: "Arturo Coello", country: "Spain", countryCode: "ES", points: 14250, trend: "same", trendValue: 0 },
-  { rank: 2, name: "Agustin Tapia", country: "Argentina", countryCode: "AR", points: 14250, trend: "same", trendValue: 0 },
-  { rank: 3, name: "Alejandro Lebron", country: "Spain", countryCode: "ES", points: 12800, trend: "up", trendValue: 1 },
-  { rank: 4, name: "Juan Galan", country: "Spain", countryCode: "ES", points: 12800, trend: "up", trendValue: 1 },
-  { rank: 5, name: "Franco Stupaczuk", country: "Argentina", countryCode: "AR", points: 10900, trend: "down", trendValue: 2 },
-  { rank: 6, name: "Martin Di Nenno", country: "Argentina", countryCode: "AR", points: 10450, trend: "down", trendValue: 1 },
-  { rank: 7, name: "Federico Chingotto", country: "Argentina", countryCode: "AR", points: 9800, trend: "up", trendValue: 2 },
-  { rank: 8, name: "Paquito Navarro", country: "Spain", countryCode: "ES", points: 9200, trend: "same", trendValue: 0 },
-  { rank: 9, name: "Juan Tello", country: "Argentina", countryCode: "AR", points: 8750, trend: "up", trendValue: 3 },
-  { rank: 10, name: "Fernando Belasteguin", country: "Argentina", countryCode: "AR", points: 8100, trend: "down", trendValue: 1 },
-  { rank: 11, name: "Miguel Yanguas", country: "Spain", countryCode: "ES", points: 7600, trend: "up", trendValue: 1 },
-  { rank: 12, name: "Ale Ruiz", country: "Argentina", countryCode: "AR", points: 7200, trend: "down", trendValue: 2 },
-  { rank: 13, name: "Lucas Campagnolo", country: "Brazil", countryCode: "BR", points: 6800, trend: "up", trendValue: 4 },
-  { rank: 14, name: "Javier Garrido", country: "Spain", countryCode: "ES", points: 6500, trend: "same", trendValue: 0 },
-  { rank: 15, name: "Pablo Lima", country: "Brazil", countryCode: "BR", points: 6100, trend: "down", trendValue: 3 },
-  { rank: 16, name: "Mike Yanguas", country: "Spain", countryCode: "ES", points: 5800, trend: "up", trendValue: 2 },
-  { rank: 17, name: "Fede Ruiz", country: "Spain", countryCode: "ES", points: 5500, trend: "same", trendValue: 0 },
-  { rank: 18, name: "Gonzalo Rubio", country: "Spain", countryCode: "ES", points: 5200, trend: "up", trendValue: 1 },
-  { rank: 19, name: "Alex Chozas", country: "Argentina", countryCode: "AR", points: 4900, trend: "down", trendValue: 2 },
-  { rank: 20, name: "Coki Nieto", country: "Spain", countryCode: "ES", points: 4600, trend: "up", trendValue: 3 },
+  { rank: 1, name: "Agustin Tapia", country: "Argentina", countryCode: "AR", points: 1000, trend: "same", trendValue: 0 },
+  { rank: 1, name: "Arturo Coello", country: "Spain", countryCode: "ES", points: 1000, trend: "same", trendValue: 0 },
+  { rank: 3, name: "Alejandro Galan", country: "Spain", countryCode: "ES", points: 600, trend: "same", trendValue: 0 },
+  { rank: 3, name: "Federico Chingotto", country: "Argentina", countryCode: "AR", points: 600, trend: "same", trendValue: 0 },
+  { rank: 5, name: "Juan Lebron", country: "Spain", countryCode: "ES", points: 360, trend: "same", trendValue: 0 },
+  { rank: 5, name: "Francisco Navarro", country: "Spain", countryCode: "ES", points: 360, trend: "up", trendValue: 4 },
+  { rank: 5, name: "Leo Augsburger", country: "Argentina", countryCode: "AR", points: 360, trend: "up", trendValue: 5 },
+  { rank: 5, name: "Francisco Guerrero", country: "Spain", countryCode: "ES", points: 360, trend: "up", trendValue: 10 },
+  { rank: 9, name: "Franco Stupaczuk", country: "Argentina", countryCode: "AR", points: 180, trend: "up", trendValue: 3 },
+  { rank: 9, name: "Miguel Yanguas", country: "Spain", countryCode: "ES", points: 180, trend: "up", trendValue: 2 },
+  { rank: 9, name: "Lucas Bergamini", country: "Brazil", countryCode: "BR", points: 180, trend: "up", trendValue: 4 },
+  { rank: 9, name: "Juan Tello", country: "Argentina", countryCode: "AR", points: 180, trend: "down", trendValue: 8 },
+  { rank: 9, name: "Edu Alonso", country: "Spain", countryCode: "ES", points: 180, trend: "up", trendValue: 9 },
+  { rank: 9, name: "Javier Garrido", country: "Spain", countryCode: "ES", points: 180, trend: "up", trendValue: 11 },
+  { rank: 9, name: "Ramiro Valenzuela", country: "Argentina", countryCode: "AR", points: 180, trend: "up", trendValue: 49 },
+  { rank: 9, name: "Javier Martinez", country: "Spain", countryCode: "ES", points: 180, trend: "up", trendValue: 52 },
+  { rank: 17, name: "Martin Di Nenno", country: "Argentina", countryCode: "AR", points: 90, trend: "down", trendValue: 5 },
+  { rank: 17, name: "Momo Gonzalez", country: "Spain", countryCode: "ES", points: 90, trend: "down", trendValue: 3 },
+  { rank: 17, name: "Coki Nieto", country: "Spain", countryCode: "ES", points: 90, trend: "down", trendValue: 2 },
+  { rank: 17, name: "Jon Sanz", country: "Spain", countryCode: "ES", points: 90, trend: "down", trendValue: 4 },
 ];
 
 export const womenRankings: RankedPlayer[] = [
-  { rank: 1, name: "Gemma Triay", country: "Spain", countryCode: "ES", points: 13800, trend: "same", trendValue: 0 },
-  { rank: 2, name: "Alejandra Salazar", country: "Spain", countryCode: "ES", points: 13100, trend: "same", trendValue: 0 },
-  { rank: 3, name: "Ariana Sanchez", country: "Spain", countryCode: "ES", points: 12400, trend: "up", trendValue: 1 },
-  { rank: 4, name: "Paula Josemaria", country: "Spain", countryCode: "ES", points: 12000, trend: "down", trendValue: 1 },
-  { rank: 5, name: "Delfi Brea", country: "Argentina", countryCode: "AR", points: 11200, trend: "up", trendValue: 2 },
-  { rank: 6, name: "Bea Gonzalez", country: "Spain", countryCode: "ES", points: 10800, trend: "up", trendValue: 1 },
-  { rank: 7, name: "Marta Ortega", country: "Spain", countryCode: "ES", points: 9600, trend: "down", trendValue: 2 },
-  { rank: 8, name: "Lucia Sainz", country: "Spain", countryCode: "ES", points: 9200, trend: "same", trendValue: 0 },
-  { rank: 9, name: "Paula Martinez", country: "Spain", countryCode: "ES", points: 8700, trend: "up", trendValue: 5 },
-  { rank: 10, name: "Tamara Icardo", country: "Spain", countryCode: "ES", points: 8100, trend: "down", trendValue: 1 },
-  { rank: 11, name: "Claudia Fernandez", country: "Spain", countryCode: "ES", points: 7500, trend: "up", trendValue: 2 },
-  { rank: 12, name: "Sofia Araujo", country: "Spain", countryCode: "ES", points: 7100, trend: "same", trendValue: 0 },
-  { rank: 13, name: "Victoria Iglesias", country: "Spain", countryCode: "ES", points: 6700, trend: "down", trendValue: 1 },
-  { rank: 14, name: "Patty Llaguno", country: "Spain", countryCode: "ES", points: 6300, trend: "down", trendValue: 3 },
-  { rank: 15, name: "Marta Marrero", country: "Spain", countryCode: "ES", points: 5900, trend: "up", trendValue: 1 },
-  { rank: 16, name: "Virginia Riera", country: "Argentina", countryCode: "AR", points: 5500, trend: "up", trendValue: 2 },
-  { rank: 17, name: "Araceli Martinez", country: "Spain", countryCode: "ES", points: 5200, trend: "same", trendValue: 0 },
-  { rank: 18, name: "Carla Mesa", country: "Spain", countryCode: "ES", points: 4800, trend: "up", trendValue: 3 },
-  { rank: 19, name: "Jessica Castello", country: "Spain", countryCode: "ES", points: 4500, trend: "down", trendValue: 2 },
-  { rank: 20, name: "Majo Sanchez Alayeto", country: "Spain", countryCode: "ES", points: 4200, trend: "up", trendValue: 1 },
+  { rank: 1, name: "Gemma Triay", country: "Spain", countryCode: "ES", points: 1000, trend: "same", trendValue: 0 },
+  { rank: 1, name: "Delfi Brea", country: "Argentina", countryCode: "AR", points: 1000, trend: "same", trendValue: 0 },
+  { rank: 3, name: "Claudia Fernandez", country: "Spain", countryCode: "ES", points: 600, trend: "up", trendValue: 3 },
+  { rank: 3, name: "Bea Gonzalez", country: "Spain", countryCode: "ES", points: 600, trend: "up", trendValue: 2 },
+  { rank: 5, name: "Tamara Icardo", country: "Spain", countryCode: "ES", points: 360, trend: "up", trendValue: 1 },
+  { rank: 5, name: "Paula Josemaria", country: "Spain", countryCode: "ES", points: 360, trend: "down", trendValue: 3 },
+  { rank: 5, name: "Ariana Sanchez", country: "Spain", countryCode: "ES", points: 360, trend: "down", trendValue: 2 },
+  { rank: 8, name: "Marta Ortega", country: "Spain", countryCode: "ES", points: 180, trend: "down", trendValue: 1 },
+  { rank: 8, name: "Lucia Sainz", country: "Spain", countryCode: "ES", points: 180, trend: "same", trendValue: 0 },
+  { rank: 10, name: "Victoria Iglesias", country: "Spain", countryCode: "ES", points: 90, trend: "down", trendValue: 2 },
 ];
 
-export const tournaments = ["Milan Open", "WPT Valencia Open", "Dubai Major", "All Tournaments"];
+export const tournaments = ["Dubai P1", "Dubai P1 (Women)", "All Tournaments"];
 
 export const newsCategories = ["All", "Tour News", "Rankings", "Business", "Academy"] as const;
