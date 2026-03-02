@@ -3,12 +3,12 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="bg-[#0F1F2E] text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
-          <div>
+          <div className="col-span-2 sm:col-span-2 lg:col-span-1">
             <h3 className="text-lg font-bold mb-3">Vamos.net</h3>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
               The World of Padel. Live scores, rankings, news, and everything you need to follow professional padel.
             </p>
           </div>
@@ -36,7 +36,7 @@ export default function Footer() {
           </div>
 
           {/* Social */}
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">Follow Us</h4>
             <div className="flex gap-3">
               <a href="#" className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-gray-300 hover:bg-[#4ABED9] hover:text-white transition-colors" aria-label="Twitter / X">
@@ -52,8 +52,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-8 border-t border-white/10 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Vamos.net — The World of Padel. All rights reserved.
+        <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-white/10 text-center text-xs sm:text-sm text-gray-500">
+          &copy; {new Date().getFullYear()} Arbi Smart Solutions LLC. All rights reserved. Vamos.net — The World of Padel.
         </div>
       </div>
     </footer>
