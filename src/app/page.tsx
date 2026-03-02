@@ -75,24 +75,20 @@ export default function ComingSoon() {
           </form>
         ) : (
           <div className="bg-[#8AB300]/10 border border-[#8AB300]/30 rounded-xl px-6 py-4 max-w-md mx-auto">
-            <p className="text-[#6B8A00] font-semibold">¡Vamos! You&apos;re on the list 🎾</p>
+            <p className="text-[#6B8A00] font-semibold">¡Vamos! You&apos;re on the list.</p>
             <p className="text-gray-400 text-sm mt-1">We&apos;ll notify you when we launch.</p>
           </div>
         )}
 
         {/* Features preview */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[
-            { icon: "🎾", label: "Live Scores" },
-            { icon: "📊", label: "Rankings" },
-            { icon: "📰", label: "News" },
-            { icon: "🏆", label: "Stats" },
-          ].map((item) => (
-            <div key={item.label} className="group">
-              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{item.icon}</div>
-              <div className="text-[11px] uppercase tracking-[0.2em] text-gray-400 font-medium">{item.label}</div>
-            </div>
-          ))}
+        <div className="mt-16 flex items-center justify-center gap-8 text-[11px] uppercase tracking-[0.2em] text-gray-400 font-medium">
+          <span>Live Scores</span>
+          <span className="w-1 h-1 rounded-full bg-gray-300" />
+          <span>Rankings</span>
+          <span className="w-1 h-1 rounded-full bg-gray-300" />
+          <span>News</span>
+          <span className="w-1 h-1 rounded-full bg-gray-300" />
+          <span>Stats</span>
         </div>
       </div>
 
