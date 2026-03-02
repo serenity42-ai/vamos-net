@@ -80,3 +80,14 @@
 ---
 
 *Add items here. Prioritize during weekly reviews.*
+
+---
+
+## Pending Actions (Alex)
+
+### PadelAPI.org Account
+- Sign up at padelapi.org/login (free tier)
+- Create API token at padelapi.org/user/api-tokens
+- Send token to Winston
+- Free tier: 50K req/mo, 10 req/min, 6 months history
+- Later: upgrade to Pro (€49/mo) for live scores + WebSocket + full history

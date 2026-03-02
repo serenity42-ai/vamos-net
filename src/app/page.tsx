@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import NewsCard from "@/components/NewsCard";
 import MatchCard from "@/components/MatchCard";
@@ -14,34 +13,22 @@ export default function Home() {
 
   return (
     <main>
-      {/* Hero — Logo + Live Scores */}
-      <section className="bg-[#0F1F2E] text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          {/* Hero logo */}
-          <div className="flex justify-center mb-8 sm:mb-10">
-            <Image
-              src="/logo.png"
-              alt="Vamos.net — The World of Padel"
-              width={400}
-              height={100}
-              className="h-auto w-[240px] sm:w-[300px] md:w-[360px] lg:w-[400px]"
-              priority
-            />
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+      {/* Live Scores Section */}
+      <section className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Live Scores</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">Live Scores</h1>
               <p className="text-gray-400 text-sm mt-1">Today&apos;s matches from the padel world</p>
             </div>
             <Link
               href="/scores"
-              className="text-sm font-semibold text-[#4ABED9] hover:text-white transition-colors self-start sm:self-auto"
+              className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors self-start sm:self-auto"
             >
               View All
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {liveMatches.map((match) => (
               <MatchCard key={match.id} match={match} />
             ))}
@@ -97,8 +84,8 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {topMen.map((p) => (
-                      <RankingRow key={p.rank} player={p} compact />
+                    {topMen.map((p, i) => (
+                      <RankingRow key={`m-${i}`} player={p} compact />
                     ))}
                   </tbody>
                 </table>
@@ -121,8 +108,8 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {topWomen.map((p) => (
-                      <RankingRow key={p.rank} player={p} compact />
+                    {topWomen.map((p, i) => (
+                      <RankingRow key={`w-${i}`} player={p} compact />
                     ))}
                   </tbody>
                 </table>
