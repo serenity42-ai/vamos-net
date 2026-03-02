@@ -23,9 +23,18 @@ async function fetchRankings() {
     }),
   ]);
 
+  // Filter out API data anomalies — players with extremely low points ranked in top positions
+  const filterAnomalies = (players: Player[]): Player[] => {
+    if (players.length < 3) return players;
+    // Find the median points of top 10 to set a threshold
+    const topPoints = players.slice(0, 10).map(p => p.points || 0).filter(p => p > 0).sort((a, b) => b - a);
+    const threshold = topPoints.length > 2 ? topPoints[2] * 0.1 : 0; // 10% of 3rd highest points
+    return players.filter(p => !p.points || p.points >= threshold);
+  };
+
   return {
-    men: menRes.status === "fulfilled" ? menRes.value.data : [],
-    women: womenRes.status === "fulfilled" ? womenRes.value.data : [],
+    men: filterAnomalies(menRes.status === "fulfilled" ? menRes.value.data : []),
+    women: filterAnomalies(womenRes.status === "fulfilled" ? womenRes.value.data : []),
   };
 }
 

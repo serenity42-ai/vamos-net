@@ -68,8 +68,14 @@ export default async function Home() {
     )
     .slice(0, 4);
 
-  const topMen = men.slice(0, 5);
-  const topWomen = women.slice(0, 5);
+  // Filter out API anomalies (players with very low points ranked high)
+  const filterAnomalies = (players: typeof men) => {
+    const topPoints = players.slice(0, 10).map(p => p.points || 0).filter(p => p > 0).sort((a, b) => b - a);
+    const threshold = topPoints.length > 2 ? topPoints[2] * 0.1 : 0;
+    return players.filter(p => !p.points || p.points >= threshold);
+  };
+  const topMen = filterAnomalies(men).slice(0, 5);
+  const topWomen = filterAnomalies(women).slice(0, 5);
 
   // Find a current/upcoming tournament
   const activeTournament = tournaments.find(
