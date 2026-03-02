@@ -19,19 +19,18 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/scores" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Live Scores</Link></li>
               <li><Link href="/rankings" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Rankings</Link></li>
+              <li><Link href="/calendar" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Calendar</Link></li>
               <li><Link href="/news" className="text-gray-300 hover:text-[#4ABED9] transition-colors">News</Link></li>
-              <li><Link href="/about" className="text-gray-300 hover:text-[#4ABED9] transition-colors">About</Link></li>
             </ul>
           </div>
 
-          {/* News */}
+          {/* Tools */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">News</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">Tools</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/news?category=Tour+News" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Tour News</Link></li>
-              <li><Link href="/news?category=Rankings" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Rankings</Link></li>
-              <li><Link href="/news?category=Business" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Business</Link></li>
-              <li><Link href="/news?category=Academy" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Academy</Link></li>
+              <li><Link href="/h2h" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Head to Head</Link></li>
+              <li><Link href="/simulator" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Match Simulator</Link></li>
+              <li><Link href="/about" className="text-gray-300 hover:text-[#4ABED9] transition-colors">About</Link></li>
             </ul>
           </div>
 

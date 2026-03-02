@@ -85,9 +85,8 @@
 
 ## Pending Actions (Alex)
 
-### PadelAPI.org Account
-- Sign up at padelapi.org/login (free tier)
-- Create API token at padelapi.org/user/api-tokens
-- Send token to Winston
-- Free tier: 50K req/mo, 10 req/min, 6 months history
-- Later: upgrade to Pro (€49/mo) for live scores + WebSocket + full history
+### PadelAPI.org Pro Upgrade — Alex, March 3
+- Currently on free tier (connected, working)
+- Upgrade to Pro (€49/mo) at padelapi.org/billing
+- Unlocks: live scores, point-by-point, match stats, player stats, pair stats
+- Live scores = the main homepage feature

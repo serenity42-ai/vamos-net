@@ -1,3 +1,13 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "storage.googleapis.com",
+        pathname: "/fantasypadeltour/**",
+      },
+    ],
+  },
+};
 export default nextConfig;

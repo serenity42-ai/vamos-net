@@ -1,48 +1,73 @@
-import type { RankedPlayer } from "@/data/mock";
+import Image from "next/image";
+import Link from "next/link";
+import type { Player } from "@/lib/padel-api";
+import { countryFlag } from "@/lib/padel-api";
 
-function TrendIndicator({ trend, value }: { trend: RankedPlayer["trend"]; value: number }) {
-  if (trend === "up") {
-    return (
-      <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-[#3CB371]">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 2L10 7H2L6 2Z"/></svg>
-        {value}
-      </span>
-    );
-  }
-  if (trend === "down") {
-    return (
-      <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-red-500">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 10L2 5H10L6 10Z"/></svg>
-        {value}
-      </span>
-    );
-  }
-  return <span className="text-xs text-gray-400">--</span>;
-}
+export default function RankingRow({
+  player,
+  compact,
+}: {
+  player: Player;
+  compact?: boolean;
+}) {
+  const flag = countryFlag(player.nationality);
 
-export default function RankingRow({ player, compact }: { player: RankedPlayer; compact?: boolean }) {
   return (
     <tr className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
       <td className="py-3 px-3 text-center">
-        <span className={`text-sm font-bold ${player.rank <= 3 ? "text-[#4ABED9]" : "text-[#0F1F2E]"}`}>
-          {player.rank}
+        <span
+          className={`text-sm font-bold ${
+            player.ranking <= 3 ? "text-[#4ABED9]" : "text-[#0F1F2E]"
+          }`}
+        >
+          {player.ranking}
         </span>
       </td>
       <td className="py-3 px-3">
-        <span className="text-sm font-semibold text-[#0F1F2E]">{player.name}</span>
+        <Link
+          href={`/players/${player.id}`}
+          className="flex items-center gap-2.5 group"
+        >
+          {player.photo_url && !compact ? (
+            <Image
+              src={player.photo_url}
+              alt={player.name}
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-full object-cover bg-gray-100"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 shrink-0">
+              {player.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)}
+            </div>
+          )}
+          <div className="min-w-0">
+            <span className="text-sm font-semibold text-[#0F1F2E] group-hover:text-[#4ABED9] transition-colors truncate block">
+              {player.name}
+            </span>
+            {!compact && (
+              <span className="text-xs text-gray-400">
+                {flag} {player.nationality}
+              </span>
+            )}
+          </div>
+        </Link>
       </td>
       {!compact && (
         <td className="py-3 px-3 hidden sm:table-cell">
-          <span className="text-sm text-gray-500">{player.country}</span>
+          <span className="text-sm text-gray-500">
+            {flag} {player.nationality}
+          </span>
         </td>
       )}
       <td className="py-3 px-3 text-right">
         <span className="text-sm font-semibold text-[#0F1F2E] tabular-nums">
-          {player.points.toLocaleString()}
+          {player.points?.toLocaleString() ?? "-"}
         </span>
-      </td>
-      <td className="py-3 px-3 text-center">
-        <TrendIndicator trend={player.trend} value={player.trendValue} />
       </td>
     </tr>
   );
