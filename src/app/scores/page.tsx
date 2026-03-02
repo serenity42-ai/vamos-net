@@ -15,14 +15,15 @@ export const metadata = {
 async function fetchScoresData(tournamentFilter?: string) {
   // Get matches from last 14 days + upcoming
   const today = new Date();
-  const twoWeeksAgo = new Date(today);
-  twoWeeksAgo.setDate(today.getDate() - 14);
+  const lookback = new Date(today);
+  lookback.setDate(today.getDate() - 60);
 
-  const afterDate = twoWeeksAgo.toISOString().split("T")[0];
+  const afterDate = lookback.toISOString().split("T")[0];
 
   const [matchesRes, tournamentsRes] = await Promise.allSettled([
     getMatches({
       after_date: afterDate,
+      before_date: new Date().toISOString().split("T")[0],
       sort_by: "played_at",
       order_by: "desc",
       per_page: "50",
