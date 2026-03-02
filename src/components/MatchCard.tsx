@@ -13,7 +13,7 @@ function StatusBadge({ status }: { status: Match["status"] }) {
   if (status === "finished") {
     return (
       <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-        Final
+        Score
       </span>
     );
   }
