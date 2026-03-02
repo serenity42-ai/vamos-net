@@ -4,8 +4,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        court: { blue: "#4ABED9", green: "#3CB371", dark: "#0F1923" },
-        vamos: { lime: "#C4FF00", white: "#FAFAFA" },
+        court: { blue: "#4ABED9", green: "#3CB371", navy: "#0F1F2E" },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

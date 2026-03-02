@@ -1,103 +1,124 @@
-"use client";
+import Link from "next/link";
+import NewsCard from "@/components/NewsCard";
+import MatchCard from "@/components/MatchCard";
+import RankingRow from "@/components/RankingRow";
+import NewsletterSignup from "@/components/NewsletterSignup";
+import { articles, matches, menRankings, womenRankings } from "@/data/mock";
 
-import { useState } from "react";
-import Image from "next/image";
-
-export default function ComingSoon() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Connect to Beehiiv API
-    if (email) {
-      setSubmitted(true);
-    }
-  };
+export default function Home() {
+  const liveMatches = matches.filter((m) => m.status === "live" || m.status === "upcoming").slice(0, 4);
+  const latestNews = articles.slice(0, 4);
+  const topMen = menRankings.slice(0, 5);
+  const topWomen = womenRankings.slice(0, 5);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden bg-white">
-      {/* Subtle court-line background */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-[0.04]">
-        <div className="w-[700px] h-[460px] border-[3px] border-[#0F1F2E] rounded-lg relative">
-          <div className="w-full h-1/2 border-b-[3px] border-[#0F1F2E]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-full border-x-[3px] border-[#0F1F2E]" />
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 text-center max-w-2xl">
-        {/* Logo */}
-        <div className="mb-10">
-          <Image
-            src="/logo.png"
-            alt="Vamos.net — The World of Padel"
-            width={500}
-            height={120}
-            className="mx-auto"
-            priority
-          />
-        </div>
-
-        {/* Tagline */}
-        <p className="text-sm uppercase tracking-[0.35em] text-[#4ABED9] font-medium mb-10">
-          The World of Padel
-        </p>
-
-        {/* Divider */}
-        <div className="w-16 h-[2px] bg-gradient-to-r from-[#4ABED9] to-[#8AB300] mx-auto mb-10" />
-
-        {/* Description */}
-        <p className="text-xl text-[#0F1F2E] mb-3 leading-relaxed font-medium">
-          Live scores. Rankings. News. Stats.
-        </p>
-        <p className="text-base text-gray-400 mb-10">
-          The definitive padel platform is launching soon.
-        </p>
-
-        {/* Email signup */}
-        {!submitted ? (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required
-              className="flex-1 px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[#0F1F2E] placeholder-gray-400 outline-none focus:border-[#8AB300]/50 focus:ring-2 focus:ring-[#8AB300]/10 transition-all text-base"
-            />
-            <button
-              type="submit"
-              className="px-8 py-3.5 bg-[#0F1F2E] hover:bg-[#1a2d40] text-white font-bold rounded-xl transition-all text-base tracking-wide whitespace-nowrap"
+    <main>
+      {/* Hero — Live Scores */}
+      <section className="bg-[#0F1F2E] text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Live Scores</h1>
+              <p className="text-gray-400 text-sm mt-1">Today&apos;s matches from the padel world</p>
+            </div>
+            <Link
+              href="/scores"
+              className="text-sm font-semibold text-[#4ABED9] hover:text-white transition-colors"
             >
-              Notify Me
-            </button>
-          </form>
-        ) : (
-          <div className="bg-[#8AB300]/10 border border-[#8AB300]/30 rounded-xl px-6 py-4 max-w-md mx-auto">
-            <p className="text-[#6B8A00] font-semibold">¡Vamos! You&apos;re on the list.</p>
-            <p className="text-gray-400 text-sm mt-1">We&apos;ll notify you when we launch.</p>
+              View All
+            </Link>
           </div>
-        )}
-
-        {/* Features preview */}
-        <div className="mt-16 flex items-center justify-center gap-8 text-[11px] uppercase tracking-[0.2em] text-gray-400 font-medium">
-          <span>Live Scores</span>
-          <span className="w-1 h-1 rounded-full bg-gray-300" />
-          <span>Rankings</span>
-          <span className="w-1 h-1 rounded-full bg-gray-300" />
-          <span>News</span>
-          <span className="w-1 h-1 rounded-full bg-gray-300" />
-          <span>Stats</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {liveMatches.map((match) => (
+              <MatchCard key={match.id} match={match} />
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="absolute bottom-6 text-center">
-        <p className="text-xs text-gray-300">
-          © 2026 Vamos.net — The World of Padel
-        </p>
-      </footer>
+      {/* Latest News */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-[#0F1F2E]">Latest News</h2>
+          <Link
+            href="/news"
+            className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors"
+          >
+            View All
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {latestNews.map((article) => (
+            <NewsCard key={article.slug} article={article} />
+          ))}
+        </div>
+      </section>
+
+      {/* Rankings Preview */}
+      <section className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-[#0F1F2E]">Rankings</h2>
+            <Link
+              href="/rankings"
+              className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors"
+            >
+              Full Rankings
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Men */}
+            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F1F2E]">Men&apos;s Top 5</h3>
+              </div>
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100">
+                    <th className="py-2 px-3 text-center w-12">#</th>
+                    <th className="py-2 px-3 text-left">Player</th>
+                    <th className="py-2 px-3 text-right">Pts</th>
+                    <th className="py-2 px-3 text-center w-16">Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topMen.map((p) => (
+                    <RankingRow key={p.rank} player={p} compact />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Women */}
+            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F1F2E]">Women&apos;s Top 5</h3>
+              </div>
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100">
+                    <th className="py-2 px-3 text-center w-12">#</th>
+                    <th className="py-2 px-3 text-left">Player</th>
+                    <th className="py-2 px-3 text-right">Pts</th>
+                    <th className="py-2 px-3 text-center w-16">Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topWomen.map((p) => (
+                    <RankingRow key={p.rank} player={p} compact />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <NewsletterSignup />
+      </section>
     </main>
   );
 }
