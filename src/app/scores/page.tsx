@@ -23,7 +23,6 @@ async function fetchScoresData(tournamentFilter?: string) {
   const [matchesRes, tournamentsRes] = await Promise.allSettled([
     getMatches({
       after_date: afterDate,
-      before_date: new Date().toISOString().split("T")[0],
       sort_by: "played_at",
       order_by: "desc",
       per_page: "50",
@@ -59,9 +58,9 @@ export default async function ScoresPage({
 
   const tournamentFilter = searchParams.tournament;
 
-  // Filter matches that have players
+  // Filter matches that have players or are finished with scores
   let filtered = allMatches.filter(
-    (m) => m.players.team_1.length > 0 || m.players.team_2.length > 0
+    (m) => m.players.team_1.length > 0 || m.players.team_2.length > 0 || (m.status === "finished" && m.score && m.score.length > 0)
   );
 
   // Apply tournament filter

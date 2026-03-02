@@ -29,7 +29,6 @@ async function fetchHomeData() {
       sort_by: "played_at",
       order_by: "desc",
       per_page: "50",
-      before_date: new Date().toISOString().split("T")[0],
     }),
     getSeasonTournaments(5, { per_page: "5" }),
   ]);
