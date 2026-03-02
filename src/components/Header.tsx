@@ -9,9 +9,8 @@ const navItems = [
   { href: "/scores", label: "Scores" },
   { href: "/rankings", label: "Rankings" },
   { href: "/calendar", label: "Calendar" },
-  { href: "/h2h", label: "H2H" },
-  { href: "/simulator", label: "Simulator" },
   { href: "/news", label: "News" },
+  { href: "/business", label: "Business" },
 ];
 
 export default function Header() {
