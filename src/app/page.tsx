@@ -30,10 +30,10 @@ export default function ComingSoon() {
         {/* Logo */}
         <div className="mb-10">
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt="Vamos.net — The World of Padel"
             width={500}
-            height={100}
+            height={120}
             className="mx-auto"
             priority
           />
