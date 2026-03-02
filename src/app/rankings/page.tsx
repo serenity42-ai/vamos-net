@@ -93,11 +93,7 @@ function PlayerRow({ player }: { player: Player }) {
           {player.points?.toLocaleString() ?? "-"}
         </span>
       </td>
-      <td className="py-3 px-3 hidden md:table-cell text-center">
-        <span className="text-xs text-gray-400 capitalize">
-          {player.side ?? "-"}
-        </span>
-      </td>
+
     </tr>
   );
 }
@@ -158,9 +154,7 @@ export default async function RankingsPage({
                   Country
                 </th>
                 <th className="py-3 px-3 text-right">Points</th>
-                <th className="py-3 px-3 text-center hidden md:table-cell w-20">
-                  Side
-                </th>
+
               </tr>
             </thead>
             <tbody>
