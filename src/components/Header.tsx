@@ -25,10 +25,9 @@ export default function Header() {
             <Image
               src="/logo.png"
               alt="Vamos.net"
-              width={200}
-              height={50}
-              className="h-10 w-auto sm:h-12 md:h-14"
-              style={{ minWidth: "140px", maxWidth: "200px", width: "auto" }}
+              width={1600}
+              height={896}
+              className="h-8 w-auto sm:h-9 md:h-10"
               priority
             />
           </Link>
