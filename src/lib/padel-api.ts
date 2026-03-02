@@ -67,7 +67,7 @@ export interface Match {
   schedule_label: string | null;
   court: string | null;
   court_order: number | null;
-  status: "finished" | "scheduled" | "live" | "cancelled";
+  status: "finished" | "scheduled" | "live" | "cancelled" | "bye";
   score: SetScore[] | null;
   winner: "team_1" | "team_2" | null;
   started_time: string | null;

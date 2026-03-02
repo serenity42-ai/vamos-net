@@ -1,8 +1,8 @@
 import MatchCard from "@/components/MatchCard";
 import Link from "next/link";
 import {
-  getMatches,
   getSeasonTournaments,
+  getTournamentMatches,
   type Match,
   type Tournament,
 } from "@/lib/padel-api";
@@ -12,28 +12,40 @@ export const metadata = {
   description: "Latest padel match results and upcoming fixtures.",
 };
 
-async function fetchScoresData(tournamentFilter?: string) {
-  // Get matches from last 14 days + upcoming
-  const today = new Date();
-  const lookback = new Date(today);
-  lookback.setDate(today.getDate() - 60);
+async function fetchScoresData(tournamentId?: number) {
+  // Fetch season tournaments first
+  const tournamentsRes = await getSeasonTournaments(5, { per_page: "30" }).catch(
+    () => ({ data: [] as Tournament[] })
+  );
+  const tournaments = tournamentsRes.data;
 
-  const afterDate = lookback.toISOString().split("T")[0];
+  // Determine which tournaments to fetch matches for
+  let matchTournaments: Tournament[];
+  if (tournamentId) {
+    // Specific tournament selected
+    matchTournaments = tournaments.filter((t) => t.id === tournamentId);
+    if (matchTournaments.length === 0) matchTournaments = tournaments.filter((t) => t.id === tournamentId);
+  } else {
+    // "All" — fetch live + most recently finished tournaments
+    matchTournaments = tournaments.filter(
+      (t) => t.status === "live" || t.status === "finished"
+    );
+  }
 
-  const [matchesRes, tournamentsRes] = await Promise.allSettled([
-    getMatches({
-      after_date: afterDate,
-      sort_by: "played_at",
-      order_by: "desc",
-      per_page: "50",
-    }),
-    getSeasonTournaments(5, { per_page: "30" }),
-  ]);
+  // Fetch matches from each tournament in parallel
+  const matchResults = await Promise.allSettled(
+    matchTournaments.map((t) =>
+      getTournamentMatches(t.id, {
+        per_page: "100",
+        sort_by: "played_at",
+        order_by: "desc",
+      })
+    )
+  );
 
-  const allMatches: Match[] =
-    matchesRes.status === "fulfilled" ? matchesRes.value.data : [];
-  const tournaments: Tournament[] =
-    tournamentsRes.status === "fulfilled" ? tournamentsRes.value.data : [];
+  const allMatches: Match[] = matchResults.flatMap((r) =>
+    r.status === "fulfilled" ? r.value.data : []
+  );
 
   return { allMatches, tournaments };
 }
@@ -54,31 +66,32 @@ export default async function ScoresPage({
 }: {
   searchParams: { tournament?: string };
 }) {
-  const { allMatches, tournaments } = await fetchScoresData();
-
   const tournamentFilter = searchParams.tournament;
+  const tournamentId =
+    tournamentFilter && tournamentFilter !== "all"
+      ? parseInt(tournamentFilter)
+      : undefined;
 
-  // Filter matches that have players or are finished with scores
-  let filtered = allMatches.filter(
-    (m) => m.players.team_1.length > 0 || m.players.team_2.length > 0 || (m.status === "finished" && m.score && m.score.length > 0)
+  const { allMatches, tournaments } = await fetchScoresData(tournamentId);
+
+  // Filter out bye matches and matches with no data at all
+  const filtered = allMatches.filter(
+    (m) =>
+      m.status !== "bye" &&
+      m.status !== "cancelled" &&
+      (m.players.team_1.length > 0 ||
+        m.players.team_2.length > 0 ||
+        (m.status === "finished" && m.score && m.score.length > 0))
   );
-
-  // Apply tournament filter
-  if (tournamentFilter && tournamentFilter !== "all") {
-    filtered = filtered.filter((m) => {
-      const tPath = m.connections?.tournament;
-      return tPath && tPath.endsWith(`/${tournamentFilter}`);
-    });
-  }
 
   const live = filtered.filter((m) => m.status === "live");
   const scheduled = filtered.filter((m) => m.status === "scheduled");
   const finished = filtered.filter((m) => m.status === "finished");
 
-  // Get active tournaments for filter
-  const activeTournaments = tournaments.filter(
-    (t) => t.status === "live" || t.status === "finished"
-  ).slice(0, 10);
+  // Get active tournaments for filter — show live + finished
+  const activeTournaments = tournaments
+    .filter((t) => t.status === "live" || t.status === "finished")
+    .slice(0, 10);
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">

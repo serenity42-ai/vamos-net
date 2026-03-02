@@ -6,13 +6,14 @@ import {
   getPlayers,
   getMatches,
   getSeasonTournaments,
+  getTournamentMatches,
   type Player,
   type Match,
   type Tournament,
 } from "@/lib/padel-api";
 
 async function fetchHomeData() {
-  const [menRes, womenRes, matchesRes, tournamentsRes] = await Promise.allSettled([
+  const [menRes, womenRes, tournamentsRes] = await Promise.allSettled([
     getPlayers({
       category: "men",
       sort_by: "ranking",
@@ -25,22 +26,32 @@ async function fetchHomeData() {
       order_by: "asc",
       per_page: "10",
     }),
-    getMatches({
-      sort_by: "played_at",
-      order_by: "desc",
-      per_page: "50",
-    }),
-    getSeasonTournaments(5, { per_page: "5" }),
+    getSeasonTournaments(5, { per_page: "10" }),
   ]);
 
   const men: Player[] =
     menRes.status === "fulfilled" ? menRes.value.data : [];
   const women: Player[] =
     womenRes.status === "fulfilled" ? womenRes.value.data : [];
-  const matches: Match[] =
-    matchesRes.status === "fulfilled" ? matchesRes.value.data : [];
   const tournaments: Tournament[] =
     tournamentsRes.status === "fulfilled" ? tournamentsRes.value.data : [];
+
+  // Fetch matches from live + most recently finished tournaments
+  const relevantTournaments = tournaments.filter(
+    (t) => t.status === "live" || t.status === "finished"
+  );
+  const matchResults = await Promise.allSettled(
+    relevantTournaments.map((t) =>
+      getTournamentMatches(t.id, {
+        per_page: "50",
+        sort_by: "played_at",
+        order_by: "desc",
+      })
+    )
+  );
+  const matches: Match[] = matchResults.flatMap((r) =>
+    r.status === "fulfilled" ? r.value.data : []
+  );
 
   return { men, women, matches, tournaments };
 }
