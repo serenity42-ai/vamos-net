@@ -47,7 +47,9 @@ export function middleware(request: NextRequest) {
   // Redirect public visitors to Coming Soon
   const url = request.nextUrl.clone();
   url.pathname = "/coming-soon";
-  return NextResponse.rewrite(url);
+  const response = NextResponse.rewrite(url);
+  response.headers.set("x-coming-soon", "1");
+  return response;
 }
 
 export const config = {
