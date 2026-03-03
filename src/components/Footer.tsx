@@ -24,12 +24,11 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Tools */}
+          {/* More */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">Tools</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">More</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/h2h" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Head to Head</Link></li>
-              <li><Link href="/simulator" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Match Simulator</Link></li>
+              <li><Link href="/business" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Business</Link></li>
               <li><Link href="/about" className="text-gray-300 hover:text-[#4ABED9] transition-colors">About</Link></li>
             </ul>
           </div>
