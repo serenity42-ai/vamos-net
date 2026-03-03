@@ -252,30 +252,6 @@ export async function getMatch(id: number): Promise<Match> {
 }
 
 // ---------------------------------------------------------------------------
-// Head to Head (POST)
-// ---------------------------------------------------------------------------
-
-export async function getHeadToHead(
-  team1: number[],
-  team2?: number[]
-): Promise<PaginatedResponse<Match>> {
-  const body: Record<string, unknown> = { team_1: team1 };
-  if (team2 && team2.length > 0) body.team_2 = team2;
-  return post("/matches/headtohead", body, 300);
-}
-
-// ---------------------------------------------------------------------------
-// Simulate (POST)
-// ---------------------------------------------------------------------------
-
-export async function simulateMatch(
-  team1: number[],
-  team2: number[]
-): Promise<SimulationResult> {
-  return post("/matches/simulate", { team_1: team1, team_2: team2 }, 60);
-}
-
-// ---------------------------------------------------------------------------
 // Tournaments
 // ---------------------------------------------------------------------------
 
