@@ -19,7 +19,8 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/scores" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Live Scores</Link></li>
               <li><Link href="/rankings" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Rankings</Link></li>
-              <li><Link href="/calendar" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Calendar</Link></li>
+              <li><Link href="/tournaments" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Tournaments</Link></li>
+              <li><Link href="/players" className="text-gray-300 hover:text-[#4ABED9] transition-colors">Players</Link></li>
               <li><Link href="/news" className="text-gray-300 hover:text-[#4ABED9] transition-colors">News</Link></li>
             </ul>
           </div>

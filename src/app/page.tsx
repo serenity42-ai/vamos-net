@@ -1,12 +1,17 @@
 import Link from "next/link";
+import Image from "next/image";
 import MatchCard from "@/components/MatchCard";
 import RankingRow from "@/components/RankingRow";
+import NewsCard from "@/components/NewsCard";
 import NewsletterSignup from "@/components/NewsletterSignup";
+import { articles } from "@/data/mock";
 import {
   getPlayers,
-  getMatches,
   getSeasonTournaments,
   getTournamentMatches,
+  getMatches,
+  countryFlag,
+  levelLabel,
   type Player,
   type Match,
   type Tournament,
@@ -29,14 +34,10 @@ async function fetchHomeData() {
     getSeasonTournaments(5, { per_page: "10" }),
   ]);
 
-  const men: Player[] =
-    menRes.status === "fulfilled" ? menRes.value.data : [];
-  const women: Player[] =
-    womenRes.status === "fulfilled" ? womenRes.value.data : [];
-  const tournaments: Tournament[] =
-    tournamentsRes.status === "fulfilled" ? tournamentsRes.value.data : [];
+  const men: Player[] = menRes.status === "fulfilled" ? menRes.value.data : [];
+  const women: Player[] = womenRes.status === "fulfilled" ? womenRes.value.data : [];
+  const tournaments: Tournament[] = tournamentsRes.status === "fulfilled" ? tournamentsRes.value.data : [];
 
-  // Fetch matches from live + most recently finished tournaments
   const relevantTournaments = tournaments.filter(
     (t) => t.status === "live" || t.status === "finished"
   );
@@ -49,232 +50,343 @@ async function fetchHomeData() {
       })
     )
   );
-  const matches: Match[] = matchResults.flatMap((r) =>
+  const tournamentMatches: Match[] = matchResults.flatMap((r) =>
     r.status === "fulfilled" ? r.value.data : []
   );
 
+  // Also fetch today's matches (previas/qualifying not in tournament endpoint)
+  const today = new Date().toISOString().split("T")[0];
+  const todayRes = await getMatches({
+    after_date: today,
+    before_date: today,
+    sort_by: "played_at",
+    order_by: "desc",
+    per_page: "50",
+  }).catch(() => ({ data: [] as Match[] }));
+
+  const seenIds = new Set(tournamentMatches.map((m) => m.id));
+  const extraMatches = todayRes.data.filter((m) => !seenIds.has(m.id));
+  const matches = [...extraMatches, ...tournamentMatches];
+
   return { men, women, matches, tournaments };
+}
+
+function formatDateRange(start: string, end: string): string {
+  const s = new Date(start);
+  const e = new Date(end);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  if (s.getMonth() === e.getMonth()) {
+    return `${months[s.getMonth()]} ${s.getDate()}-${e.getDate()}, ${s.getFullYear()}`;
+  }
+  return `${months[s.getMonth()]} ${s.getDate()} - ${months[e.getMonth()]} ${e.getDate()}, ${s.getFullYear()}`;
+}
+
+function teamName(players: Match["players"]["team_1"]): string {
+  if (!players || players.length === 0) return "TBD";
+  return players.map((p) => p.name.split(" ").pop()).join(" / ");
 }
 
 export default async function Home() {
   const { men, women, matches, tournaments } = await fetchHomeData();
 
-  const recentMatches = matches
-    .filter(
-      (m) =>
-        m.status === "finished" &&
-        m.players.team_1.length > 0 &&
-        m.players.team_2.length > 0
-    )
-    .slice(0, 4);
-
-  // Filter out API anomalies (players with very low points ranked high)
-  const filterAnomalies = (players: typeof men) => {
-    const topPoints = players.slice(0, 10).map(p => p.points || 0).filter(p => p > 0).sort((a, b) => b - a);
+  const filterAnomalies = (players: Player[]) => {
+    const topPoints = players.slice(0, 10).map((p) => p.points || 0).filter((p) => p > 0).sort((a, b) => b - a);
     const threshold = topPoints.length > 2 ? topPoints[2] * 0.1 : 0;
-    return players.filter(p => !p.points || p.points >= threshold);
+    return players.filter((p) => !p.points || p.points >= threshold);
   };
   const topMen = filterAnomalies(men).slice(0, 5);
-  const topWomen = filterAnomalies(women).slice(0, 5);
 
-  // Find a current/upcoming tournament
-  const activeTournament = tournaments.find(
-    (t) => t.status === "live" || t.status === "pending"
-  );
+  const recentMatches = matches
+    .filter((m) => m.status === "finished" && m.players.team_1.length > 0 && m.players.team_2.length > 0)
+    .slice(0, 6);
+
+  const liveMatches = matches.filter((m) => m.status === "live");
+  const scheduledMatches = matches.filter((m) => m.status === "scheduled").slice(0, 4);
+  const tickerMatches = [...liveMatches, ...recentMatches.slice(0, 6), ...scheduledMatches].slice(0, 10);
+
+  const activeTournament = tournaments.find((t) => t.status === "live") || tournaments.find((t) => t.status === "pending");
+
+  const featuredArticle = articles[0];
+  const latestNews = articles.slice(1, 5);
+  const businessArticles = articles.filter((a) => a.category === "Business").slice(0, 3);
 
   return (
     <main>
-      {/* Hero / Active Tournament Banner */}
+      {/* Section 1: Live Scores Ticker */}
+      {tickerMatches.length > 0 && (
+        <section className="bg-[#0F1F2E] overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center">
+              <Link
+                href="/scores"
+                className="shrink-0 px-3 sm:px-4 py-2.5 bg-[#4ABED9] text-white text-xs font-bold uppercase tracking-wider"
+              >
+                Scores
+              </Link>
+              <div className="flex-1 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-0 min-w-max">
+                  {tickerMatches.map((match) => (
+                    <Link
+                      key={match.id}
+                      href="/scores"
+                      className="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-l border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      {match.status === "live" && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
+                      )}
+                      <span className="text-xs text-gray-300 whitespace-nowrap">
+                        {teamName(match.players.team_1)}
+                      </span>
+                      {match.score && match.score.length > 0 ? (
+                        <span className="text-xs font-bold text-white whitespace-nowrap">
+                          {match.score.map((s) => `${s.team_1}-${s.team_2}`).join(" ")}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-500 whitespace-nowrap">vs</span>
+                      )}
+                      <span className="text-xs text-gray-300 whitespace-nowrap">
+                        {teamName(match.players.team_2)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Section 2: Hero — Featured Story + Sidebar */}
+      <section className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* Featured Article (2/3) */}
+            <div className="lg:col-span-2">
+              {featuredArticle && (
+                <Link href={`/news/${featuredArticle.slug}`} className="group block">
+                  <div className="aspect-[16/9] bg-gradient-to-br from-[#0F1F2E] to-[#1a3a52] rounded-xl overflow-hidden relative mb-4">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-5xl sm:text-6xl font-black text-white/10">VAMOS</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#4ABED9]">
+                      {featuredArticle.category}
+                    </span>
+                    <span className="text-xs text-gray-400">{featuredArticle.date}</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#0F1F2E] group-hover:text-[#4ABED9] transition-colors mb-2 leading-tight">
+                    {featuredArticle.title}
+                  </h2>
+                  <p className="text-sm sm:text-base text-gray-500 leading-relaxed line-clamp-2">
+                    {featuredArticle.excerpt}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-2">{featuredArticle.author}</p>
+                </Link>
+              )}
+            </div>
+
+            {/* Sidebar (1/3) */}
+            <div className="space-y-6">
+              {/* Newsletter Signup */}
+              <div className="bg-[#0F1F2E] rounded-xl p-5">
+                <h3 className="text-base font-bold text-white mb-1">The Padel Brief</h3>
+                <p className="text-xs text-gray-400 mb-4">
+                  Get the latest padel scores, rankings, and news. Join thousands of fans.
+                </p>
+                <form className="space-y-2">
+                  <input
+                    type="email"
+                    placeholder="Your email address"
+                    className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 outline-none focus:border-[#4ABED9] text-sm"
+                  />
+                  <button
+                    type="button"
+                    className="w-full px-4 py-2.5 bg-[#4ABED9] hover:bg-[#3ba8c2] text-white font-bold rounded-lg transition-colors text-sm"
+                  >
+                    Subscribe
+                  </button>
+                </form>
+              </div>
+
+              {/* Top 5 Rankings Widget */}
+              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F1F2E]">
+                    Men&apos;s Top 5
+                  </h3>
+                  <Link href="/rankings" className="text-xs font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors">
+                    Full Rankings
+                  </Link>
+                </div>
+                <table className="w-full">
+                  <tbody>
+                    {topMen.map((p) => (
+                      <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                        <td className="py-2 px-3 text-center w-10">
+                          <span className={`text-xs font-bold ${p.ranking <= 3 ? "text-[#4ABED9]" : "text-[#0F1F2E]"}`}>
+                            {p.ranking}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2">
+                          <Link href={`/players/${p.id}`} className="flex items-center gap-2 group">
+                            {p.photo_url ? (
+                              <Image src={p.photo_url} alt={p.name} width={24} height={24} className="w-6 h-6 rounded-full object-cover bg-gray-100" />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
+                                {p.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                              </div>
+                            )}
+                            <span className="text-xs font-semibold text-[#0F1F2E] group-hover:text-[#4ABED9] transition-colors truncate">
+                              {countryFlag(p.nationality)} {p.name}
+                            </span>
+                          </Link>
+                        </td>
+                        <td className="py-2 px-3 text-right">
+                          <span className="text-xs font-semibold text-[#0F1F2E] tabular-nums">
+                            {p.points?.toLocaleString() ?? "-"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 3: Latest News */}
+      <section className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">Latest News</h2>
+            <Link href="/news" className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors">
+              View All News
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {latestNews.map((article) => (
+              <NewsCard key={article.slug} article={article} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Section 4: Current/Upcoming Tournament Banner */}
       {activeTournament && (
         <section className="bg-[#0F1F2E]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   {activeTournament.status === "live" && (
                     <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-400">
                       <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                       Live Now
                     </span>
                   )}
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#4ABED9]">
-                    {activeTournament.level.toUpperCase()}
+                  {activeTournament.status === "pending" && (
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#3CB371]">
+                      Upcoming
+                    </span>
+                  )}
+                  <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#4ABED9]/20 text-[#4ABED9]">
+                    {levelLabel(activeTournament.level)}
                   </span>
                 </div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">
+                <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">
                   {activeTournament.name}
-                </h1>
-                <p className="text-gray-400 text-sm mt-1">
-                  {activeTournament.location}, {activeTournament.country} |{" "}
-                  {activeTournament.start_date} to {activeTournament.end_date}
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  {activeTournament.location}, {activeTournament.country} | {formatDateRange(activeTournament.start_date, activeTournament.end_date)}
                 </p>
               </div>
-              <Link
-                href="/scores"
-                className="px-5 py-2.5 bg-[#4ABED9] text-white text-sm font-bold rounded-lg hover:bg-[#3ba8c2] transition-colors self-start"
-              >
-                View Scores
-              </Link>
+              <div className="flex gap-3 self-start">
+                <Link
+                  href={`/tournaments/${activeTournament.id}`}
+                  className="px-5 py-2.5 bg-[#4ABED9] text-white text-sm font-bold rounded-lg hover:bg-[#3ba8c2] transition-colors"
+                >
+                  View Draws
+                </Link>
+                <Link
+                  href="/scores"
+                  className="px-5 py-2.5 bg-white/10 text-white text-sm font-bold rounded-lg hover:bg-white/20 transition-colors"
+                >
+                  View Schedule
+                </Link>
+              </div>
             </div>
           </div>
         </section>
       )}
 
-      {/* Recent Matches */}
+      {/* Section 5: Recent Results */}
       <section className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">
-                Recent Results
-              </h2>
-              <p className="text-gray-400 text-sm mt-1">
-                Latest matches from the tour
-              </p>
-            </div>
-            <Link
-              href="/scores"
-              className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors self-start sm:self-auto"
-            >
-              View All
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">Recent Results</h2>
+            <Link href="/scores" className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors">
+              View All Results
             </Link>
           </div>
           {recentMatches.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {recentMatches.map((match) => (
                 <MatchCard key={match.id} match={match} />
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-sm">
-              No recent results available.
-            </p>
+            <p className="text-gray-400 text-sm">No recent results available.</p>
           )}
         </div>
       </section>
 
-      {/* Rankings Preview */}
-      <section className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          <div className="flex items-center justify-between mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">
-              Rankings
-            </h2>
-            <Link
-              href="/rankings"
-              className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors"
-            >
-              Full Rankings
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-            {/* Men */}
-            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-              <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F1F2E]">
-                  Men&apos;s Top 5
-                </h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[320px]">
-                  <thead>
-                    <tr className="text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100">
-                      <th className="py-2 px-3 text-center w-12">#</th>
-                      <th className="py-2 px-3 text-left">Player</th>
-                      <th className="py-2 px-3 text-right">Pts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topMen.map((p) => (
-                      <RankingRow key={p.id} player={p} compact />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Women */}
-            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-              <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F1F2E]">
-                  Women&apos;s Top 5
-                </h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[320px]">
-                  <thead>
-                    <tr className="text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100">
-                      <th className="py-2 px-3 text-center w-12">#</th>
-                      <th className="py-2 px-3 text-left">Player</th>
-                      <th className="py-2 px-3 text-right">Pts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topWomen.map((p) => (
-                      <RankingRow key={p.id} player={p} compact />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Upcoming Tournaments */}
-      {tournaments.length > 0 && (
-        <section className="bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-            <div className="flex items-center justify-between mb-6 sm:mb-8">
-              <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">
-                Upcoming Tournaments
-              </h2>
-              <Link
-                href="/calendar"
-                className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors"
-              >
-                Full Calendar
+      {/* Section 6: Business/Featured Articles */}
+      {businessArticles.length > 0 && (
+        <section className="bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">Business of Padel</h2>
+              <Link href="/business" className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors">
+                Explore Business of Padel
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {tournaments
-                .filter((t) => t.status === "pending" || t.status === "live")
-                .slice(0, 3)
-                .map((t) => (
-                  <div
-                    key={t.id}
-                    className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#4ABED9]/10 text-[#4ABED9]">
-                        {t.level.toUpperCase()}
-                      </span>
-                      {t.status === "live" && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-red-50 text-red-600">
-                          Live
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-sm font-bold text-[#0F1F2E] mb-1">
-                      {t.name}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      {t.location}, {t.country}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {t.start_date} - {t.end_date}
-                    </p>
-                  </div>
-                ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {businessArticles.map((article) => (
+                <NewsCard key={article.slug} article={article} />
+              ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Newsletter */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <NewsletterSignup />
+      {/* Section 7: Newsletter CTA (bottom) */}
+      <section className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="bg-gradient-to-r from-[#4ABED9] to-[#3CB371] rounded-2xl px-6 py-10 sm:px-10 sm:py-12 text-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3">
+              Never Miss a Match
+            </h2>
+            <p className="text-white/80 text-sm sm:text-base mb-6 max-w-md mx-auto">
+              The Padel Brief -- scores, rankings, and news delivered to your inbox. Free.
+            </p>
+            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 outline-none focus:border-white focus:ring-2 focus:ring-white/20 transition-all text-sm"
+              />
+              <button
+                type="button"
+                className="px-6 py-3 bg-[#0F1F2E] hover:bg-[#1a2f42] text-white font-bold rounded-xl transition-colors text-sm whitespace-nowrap"
+              >
+                Subscribe
+              </button>
+            </form>
+          </div>
+        </div>
       </section>
     </main>
   );

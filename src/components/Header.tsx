@@ -6,9 +6,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/scores", label: "Scores" },
+  { href: "/scores", label: "Live Scores" },
   { href: "/rankings", label: "Rankings" },
-  { href: "/calendar", label: "Calendar" },
+  { href: "/tournaments", label: "Tournaments" },
+  { href: "/players", label: "Players" },
   { href: "/news", label: "News" },
   { href: "/business", label: "Business" },
 ];
@@ -20,7 +21,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <Image
@@ -28,20 +29,20 @@ export default function Header() {
               alt="Vamos.net"
               width={1600}
               height={896}
-              className="h-8 w-auto sm:h-9 md:h-10"
+              className="h-7 w-auto sm:h-8 md:h-9"
               priority
             />
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Desktop nav — always visible on md+ */}
+          <nav className="hidden md:flex items-center gap-0.5 lg:gap-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                  className={`px-3 lg:px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap ${
                     isActive
                       ? "text-[#4ABED9] bg-[#4ABED9]/5"
                       : "text-[#0F1F2E] hover:text-[#4ABED9] hover:bg-gray-50"

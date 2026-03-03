@@ -69,8 +69,16 @@
 - User-submitted listings
 - "Padel courts in [city]" local SEO pages
 
+### Partnership Tracker ("Padel Relationships")
+- Track who played with whom, when, and their record together
+- "Lebron's Partners: Galan (2019-2025, 47 titles), Augsburger (2026-, building)"
+- Team vs Team history: only when exact pair matchup exists (Coello/Tapia vs Galan/Chingotto: 4 meetings)
+- Visualize as a relationship timeline — the drama of splits, new partnerships, reunion tours
+- Think reality TV meets sports stats — padel's version of transfer drama
+- Unique feature: nobody has this for padel (or any doubles sport)
+- Replaces traditional H2H which doesn't work for doubles with frequent partner changes
+
 ### Enhanced Stats
-- Head-to-head records
 - Performance trends and charts
 - Tournament history per player
 

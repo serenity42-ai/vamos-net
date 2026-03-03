@@ -3,7 +3,8 @@ import NewsletterSignup from "@/components/NewsletterSignup";
 export default function AboutPage() {
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1F2E] mb-6">About Vamos.net</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1F2E] mb-2">About Vamos.net</h1>
+      <p className="text-lg text-gray-500 mb-6">Everything Happens at the Net</p>
 
       <div className="prose prose-sm sm:prose-lg max-w-none text-gray-700 leading-relaxed mb-10 sm:mb-12 break-words">
         <p>
