@@ -21,7 +21,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <Image
@@ -29,7 +29,7 @@ export default function Header() {
               alt="Vamos.net"
               width={1600}
               height={896}
-              className="h-7 w-auto sm:h-8 md:h-9"
+              className="h-12 w-auto sm:h-14 md:h-16"
               priority
             />
           </Link>
