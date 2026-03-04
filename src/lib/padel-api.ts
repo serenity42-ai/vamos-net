@@ -158,7 +158,7 @@ export interface SimulationResult {
 async function get<T>(
   path: string,
   params?: Record<string, string>,
-  revalidate = 300
+  revalidate = 900
 ): Promise<T> {
   const url = new URL(`${BASE_URL}${path}`);
   if (params) {
@@ -212,11 +212,11 @@ export async function getPlayers(params?: {
   per_page?: string;
   page?: string;
 }): Promise<PaginatedResponse<Player>> {
-  return get("/players", params as Record<string, string>, 300);
+  return get("/players", params as Record<string, string>, 900);
 }
 
 export async function getPlayer(id: number): Promise<Player> {
-  return get(`/players/${id}`, undefined, 300);
+  return get(`/players/${id}`, undefined, 900);
 }
 
 export async function getPlayerMatches(
@@ -227,7 +227,7 @@ export async function getPlayerMatches(
     order_by?: string;
   }
 ): Promise<PaginatedResponse<Match>> {
-  return get(`/players/${playerId}/matches`, params as Record<string, string>, 60);
+  return get(`/players/${playerId}/matches`, params as Record<string, string>, 900);
 }
 
 // ---------------------------------------------------------------------------
@@ -244,11 +244,11 @@ export async function getMatches(params?: {
   per_page?: string;
   page?: string;
 }): Promise<PaginatedResponse<Match>> {
-  return get("/matches", params as Record<string, string>, 60);
+  return get("/matches", params as Record<string, string>, 300);
 }
 
 export async function getMatch(id: number): Promise<Match> {
-  return get(`/matches/${id}`, undefined, 60);
+  return get(`/matches/${id}`, undefined, 300);
 }
 
 // ---------------------------------------------------------------------------
@@ -265,11 +265,11 @@ export async function getTournaments(params?: {
   per_page?: string;
   page?: string;
 }): Promise<PaginatedResponse<Tournament>> {
-  return get("/tournaments", params as Record<string, string>, 300);
+  return get("/tournaments", params as Record<string, string>, 900);
 }
 
 export async function getTournament(id: number): Promise<Tournament> {
-  return get(`/tournaments/${id}`, undefined, 300);
+  return get(`/tournaments/${id}`, undefined, 900);
 }
 
 export async function getTournamentMatches(
