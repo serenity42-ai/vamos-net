@@ -86,34 +86,54 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
     setPlayerDetails(new Map());
     setLiveScore(null);
 
-    const fetchPlayers = Promise.allSettled(
-      ids.map((id) => fetch(`/api/players/${id}`).then((r) => r.json()))
-    );
+    const validIds = ids.filter((id) => id && !isNaN(id));
 
-    const fetchLive = match.status === "live"
-      ? fetch(`/api/matches/${match.id}/live`).then((r) => r.json()).catch(() => null)
+    const fetchPlayers = validIds.length > 0
+      ? Promise.allSettled(
+          validIds.map((id) =>
+            fetch(`/api/players/${id}`)
+              .then((r) => {
+                if (!r.ok) throw new Error("not ok");
+                return r.json();
+              })
+              .catch(() => null)
+          )
+        )
+      : Promise.resolve([]);
+
+    const fetchLive = match.status === "live" && match.id
+      ? fetch(`/api/matches/${match.id}/live`)
+          .then((r) => {
+            if (!r.ok) throw new Error("not ok");
+            return r.json();
+          })
+          .catch(() => null)
       : Promise.resolve(null);
 
-    Promise.all([fetchPlayers, fetchLive]).then(([playerResults, liveData]) => {
-      const map = new Map<number, Player>();
-      playerResults.forEach((r, i) => {
-        if (r.status === "fulfilled" && !r.value.error) {
-          map.set(ids[i], r.value as Player);
+    Promise.all([fetchPlayers, fetchLive])
+      .then(([playerResults, liveData]) => {
+        const map = new Map<number, Player>();
+        (playerResults as PromiseSettledResult<Player | null>[]).forEach((r, i) => {
+          if (r.status === "fulfilled" && r.value && !("error" in r.value)) {
+            map.set(validIds[i], r.value as Player);
+          }
+        });
+        setPlayerDetails(map);
+
+        if (liveData?.sets?.length > 0) {
+          setLiveScore(
+            liveData.sets.map((s: { set_score: string }) => {
+              const [t1, t2] = s.set_score.split("-");
+              return { team_1: t1, team_2: t2 };
+            })
+          );
         }
+
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-      setPlayerDetails(map);
-
-      if (liveData?.sets?.length > 0) {
-        setLiveScore(
-          liveData.sets.map((s: { set_score: string }) => {
-            const [t1, t2] = s.set_score.split("-");
-            return { team_1: t1, team_2: t2 };
-          })
-        );
-      }
-
-      setLoading(false);
-    });
   }, [match.id, match.status]);
 
   // Escape key handler
