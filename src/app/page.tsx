@@ -103,9 +103,16 @@ export default async function Home() {
     .slice(0, 6);
 
   const liveMatches = matches.filter((m) => m.status === "live");
+
+  // Only show recent finished matches if they're from the last 3 days
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+  const freshFinished = recentMatches.filter(
+    (m) => new Date(m.played_at) >= threeDaysAgo
+  );
+
   const tickerMatches = liveMatches.length > 0
     ? liveMatches
-    : recentMatches.slice(0, 4);
+    : freshFinished.slice(0, 4);
 
   const activeTournament = tournaments.find((t) => t.status === "live") || tournaments.find((t) => t.status === "pending");
 
