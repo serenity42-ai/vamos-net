@@ -202,8 +202,17 @@ export default async function ScoresPage({
     });
   }
 
+  // Only show tournaments that actually have matches on the selected date
+  const tournamentIdsWithMatches = new Set<number>();
+  for (const match of filtered) {
+    const tournamentPath = match.connections?.tournament;
+    if (tournamentPath) {
+      const id = parseInt(tournamentPath.split("/").pop() || "0");
+      if (id) tournamentIdsWithMatches.add(id);
+    }
+  }
   const activeTournaments = tournaments
-    .filter((t) => t.status === "live" || t.status === "finished")
+    .filter((t) => tournamentIdsWithMatches.has(t.id))
     .slice(0, 10);
 
   // Date navigation

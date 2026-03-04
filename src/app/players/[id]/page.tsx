@@ -5,9 +5,11 @@ import MatchCard from "@/components/MatchCard";
 import {
   getPlayer,
   getPlayerMatches,
+  getSeasonTournaments,
   countryFlag,
   type Player,
   type Match,
+  type Tournament,
 } from "@/lib/padel-api";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -24,15 +26,23 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 
 async function fetchPlayerData(id: number) {
   try {
-    const [player, matchesRes] = await Promise.all([
+    const [player, matchesRes, tournamentsRes] = await Promise.all([
       getPlayer(id),
       getPlayerMatches(id, {
         per_page: "10",
         sort_by: "played_at",
         order_by: "desc",
       }),
+      getSeasonTournaments(5, { per_page: "50" }).catch(() => ({ data: [] as Tournament[] })),
     ]);
-    return { player, matches: matchesRes.data };
+
+    // Build tournament name map
+    const tournamentNameMap = new Map<number, string>();
+    for (const t of tournamentsRes.data) {
+      tournamentNameMap.set(t.id, t.name);
+    }
+
+    return { player, matches: matchesRes.data, tournamentNameMap };
   } catch {
     return null;
   }
@@ -55,8 +65,15 @@ export default async function PlayerPage({ params }: { params: { id: string } })
   const data = await fetchPlayerData(id);
   if (!data) notFound();
 
-  const { player, matches } = data;
+  const { player, matches, tournamentNameMap } = data;
   const flag = countryFlag(player.nationality);
+
+  function getTournamentName(match: Match): string | undefined {
+    const path = match.connections?.tournament;
+    if (!path) return undefined;
+    const id = parseInt(path.split("/").pop() || "0");
+    return tournamentNameMap.get(id);
+  }
 
   const finishedMatches = matches.filter(
     (m: Match) => m.status === "finished" && m.players.team_1.length > 0 && m.players.team_2.length > 0
@@ -152,7 +169,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
         {finishedMatches.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {finishedMatches.slice(0, 8).map((match: Match) => (
-              <MatchCard key={match.id} match={match} />
+              <MatchCard key={match.id} match={match} tournamentName={getTournamentName(match)} />
             ))}
           </div>
         ) : (

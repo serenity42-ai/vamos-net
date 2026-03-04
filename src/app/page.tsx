@@ -104,7 +104,13 @@ async function fetchHomeData() {
     // Live score enrichment failed — continue with base match data
   }
 
-  return { men, women, matches, tournaments };
+  // Build tournament name map from connections
+  const tournamentNameMap = new Map<number, string>();
+  for (const t of tournaments) {
+    tournamentNameMap.set(t.id, t.name);
+  }
+
+  return { men, women, matches, tournaments, tournamentNameMap };
 }
 
 function formatDateRange(start: string, end: string): string {
@@ -118,7 +124,15 @@ function formatDateRange(start: string, end: string): string {
 }
 
 export default async function Home() {
-  const { men, women, matches, tournaments } = await fetchHomeData();
+  const { men, women, matches, tournaments, tournamentNameMap } = await fetchHomeData();
+
+  // Helper to get tournament name from a match's connections
+  function getTournamentName(match: Match): string | undefined {
+    const path = match.connections?.tournament;
+    if (!path) return undefined;
+    const id = parseInt(path.split("/").pop() || "0");
+    return tournamentNameMap.get(id);
+  }
 
   const filterAnomalies = (players: Player[]) => {
     const topPoints = players.slice(0, 10).map((p) => p.points || 0).filter((p) => p > 0).sort((a, b) => b - a);
@@ -346,7 +360,7 @@ export default async function Home() {
           {recentMatches.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {recentMatches.map((match) => (
-                <MatchCard key={match.id} match={match} />
+                <MatchCard key={match.id} match={match} tournamentName={getTournamentName(match)} />
               ))}
             </div>
           ) : (
