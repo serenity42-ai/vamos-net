@@ -1,5 +1,8 @@
+"use client";
+
 import type { Match } from "@/lib/padel-api";
 import { formatScore } from "@/lib/padel-api";
+import { useMatchModal } from "@/components/MatchModalProvider";
 
 function StatusBadge({ status }: { status: Match["status"] }) {
   if (status === "live") {
@@ -43,17 +46,24 @@ export default function MatchCard({
   match: Match;
   tournamentName?: string;
 }) {
+  const { openMatch } = useMatchModal();
   const score = formatScore(match.score);
   const team1Label = teamName(match.players.team_1);
   const team2Label = teamName(match.players.team_2);
 
   return (
     <div
-      className={`bg-white rounded-xl border overflow-hidden transition-shadow hover:shadow-md ${
+      className={`bg-white rounded-xl border overflow-hidden transition-shadow hover:shadow-md cursor-pointer ${
         match.status === "live"
           ? "border-red-200 shadow-sm"
           : "border-gray-100"
       }`}
+      onClick={() => openMatch(match, tournamentName)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") openMatch(match, tournamentName);
+      }}
     >
       {/* Header */}
       <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-50 flex items-center justify-between border-b border-gray-100 gap-2">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import MatchCard from "@/components/MatchCard";
+import ScoresTicker from "@/components/ScoresTicker";
 import RankingRow from "@/components/RankingRow";
 import NewsCard from "@/components/NewsCard";
 import NewsletterSignup from "@/components/NewsletterSignup";
@@ -86,11 +87,6 @@ function formatDateRange(start: string, end: string): string {
   return `${months[s.getMonth()]} ${s.getDate()} - ${months[e.getMonth()]} ${e.getDate()}, ${s.getFullYear()}`;
 }
 
-function teamName(players: Match["players"]["team_1"]): string {
-  if (!players || players.length === 0) return "TBD";
-  return players.map((p) => p.name.split(" ").pop()).join(" / ");
-}
-
 export default async function Home() {
   const { men, women, matches, tournaments } = await fetchHomeData();
 
@@ -131,32 +127,7 @@ export default async function Home() {
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center">
               <div className="flex-1 overflow-x-auto scrollbar-hide">
-                <div className="flex items-center gap-0 min-w-max">
-                  {tickerMatches.map((match) => (
-                    <Link
-                      key={match.id}
-                      href="/scores"
-                      className="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-l border-white/10 hover:bg-white/5 transition-colors"
-                    >
-                      {match.status === "live" && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
-                      )}
-                      <span className="text-xs text-gray-300 whitespace-nowrap">
-                        {teamName(match.players.team_1)}
-                      </span>
-                      {match.score && match.score.length > 0 ? (
-                        <span className="text-xs font-bold text-white whitespace-nowrap">
-                          {match.score.map((s) => `${s.team_1}-${s.team_2}`).join(" ")}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-500 whitespace-nowrap">vs</span>
-                      )}
-                      <span className="text-xs text-gray-300 whitespace-nowrap">
-                        {teamName(match.players.team_2)}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
+                <ScoresTicker matches={tickerMatches} />
               </div>
             </div>
           </div>

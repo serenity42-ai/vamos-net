@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MatchModalProvider from "@/components/MatchModalProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -44,9 +45,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-white text-[#0F1F2E] min-h-screen flex flex-col overflow-x-hidden">
-        {!isComingSoon && <Header />}
-        <div className="flex-1">{children}</div>
-        {!isComingSoon && <Footer />}
+        <MatchModalProvider>
+          {!isComingSoon && <Header />}
+          <div className="flex-1">{children}</div>
+          {!isComingSoon && <Footer />}
+        </MatchModalProvider>
       </body>
     </html>
   );
