@@ -251,6 +251,28 @@ export async function getMatch(id: number): Promise<Match> {
   return get(`/matches/${id}`, undefined, 300);
 }
 
+export interface LiveSet {
+  set_number: number;
+  set_score: string;
+  games: {
+    game_number: number;
+    game_score: string;
+    points: string[];
+  }[];
+}
+
+export interface LiveMatchData {
+  id: number;
+  self: string;
+  status: string;
+  channel: string;
+  sets: LiveSet[];
+}
+
+export async function getMatchLive(id: number): Promise<LiveMatchData> {
+  return get(`/matches/${id}/live`, undefined, 15);
+}
+
 // ---------------------------------------------------------------------------
 // Tournaments
 // ---------------------------------------------------------------------------

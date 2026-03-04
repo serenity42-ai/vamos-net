@@ -74,29 +74,47 @@ function formatDate(dateStr: string): string {
 
 export default function MatchModal({ match, tournamentName, onClose }: MatchModalProps) {
   const [playerDetails, setPlayerDetails] = useState<Map<number, Player>>(new Map());
+  const [liveScore, setLiveScore] = useState<{ team_1: string; team_2: string }[] | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch player details
+  // Fetch player details + live scores
   useEffect(() => {
     const allPlayers = [...match.players.team_1, ...match.players.team_2];
     const ids = allPlayers.map((p) => p.id);
 
     setLoading(true);
     setPlayerDetails(new Map());
+    setLiveScore(null);
 
-    Promise.allSettled(
+    const fetchPlayers = Promise.allSettled(
       ids.map((id) => fetch(`/api/players/${id}`).then((r) => r.json()))
-    ).then((results) => {
+    );
+
+    const fetchLive = match.status === "live"
+      ? fetch(`/api/matches/${match.id}/live`).then((r) => r.json()).catch(() => null)
+      : Promise.resolve(null);
+
+    Promise.all([fetchPlayers, fetchLive]).then(([playerResults, liveData]) => {
       const map = new Map<number, Player>();
-      results.forEach((r, i) => {
+      playerResults.forEach((r, i) => {
         if (r.status === "fulfilled" && !r.value.error) {
           map.set(ids[i], r.value as Player);
         }
       });
       setPlayerDetails(map);
+
+      if (liveData?.sets?.length > 0) {
+        setLiveScore(
+          liveData.sets.map((s: { set_score: string }) => {
+            const [t1, t2] = s.set_score.split("-");
+            return { team_1: t1, team_2: t2 };
+          })
+        );
+      }
+
       setLoading(false);
     });
-  }, [match.id]);
+  }, [match.id, match.status]);
 
   // Escape key handler
   useEffect(() => {
@@ -117,7 +135,7 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
 
   const t1 = match.players.team_1;
   const t2 = match.players.team_2;
-  const score = match.score;
+  const score = liveScore || match.score;
 
   const teams = [
     { players: t1, isWinner: match.winner === "team_1", key: "team_1" as const },
@@ -142,8 +160,14 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                 {tournamentName}
               </p>
             )}
-            <p className="text-white font-bold text-base leading-tight">
+            <p className="text-white font-bold text-base leading-tight flex items-center gap-2">
               {match.round_name}
+              {match.status === "live" && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-red-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  Live
+                </span>
+              )}
             </p>
           </div>
           <button

@@ -11,6 +11,7 @@ import {
   getSeasonTournaments,
   getTournamentMatches,
   getMatches,
+  getMatchLive,
   countryFlag,
   levelLabel,
   type Player,
@@ -70,9 +71,34 @@ async function fetchHomeData() {
 
   const seenIds = new Set(tournamentMatches.map((m) => m.id));
   const extraMatches = todayRes.data.filter((m) => !seenIds.has(m.id));
-  const matches = [...extraMatches, ...tournamentMatches].sort(
+  let matches = [...extraMatches, ...tournamentMatches].sort(
     (a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime()
   );
+
+  // Enrich live matches with real-time scores from /live endpoint
+  const liveMatches = matches.filter((m) => m.status === "live");
+  if (liveMatches.length > 0) {
+    const liveResults = await Promise.allSettled(
+      liveMatches.map((m) => getMatchLive(m.id))
+    );
+    const liveScoreMap = new Map<number, { team_1: string; team_2: string }[]>();
+    liveResults.forEach((r, i) => {
+      if (r.status === "fulfilled" && r.value.sets?.length > 0) {
+        liveScoreMap.set(
+          liveMatches[i].id,
+          r.value.sets.map((s) => {
+            const [t1, t2] = s.set_score.split("-");
+            return { team_1: t1, team_2: t2 };
+          })
+        );
+      }
+    });
+    matches = matches.map((m) => {
+      const liveScore = liveScoreMap.get(m.id);
+      if (liveScore) return { ...m, score: liveScore };
+      return m;
+    });
+  }
 
   return { men, women, matches, tournaments };
 }
