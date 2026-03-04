@@ -173,9 +173,13 @@ export default async function Home() {
               {featuredArticle && (
                 <Link href={`/news/${featuredArticle.slug}`} className="group block">
                   <div className="aspect-[16/9] bg-gradient-to-br from-[#0F1F2E] to-[#1a3a52] rounded-xl overflow-hidden relative mb-4">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-5xl sm:text-6xl font-black text-white/10">VAMOS</span>
-                    </div>
+                    {featuredArticle.imageUrl && (
+                      <img
+                        src={featuredArticle.imageUrl}
+                        alt={featuredArticle.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-[#4ABED9]">

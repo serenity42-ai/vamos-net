@@ -45,7 +45,7 @@ export const articles: Article[] = [
     category: "Tour News",
     author: "Vamos Editorial",
     date: "2026-02-15",
-    imageUrl: "/placeholder-news-1.jpg",
+    imageUrl: "/images/news/padel-match-1.jpg",
     body: `<p>Arturo Coello and Agustin Tapia began the 2026 Premier Padel season exactly where they left off in 2025 — on top. The world number one pair claimed the Riyadh Season P1 title with a commanding performance throughout the week.</p>
 <p>In the final, they faced the newly formed pair of Alejandro Galan and Federico Chingotto, who had impressed in their first tournament together after both players split from their 2025 partners.</p>
 <p>"Riyadh is always special for us," said Coello after the match. "Starting the season with a title gives us huge confidence for the rest of the year."</p>
@@ -59,7 +59,7 @@ export const articles: Article[] = [
     category: "Tour News",
     author: "Vamos Editorial",
     date: "2026-02-10",
-    imageUrl: "/placeholder-news-2.jpg",
+    imageUrl: "/images/news/padel-team-1.jpg",
     body: `<p>Alejandro Galan and Federico Chingotto have officially confirmed their partnership for the 2026 Premier Padel season, forming what many consider the most exciting new pairing in professional padel.</p>
 <p>Galan, who previously partnered with Juan Lebron in one of padel's most iconic duos, brings his exceptional defensive skills and court coverage. Chingotto, known for his creativity and flair, adds an unpredictable attacking dimension.</p>
 <p>Their Riyadh P1 final appearance in their very first tournament together suggests the chemistry is already building. "We complement each other well," said Galan. "Fede sees angles on the court that nobody else does."</p>
@@ -73,7 +73,7 @@ export const articles: Article[] = [
     category: "Tour News",
     author: "Vamos Editorial",
     date: "2026-03-02",
-    imageUrl: "/placeholder-news-3.jpg",
+    imageUrl: "/images/news/padel-court-1.jpg",
     body: `<p>Premier Padel is heading to Miami for what promises to be one of the landmark events of the 2026 season. Running from March 23-29, the Miami P1 represents padel's most significant push into the US market.</p>
 <p>All eyes will be on whether Coello and Tapia can extend their dominant start to the season, but the American crowds are expected to be especially receptive to the explosive playing styles of pairs like Galan/Chingotto and Stupa/Yanguas.</p>
 <p>On the women's side, Triay and Brea will look to continue their stranglehold on the top ranking, though the newly formed partnerships after Josemaria and Sanchez split could shake up the competition.</p>`,
@@ -86,7 +86,7 @@ export const articles: Article[] = [
     category: "Rankings",
     author: "Vamos Editorial",
     date: "2026-02-08",
-    imageUrl: "/placeholder-news-4.jpg",
+    imageUrl: "/images/news/padel-action-1.jpg",
     body: `<p>The 2026 Premier Padel season has seen more partnership changes than any year in recent memory. Here's the definitive guide to all the major new pairings:</p>
 <p><strong>Men's Top 8 Pairs:</strong></p>
 <ul>
@@ -109,7 +109,7 @@ export const articles: Article[] = [
     category: "Tour News",
     author: "Vamos Editorial",
     date: "2026-02-05",
-    imageUrl: "/placeholder-news-5.jpg",
+    imageUrl: "/images/news/padel-player-1.jpg",
     body: `<p>Gemma Triay and Delfi Brea enter the 2026 season as the dominant force in women's padel, and their early-season form suggests they have no intention of slowing down.</p>
 <p>The Spanish-Argentine pair, who finished 2025 as the clear world number ones, have been virtually untouchable since forming their partnership. Triay's defensive mastery combined with Brea's aggressive net play creates a combination that no other pair has consistently solved.</p>
 <p>The biggest shake-up in women's padel comes from the split of Paula Josemaria and Ariana Sanchez, a partnership that had been the main rival to Triay/Brea. Both players are now seeking new partners, creating opportunities for emerging talents to break into the top tier.</p>`,
@@ -122,7 +122,7 @@ export const articles: Article[] = [
     category: "Business",
     author: "Vamos Editorial",
     date: "2026-01-30",
-    imageUrl: "/placeholder-news-6.jpg",
+    imageUrl: "/images/news/padel-court-2.jpg",
     body: `<p>For the third consecutive year, padel has been confirmed as the world's fastest-growing sport, with global participation figures rising 35% in 2025 according to a new report from the International Padel Federation (FIP).</p>
 <p>The sport now boasts over 30 million active players worldwide, with the most significant growth coming from the United States (+120% year-over-year), the United Kingdom (+85%), and the Middle East (+75%).</p>
 <p>The FIP report highlights several key drivers: increased Premier Padel TV coverage via Red Bull and beIN Sports, the explosion of padel court construction globally, and the sport's inherent social accessibility.</p>`,

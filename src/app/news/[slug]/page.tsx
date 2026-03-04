@@ -83,12 +83,18 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             <span>{article.date}</span>
           </div>
 
-          <div className="aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl mb-6 sm:mb-8 flex items-center justify-center">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
+          <div className="aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl mb-6 sm:mb-8 overflow-hidden relative">
+            {article.imageUrl ? (
+              <img
+                src={article.imageUrl}
+                alt={article.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-4xl font-black text-gray-300">VAMOS</span>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mb-6 sm:mb-8">
