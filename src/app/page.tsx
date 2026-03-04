@@ -66,7 +66,9 @@ async function fetchHomeData() {
 
   const seenIds = new Set(tournamentMatches.map((m) => m.id));
   const extraMatches = todayRes.data.filter((m) => !seenIds.has(m.id));
-  const matches = [...extraMatches, ...tournamentMatches];
+  const matches = [...extraMatches, ...tournamentMatches].sort(
+    (a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime()
+  );
 
   return { men, women, matches, tournaments };
 }
@@ -101,8 +103,9 @@ export default async function Home() {
     .slice(0, 6);
 
   const liveMatches = matches.filter((m) => m.status === "live");
-  const scheduledMatches = matches.filter((m) => m.status === "scheduled").slice(0, 4);
-  const tickerMatches = [...liveMatches, ...recentMatches.slice(0, 6), ...scheduledMatches].slice(0, 10);
+  const tickerMatches = liveMatches.length > 0
+    ? liveMatches
+    : recentMatches.slice(0, 4);
 
   const activeTournament = tournaments.find((t) => t.status === "live") || tournaments.find((t) => t.status === "pending");
 
@@ -117,12 +120,6 @@ export default async function Home() {
         <section className="bg-[#0F1F2E] overflow-hidden">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center">
-              <Link
-                href="/scores"
-                className="shrink-0 px-3 sm:px-4 py-2.5 bg-[#4ABED9] text-white text-xs font-bold uppercase tracking-wider"
-              >
-                Scores
-              </Link>
               <div className="flex-1 overflow-x-auto scrollbar-hide">
                 <div className="flex items-center gap-0 min-w-max">
                   {tickerMatches.map((match) => (
