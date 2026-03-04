@@ -54,11 +54,14 @@ async function fetchHomeData() {
     r.status === "fulfilled" ? r.value.data : []
   );
 
-  // Also fetch today's matches (previas/qualifying not in tournament endpoint)
-  const today = new Date().toISOString().split("T")[0];
+  // Fetch recent matches from global endpoint (tournament endpoint can miss some)
+  const today = new Date();
+  const threeDaysAgo = new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000);
+  const todayStr = today.toISOString().split("T")[0];
+  const recentStr = threeDaysAgo.toISOString().split("T")[0];
   const todayRes = await getMatches({
-    after_date: today,
-    before_date: today,
+    after_date: recentStr,
+    before_date: todayStr,
     sort_by: "played_at",
     order_by: "desc",
     per_page: "50",
