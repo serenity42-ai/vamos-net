@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ClickableMatchRow from "@/components/ClickableMatchRow";
 import {
   getSeasonTournaments,
   getTournamentMatches,
@@ -92,16 +93,18 @@ function StatusBadge({ status }: { status: Match["status"] }) {
   );
 }
 
-function MatchRow({ match }: { match: Match }) {
+function MatchRow({ match, tournamentName }: { match: Match; tournamentName?: string }) {
   const score = match.score;
   const t1 = teamName(match.players.team_1);
   const t2 = teamName(match.players.team_2);
 
   return (
     <div
-      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors ${
+      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer ${
         match.status === "live" ? "bg-red-50/30" : ""
       }`}
+      data-match={JSON.stringify(match)}
+      data-tournament-name={tournamentName}
     >
       {/* Status */}
       <div className="w-12 sm:w-14 shrink-0 text-center">
@@ -339,7 +342,11 @@ export default async function ScoresPage({
                   </div>
                   <div>
                     {round.matches.map((match) => (
-                      <MatchRow key={match.id} match={match} />
+                      <ClickableMatchRow
+                        key={match.id}
+                        match={match}
+                        tournamentName={group.tournament?.name}
+                      />
                     ))}
                   </div>
                 </div>
