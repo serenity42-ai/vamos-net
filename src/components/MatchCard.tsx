@@ -39,6 +39,24 @@ function teamName(players: Match["players"]["team_1"]): string {
   return players.map((p) => p.name.split(" ").pop()).join(" / ");
 }
 
+/** Render a set score, splitting tiebreak into superscript: "6(4)" → 6⁴ */
+function SetScore({ value, isWinner }: { value: string; isWinner: boolean }) {
+  const match = value.match(/^(\d+)\((\d+)\)$/);
+  if (match) {
+    return (
+      <span className={`text-sm font-bold tabular-nums text-center ${isWinner ? "text-[#0F1F2E]" : "text-gray-400"}`}>
+        {match[1]}
+        <sup className="text-[9px] text-gray-400 ml-px">{match[2]}</sup>
+      </span>
+    );
+  }
+  return (
+    <span className={`text-sm font-bold tabular-nums text-center ${isWinner ? "text-[#0F1F2E]" : "text-gray-400"}`}>
+      {value}
+    </span>
+  );
+}
+
 export default function MatchCard({
   match,
   tournamentName,
@@ -99,18 +117,9 @@ export default function MatchCard({
             </p>
           </div>
           {match.score && match.score.length > 0 && (
-            <div className="flex gap-2 shrink-0 ml-2">
+            <div className="flex gap-3 shrink-0 ml-2">
               {match.score.map((s, i) => (
-                <span
-                  key={i}
-                  className={`text-sm font-bold tabular-nums ${
-                    parseInt(s.team_1) > parseInt(s.team_2)
-                      ? "text-[#0F1F2E]"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {s.team_1}
-                </span>
+                <SetScore key={i} value={s.team_1} isWinner={parseInt(s.team_1) > parseInt(s.team_2)} />
               ))}
             </div>
           )}
@@ -131,18 +140,9 @@ export default function MatchCard({
             </p>
           </div>
           {match.score && match.score.length > 0 && (
-            <div className="flex gap-2 shrink-0 ml-2">
+            <div className="flex gap-3 shrink-0 ml-2">
               {match.score.map((s, i) => (
-                <span
-                  key={i}
-                  className={`text-sm font-bold tabular-nums ${
-                    parseInt(s.team_2) > parseInt(s.team_1)
-                      ? "text-[#0F1F2E]"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {s.team_2}
-                </span>
+                <SetScore key={i} value={s.team_2} isWinner={parseInt(s.team_2) > parseInt(s.team_1)} />
               ))}
             </div>
           )}
