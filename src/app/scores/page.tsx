@@ -14,52 +14,22 @@ export const metadata = {
   description: "Live padel scores, results, and upcoming matches from the Premier Padel tour.",
 };
 
-async function fetchScoresData(tournamentId?: number) {
+async function fetchScoresData(date: string) {
   const tournamentsRes = await getSeasonTournaments(5, { per_page: "30" }).catch(
     () => ({ data: [] as Tournament[] })
   );
   const tournaments = tournamentsRes.data;
 
-  let matchTournaments: Tournament[];
-  if (tournamentId) {
-    matchTournaments = tournaments.filter((t) => t.id === tournamentId);
-  } else {
-    matchTournaments = tournaments.filter(
-      (t) => t.status === "live" || t.status === "finished"
-    );
-  }
-
-  // Fetch tournament-specific matches
-  const matchResults = await Promise.allSettled(
-    matchTournaments.map((t) =>
-      getTournamentMatches(t.id, {
-        per_page: "100",
-        sort_by: "played_at",
-        order_by: "desc",
-      })
-    )
-  );
-
-  const tournamentMatches: Match[] = matchResults.flatMap((r) =>
-    r.status === "fulfilled" ? r.value.data : []
-  );
-
-  // Also fetch today's matches from global endpoint to catch previas/qualifying
-  const today = new Date().toISOString().split("T")[0];
-  const todayMatches = await getMatches({
-    after_date: today,
-    before_date: today,
+  // Fetch matches for the specific date only
+  const matchesRes = await getMatches({
+    after_date: date,
+    before_date: date,
     sort_by: "played_at",
     order_by: "desc",
-    per_page: "50",
+    per_page: "100",
   }).catch(() => ({ data: [] as Match[] }));
 
-  // Merge and deduplicate by match id
-  const seenIds = new Set(tournamentMatches.map((m) => m.id));
-  const extraMatches = todayMatches.data.filter((m) => !seenIds.has(m.id));
-  const allMatches = [...extraMatches, ...tournamentMatches];
-
-  return { allMatches, tournaments };
+  return { allMatches: matchesRes.data, tournaments };
 }
 
 function getTournamentForMatch(match: Match, tournaments: Tournament[]): Tournament | undefined {
@@ -158,16 +128,17 @@ function MatchRow({ match, tournamentName }: { match: Match; tournamentName?: st
 export default async function ScoresPage({
   searchParams,
 }: {
-  searchParams: { tournament?: string; category?: string };
+  searchParams: { tournament?: string; category?: string; date?: string };
 }) {
   const tournamentFilter = searchParams.tournament;
   const categoryFilter = searchParams.category;
-  const tournamentId =
-    tournamentFilter && tournamentFilter !== "all"
-      ? parseInt(tournamentFilter)
-      : undefined;
 
-  const { allMatches, tournaments } = await fetchScoresData(tournamentId);
+  // Date handling
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const selectedDate = searchParams.date || todayStr;
+
+  const { allMatches, tournaments } = await fetchScoresData(selectedDate);
 
   // Filter out byes/cancelled, and optionally by category
   let filtered = allMatches.filter(
@@ -220,19 +191,45 @@ export default async function ScoresPage({
     return aLive - bLive;
   });
 
+  // Filter by tournament if specified
+  if (tournamentFilter && tournamentFilter !== "all") {
+    const tId = parseInt(tournamentFilter);
+    filtered = filtered.filter((m) => {
+      const tournamentPath = m.connections?.tournament;
+      if (!tournamentPath) return false;
+      const id = parseInt(tournamentPath.split("/").pop() || "0");
+      return id === tId;
+    });
+  }
+
   const activeTournaments = tournaments
     .filter((t) => t.status === "live" || t.status === "finished")
     .slice(0, 10);
 
   // Date navigation
-  const today = new Date();
-  const formatDate = (d: Date) =>
-    d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const formatDateDisplay = (dateStr: string) => {
+    const d = new Date(dateStr + "T12:00:00");
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  };
 
-  const prevDate = new Date(today);
-  prevDate.setDate(prevDate.getDate() - 1);
-  const nextDate = new Date(today);
-  nextDate.setDate(nextDate.getDate() + 1);
+  const selectedDateObj = new Date(selectedDate + "T12:00:00");
+  const prevDateObj = new Date(selectedDateObj);
+  prevDateObj.setDate(prevDateObj.getDate() - 1);
+  const nextDateObj = new Date(selectedDateObj);
+  nextDateObj.setDate(nextDateObj.getDate() + 1);
+
+  const prevDateStr = prevDateObj.toISOString().split("T")[0];
+  const nextDateStr = nextDateObj.toISOString().split("T")[0];
+  const isToday = selectedDate === todayStr;
+
+  function buildUrl(params: Record<string, string | undefined>) {
+    const p = new URLSearchParams();
+    if (params.date && params.date !== todayStr) p.set("date", params.date);
+    if (params.category) p.set("category", params.category);
+    if (params.tournament) p.set("tournament", params.tournament);
+    const qs = p.toString();
+    return `/scores${qs ? `?${qs}` : ""}`;
+  }
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -244,21 +241,37 @@ export default async function ScoresPage({
 
       {/* Date Navigation */}
       <div className="flex items-center justify-center gap-4 mb-5 bg-gray-50 rounded-lg py-2.5 px-4">
-        <button className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors">
-          &lt; {formatDate(prevDate)}
-        </button>
-        <span className="text-sm font-bold text-[#0F1F2E] px-3 py-1 bg-white rounded shadow-sm">
-          {formatDate(today)}
-        </span>
-        <button className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors">
-          {formatDate(nextDate)} &gt;
-        </button>
+        <Link
+          href={buildUrl({ date: prevDateStr, category: categoryFilter, tournament: tournamentFilter })}
+          className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors"
+        >
+          &lt; {formatDateDisplay(prevDateStr)}
+        </Link>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-[#0F1F2E] px-3 py-1 bg-white rounded shadow-sm">
+            {formatDateDisplay(selectedDate)}
+          </span>
+          {!isToday && (
+            <Link
+              href={buildUrl({ category: categoryFilter, tournament: tournamentFilter })}
+              className="text-xs font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors"
+            >
+              Today
+            </Link>
+          )}
+        </div>
+        <Link
+          href={buildUrl({ date: nextDateStr, category: categoryFilter, tournament: tournamentFilter })}
+          className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors"
+        >
+          {formatDateDisplay(nextDateStr)} &gt;
+        </Link>
       </div>
 
       {/* Men/Women Tab Filter */}
       <div className="flex gap-1 mb-5 bg-gray-100 rounded-lg p-1 w-fit">
         <Link
-          href={`/scores${tournamentFilter ? `?tournament=${tournamentFilter}` : ""}`}
+          href={buildUrl({ date: selectedDate, tournament: tournamentFilter })}
           className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${
             !categoryFilter ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
           }`}
@@ -266,7 +279,7 @@ export default async function ScoresPage({
           All
         </Link>
         <Link
-          href={`/scores?category=men${tournamentFilter ? `&tournament=${tournamentFilter}` : ""}`}
+          href={buildUrl({ date: selectedDate, category: "men", tournament: tournamentFilter })}
           className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${
             categoryFilter === "men" ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
           }`}
@@ -274,7 +287,7 @@ export default async function ScoresPage({
           Men
         </Link>
         <Link
-          href={`/scores?category=women${tournamentFilter ? `&tournament=${tournamentFilter}` : ""}`}
+          href={buildUrl({ date: selectedDate, category: "women", tournament: tournamentFilter })}
           className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${
             categoryFilter === "women" ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
           }`}
@@ -287,7 +300,7 @@ export default async function ScoresPage({
       <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto mb-6">
         <div className="flex gap-2 pb-2 sm:pb-0 sm:flex-wrap">
           <Link
-            href={`/scores${categoryFilter ? `?category=${categoryFilter}` : ""}`}
+            href={buildUrl({ date: selectedDate, category: categoryFilter })}
             className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
               !tournamentFilter || tournamentFilter === "all"
                 ? "bg-[#4ABED9] text-white"
@@ -299,7 +312,7 @@ export default async function ScoresPage({
           {activeTournaments.map((t) => (
             <Link
               key={t.id}
-              href={`/scores?tournament=${t.id}${categoryFilter ? `&category=${categoryFilter}` : ""}`}
+              href={buildUrl({ date: selectedDate, category: categoryFilter, tournament: String(t.id) })}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 tournamentFilter === String(t.id)
                   ? "bg-[#4ABED9] text-white"
