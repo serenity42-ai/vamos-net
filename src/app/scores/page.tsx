@@ -216,6 +216,18 @@ export default async function ScoresPage({
     group.matchesByRound.get(roundKey)!.matches.push(match);
   }
 
+  // Sort matches within each round: live first, then scheduled, then finished
+  const statusOrder: Record<string, number> = { live: 0, scheduled: 1, finished: 2, cancelled: 3 };
+  groupMap.forEach((g) => {
+    g.matchesByRound.forEach((roundData) => {
+      roundData.matches.sort((a, b) => {
+        const aOrder = statusOrder[a.status] ?? 2;
+        const bOrder = statusOrder[b.status] ?? 2;
+        return aOrder - bOrder;
+      });
+    });
+  });
+
   const tournamentGroups: TournamentGroup[] = Array.from(groupMap.entries()).map(([id, g]) => ({
     tournament: g.tournament,
     tournamentId: id,
