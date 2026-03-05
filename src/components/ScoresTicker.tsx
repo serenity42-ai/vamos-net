@@ -3,11 +3,7 @@
 import type { Match } from "@/lib/padel-api";
 import { useMatchModal } from "@/components/MatchModalProvider";
 import { useLiveScore } from "@/hooks/useLiveScore";
-
-function teamName(players: Match["players"]["team_1"]): string {
-  if (!players || players.length === 0) return "TBD";
-  return players.map((p) => p.name.split(" ").pop()).join(" / ");
-}
+import { teamName } from "@/lib/player-utils";
 
 function TickerMatch({ match }: { match: Match }) {
   const { openMatch } = useMatchModal();

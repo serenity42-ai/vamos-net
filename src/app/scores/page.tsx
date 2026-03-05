@@ -64,9 +64,15 @@ function getTournamentForMatch(match: Match, tournaments: Tournament[]): Tournam
   return tournaments.find((t) => t.id === id);
 }
 
+function displaySurname(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 2) return parts[parts.length - 1];
+  return parts[1];
+}
+
 function teamName(players: Match["players"]["team_1"]): string {
   if (!players || players.length === 0) return "TBD";
-  return players.map((p) => p.name.split(" ").pop()).join(" / ");
+  return players.map((p) => displaySurname(p.name)).join(" / ");
 }
 
 function StatusBadge({ status }: { status: Match["status"] }) {

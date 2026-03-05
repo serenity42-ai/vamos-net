@@ -239,7 +239,10 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                         }`}
                       >
                         {players.length > 0
-                          ? players.map((p) => p.name.split(" ").pop()).join(" / ")
+                          ? players.map((p) => {
+                              const parts = p.name.trim().split(/\s+/);
+                              return parts.length <= 2 ? parts[parts.length - 1] : parts[1];
+                            }).join(" / ")
                           : "TBD"}
                       </p>
                       <div className="flex items-center gap-1 mt-1 flex-wrap">

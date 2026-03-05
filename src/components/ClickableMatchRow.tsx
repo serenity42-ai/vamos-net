@@ -3,11 +3,7 @@
 import type { Match } from "@/lib/padel-api";
 import { useMatchModal } from "@/components/MatchModalProvider";
 import { useLiveScore } from "@/hooks/useLiveScore";
-
-function teamName(players: Match["players"]["team_1"]): string {
-  if (!players || players.length === 0) return "TBD";
-  return players.map((p) => p.name.split(" ").pop()).join(" / ");
-}
+import { teamName } from "@/lib/player-utils";
 
 /** Render a set score, splitting tiebreak into superscript: "6(4)" → 6⁽⁴⁾ */
 function SetScoreCell({ value, isWinner }: { value: string; isWinner: boolean }) {
