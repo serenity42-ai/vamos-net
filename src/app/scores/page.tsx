@@ -45,11 +45,20 @@ async function fetchScoresData(date: string) {
     );
   }
 
-  // Merge live scores into matches
+  // Merge live scores into matches + fix stale "live" status
+  const now = Date.now();
   const allMatches = matchesRes.data.map((match) => {
     const liveScore = liveScoreMap.get(match.id);
     if (liveScore && liveScore.length > 0) {
       return { ...match, score: liveScore };
+    }
+    // If match says "live" but has no score and played_at is >4 hours ago,
+    // it's likely a stale status from PadelAPI — downgrade to "scheduled"
+    if (match.status === "live" && (!match.score || match.score.length === 0)) {
+      const playedAt = new Date(match.played_at).getTime();
+      if (playedAt && now - playedAt > 4 * 60 * 60 * 1000) {
+        return { ...match, status: "finished" as Match["status"] };
+      }
     }
     return match;
   });
