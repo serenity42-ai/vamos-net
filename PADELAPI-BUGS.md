@@ -18,5 +18,12 @@ Report to: ferran@padelapi.org
 **Issue:** `GET /api/live` returned `sets: null` for match 7281 (instead of empty array or actual data). Caused server-side crash on our scores page.
 **Impact:** Fixed with null guard on our side.
 
+## 4. Completed set shows "0-0" score — Match 7277
+**Date:** 2026-03-05
+**Match:** Coello/Tapia vs Lijo/Arce (Gijón P2, Round of 16, Men)
+**Issue:** `/api/live` returns Set 1 with `set_score: "0-0"` even though it's a completed set (9 games played in the data). Correct score should be something like 6-3 or similar.
+**Endpoint:** `GET /api/live` → match 7277
+**Impact:** Modal shows "0 2 / 0 2" instead of correct set scores.
+
 ---
 *Batch these up and send to Ferran when we have a few more, or at end of tournament week.*
