@@ -2,6 +2,7 @@
 
 import type { Match } from "@/lib/padel-api";
 import { useMatchModal } from "@/components/MatchModalProvider";
+import { useLiveScore } from "@/hooks/useLiveScore";
 
 function teamName(players: Match["players"]["team_1"]): string {
   if (!players || players.length === 0) return "TBD";
@@ -9,7 +10,7 @@ function teamName(players: Match["players"]["team_1"]): string {
 }
 
 /** Render a set score, splitting tiebreak into superscript: "6(4)" → 6⁽⁴⁾ */
-function SetScore({ value, isWinner }: { value: string; isWinner: boolean }) {
+function SetScoreCell({ value, isWinner }: { value: string; isWinner: boolean }) {
   const match = value.match(/^(\d+)\((\d+)\)$/);
   if (match) {
     return (
@@ -26,13 +27,20 @@ function SetScore({ value, isWinner }: { value: string; isWinner: boolean }) {
   );
 }
 
-function StatusBadge({ status }: { status: Match["status"] }) {
+function StatusBadge({ status, currentPoint }: { status: string; currentPoint?: string | null }) {
   if (status === "live") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600">
-        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-        Live
-      </span>
+      <div className="flex flex-col items-center gap-0.5">
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          Live
+        </span>
+        {currentPoint && (
+          <span className="text-[10px] font-bold text-red-500 tabular-nums">
+            {currentPoint}
+          </span>
+        )}
+      </div>
     );
   }
   if (status === "finished") {
@@ -53,14 +61,22 @@ export default function ClickableMatchRow({
   tournamentName?: string;
 }) {
   const { openMatch } = useMatchModal();
-  const score = match.score;
+  const isLive = match.status === "live";
+  const { score, currentPoint, status } = useLiveScore(
+    match.id,
+    isLive,
+    match.score
+  );
+
+  const displayScore = score;
+  const displayStatus = status as Match["status"];
   const t1 = teamName(match.players.team_1);
   const t2 = teamName(match.players.team_2);
 
   return (
     <div
       className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer ${
-        match.status === "live" ? "bg-red-50/30" : ""
+        displayStatus === "live" ? "bg-red-50/30" : ""
       }`}
       onClick={() => openMatch(match, tournamentName)}
       role="button"
@@ -71,7 +87,7 @@ export default function ClickableMatchRow({
     >
       {/* Status */}
       <div className="w-12 sm:w-14 shrink-0 text-center">
-        <StatusBadge status={match.status} />
+        <StatusBadge status={displayStatus} currentPoint={isLive ? currentPoint : null} />
       </div>
 
       {/* Teams and Scores */}
@@ -88,10 +104,10 @@ export default function ClickableMatchRow({
           >
             {t1}
           </span>
-          {score && score.length > 0 && (
+          {displayScore && displayScore.length > 0 && (
             <div className="flex gap-2 sm:gap-3 shrink-0">
-              {score.map((s, i) => (
-                <SetScore key={i} value={s.team_1} isWinner={parseInt(s.team_1) > parseInt(s.team_2)} />
+              {displayScore.map((s, i) => (
+                <SetScoreCell key={i} value={s.team_1} isWinner={parseInt(s.team_1) > parseInt(s.team_2)} />
               ))}
             </div>
           )}
@@ -108,10 +124,10 @@ export default function ClickableMatchRow({
           >
             {t2}
           </span>
-          {score && score.length > 0 && (
+          {displayScore && displayScore.length > 0 && (
             <div className="flex gap-2 sm:gap-3 shrink-0">
-              {score.map((s, i) => (
-                <SetScore key={i} value={s.team_2} isWinner={parseInt(s.team_2) > parseInt(s.team_1)} />
+              {displayScore.map((s, i) => (
+                <SetScoreCell key={i} value={s.team_2} isWinner={parseInt(s.team_2) > parseInt(s.team_1)} />
               ))}
             </div>
           )}

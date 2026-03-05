@@ -3,13 +3,19 @@
 import type { Match } from "@/lib/padel-api";
 import { formatScore } from "@/lib/padel-api";
 import { useMatchModal } from "@/components/MatchModalProvider";
+import { useLiveScore } from "@/hooks/useLiveScore";
 
-function StatusBadge({ status }: { status: Match["status"] }) {
+function StatusBadge({ status, currentPoint }: { status: string; currentPoint?: string | null }) {
   if (status === "live") {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600">
         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
         Live
+        {currentPoint && (
+          <span className="text-[10px] font-bold text-red-500 tabular-nums ml-1">
+            {currentPoint}
+          </span>
+        )}
       </span>
     );
   }
@@ -40,7 +46,7 @@ function teamName(players: Match["players"]["team_1"]): string {
 }
 
 /** Render a set score, splitting tiebreak into superscript: "6(4)" → 6⁴ */
-function SetScore({ value, isWinner }: { value: string; isWinner: boolean }) {
+function SetScoreCell({ value, isWinner }: { value: string; isWinner: boolean }) {
   const match = value.match(/^(\d+)\((\d+)\)$/);
   if (match) {
     return (
@@ -65,14 +71,23 @@ export default function MatchCard({
   tournamentName?: string;
 }) {
   const { openMatch } = useMatchModal();
-  const score = formatScore(match.score);
+  const isLive = match.status === "live";
+  const { score, currentPoint, status } = useLiveScore(
+    match.id,
+    isLive,
+    match.score
+  );
+
+  const displayScore = score;
+  const displayStatus = status as Match["status"];
+  const scoreStr = formatScore(displayScore);
   const team1Label = teamName(match.players.team_1);
   const team2Label = teamName(match.players.team_2);
 
   return (
     <div
       className={`bg-white rounded-xl border overflow-hidden transition-shadow hover:shadow-md cursor-pointer ${
-        match.status === "live"
+        displayStatus === "live"
           ? "border-red-200 shadow-sm"
           : "border-gray-100"
       }`}
@@ -96,7 +111,7 @@ export default function MatchCard({
           </span>
         </div>
         <div className="shrink-0">
-          <StatusBadge status={match.status} />
+          <StatusBadge status={displayStatus} currentPoint={isLive ? currentPoint : null} />
         </div>
       </div>
 
@@ -116,10 +131,10 @@ export default function MatchCard({
               {team1Label}
             </p>
           </div>
-          {match.score && match.score.length > 0 && (
+          {displayScore && displayScore.length > 0 && (
             <div className="flex gap-3 shrink-0 ml-2">
-              {match.score.map((s, i) => (
-                <SetScore key={i} value={s.team_1} isWinner={parseInt(s.team_1) > parseInt(s.team_2)} />
+              {displayScore.map((s, i) => (
+                <SetScoreCell key={i} value={s.team_1} isWinner={parseInt(s.team_1) > parseInt(s.team_2)} />
               ))}
             </div>
           )}
@@ -139,19 +154,19 @@ export default function MatchCard({
               {team2Label}
             </p>
           </div>
-          {match.score && match.score.length > 0 && (
+          {displayScore && displayScore.length > 0 && (
             <div className="flex gap-3 shrink-0 ml-2">
-              {match.score.map((s, i) => (
-                <SetScore key={i} value={s.team_2} isWinner={parseInt(s.team_2) > parseInt(s.team_1)} />
+              {displayScore.map((s, i) => (
+                <SetScoreCell key={i} value={s.team_2} isWinner={parseInt(s.team_2) > parseInt(s.team_1)} />
               ))}
             </div>
           )}
         </div>
 
         {/* Full score line */}
-        {score && (
+        {scoreStr && (
           <p className="text-xs text-gray-400 pt-1 border-t border-gray-50 truncate">
-            {score}
+            {scoreStr}
             {match.duration && (
               <span className="ml-2 text-gray-300">| {match.duration}</span>
             )}
@@ -159,7 +174,7 @@ export default function MatchCard({
         )}
 
         {/* Schedule / court for scheduled */}
-        {match.status === "scheduled" && (
+        {displayStatus === "scheduled" && (
           <div className="flex items-center gap-2 pt-1 border-t border-gray-50">
             <span className="text-xs text-gray-500">{match.played_at}</span>
             {match.court && (
@@ -172,7 +187,7 @@ export default function MatchCard({
         )}
 
         {/* Court for live */}
-        {match.status === "live" && match.court && (
+        {displayStatus === "live" && match.court && (
           <p className="text-xs text-gray-400 pt-1 border-t border-gray-50">
             {match.court}
           </p>
