@@ -285,6 +285,7 @@ export async function getLiveMatches(): Promise<PaginatedResponse<LiveMatchData>
  * For completed sets, uses set_score. For in-progress sets, uses last game's cumulative score.
  */
 export function liveDataToScore(liveData: LiveMatchData): SetScore[] {
+  if (!liveData.sets || !Array.isArray(liveData.sets)) return [];
   return liveData.sets.map((set) => {
     if (set.set_score) {
       const [t1, t2] = set.set_score.split("-");
