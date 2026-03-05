@@ -50,29 +50,13 @@ export function useLiveScore(
               const [t1, t2] = set.set_score.split("-");
               return { team_1: t1, team_2: t2 };
             }
-            // Set in progress — count games won by each team
-            let t1Games = 0;
-            let t2Games = 0;
-            for (const game of set.games) {
-              const [g1, g2] = game.game_score.split(" - ").map(Number);
-              // game_score is cumulative BEFORE the game, so last game's score + winner
-              if (game === set.games[set.games.length - 1]) {
-                // Current game — use cumulative score from game_score
-                // and check if there's a winner from the points
-                t1Games = g1;
-                t2Games = g2;
-                // Check if the last point suggests a game was won
-                // Actually, we should just count from game_score of the last game
-              }
-            }
-            // Better approach: last game's game_score shows cumulative
-            if (set.games.length > 0) {
+            // In-progress set: last game's game_score is cumulative before that game
+            if (set.games && set.games.length > 0) {
               const lastGame = set.games[set.games.length - 1];
-              const [g1, g2] = lastGame.game_score.split(" - ").map(Number);
-              t1Games = g1;
-              t2Games = g2;
+              const parts = lastGame.game_score.split(" - ").map((s) => s.trim());
+              return { team_1: parts[0] || "0", team_2: parts[1] || "0" };
             }
-            return { team_1: String(t1Games), team_2: String(t2Games) };
+            return { team_1: "0", team_2: "0" };
           });
           setScore(newScore);
         }

@@ -4,9 +4,12 @@ import {
   getSeasonTournaments,
   getTournamentMatches,
   getMatches,
+  getLiveMatches,
+  liveDataToScore,
   formatScore,
   type Match,
   type Tournament,
+  type LiveMatchData,
 } from "@/lib/padel-api";
 
 export const metadata = {
@@ -20,16 +23,38 @@ async function fetchScoresData(date: string) {
   );
   const tournaments = tournamentsRes.data;
 
-  // Fetch matches for the specific date only
-  const matchesRes = await getMatches({
-    after_date: date,
-    before_date: date,
-    sort_by: "played_at",
-    order_by: "desc",
-    per_page: "100",
-  }).catch(() => ({ data: [] as Match[] }));
+  // Fetch matches for the specific date + live match data in parallel
+  const [matchesRes, liveRes] = await Promise.all([
+    getMatches({
+      after_date: date,
+      before_date: date,
+      sort_by: "played_at",
+      order_by: "desc",
+      per_page: "100",
+    }).catch(() => ({ data: [] as Match[] })),
+    getLiveMatches().catch(() => ({ data: [] as LiveMatchData[] })),
+  ]);
 
-  return { allMatches: matchesRes.data, tournaments };
+  // Build a map of live match scores from the /live endpoint
+  const liveScoreMap = new Map<number, Match["score"]>();
+  for (const liveMatch of liveRes.data) {
+    liveScoreMap.set(
+      // Extract match ID from connections.match (e.g. "/api/matches/7250")
+      parseInt(liveMatch.connections?.match?.split("/").pop() || String(liveMatch.id)),
+      liveDataToScore(liveMatch)
+    );
+  }
+
+  // Merge live scores into matches
+  const allMatches = matchesRes.data.map((match) => {
+    const liveScore = liveScoreMap.get(match.id);
+    if (liveScore && liveScore.length > 0) {
+      return { ...match, score: liveScore };
+    }
+    return match;
+  });
+
+  return { allMatches, tournaments };
 }
 
 function getTournamentForMatch(match: Match, tournaments: Tournament[]): Tournament | undefined {

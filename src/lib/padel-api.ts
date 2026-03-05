@@ -267,10 +267,37 @@ export interface LiveMatchData {
   status: string;
   channel: string;
   sets: LiveSet[];
+  connections?: {
+    match?: string;
+  };
 }
 
 export async function getMatchLive(id: number): Promise<LiveMatchData> {
   return get(`/matches/${id}/live`, undefined, 15);
+}
+
+export async function getLiveMatches(): Promise<PaginatedResponse<LiveMatchData>> {
+  return get("/live", undefined, 15);
+}
+
+/**
+ * Convert live set data to SetScore array for display.
+ * For completed sets, uses set_score. For in-progress sets, uses last game's cumulative score.
+ */
+export function liveDataToScore(liveData: LiveMatchData): SetScore[] {
+  return liveData.sets.map((set) => {
+    if (set.set_score) {
+      const [t1, t2] = set.set_score.split("-");
+      return { team_1: t1, team_2: t2 };
+    }
+    // In-progress set: use the last game's cumulative game_score
+    if (set.games && set.games.length > 0) {
+      const lastGame = set.games[set.games.length - 1];
+      const [g1, g2] = lastGame.game_score.split(" - ").map((s) => s.trim());
+      return { team_1: g1, team_2: g2 };
+    }
+    return { team_1: "0", team_2: "0" };
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,8 @@ import {
   getTournamentMatches,
   getMatches,
   getMatchLive,
+  getLiveMatches,
+  liveDataToScore,
   countryFlag,
   levelLabel,
   type Player,
@@ -77,26 +79,18 @@ async function fetchHomeData() {
 
   // Enrich live matches with real-time scores from /live endpoint
   try {
-    const liveOnly = matches.filter((m) => m.status === "live");
-    if (liveOnly.length > 0) {
-      const liveResults = await Promise.allSettled(
-        liveOnly.map((m) => getMatchLive(m.id))
-      );
+    const liveRes = await getLiveMatches().catch(() => ({ data: [] as any[] }));
+    if (liveRes.data.length > 0) {
       const liveScoreMap = new Map<number, { team_1: string; team_2: string }[]>();
-      liveResults.forEach((r, i) => {
-        if (r.status === "fulfilled" && r.value?.sets?.length > 0) {
-          liveScoreMap.set(
-            liveOnly[i].id,
-            r.value.sets.map((s: { set_score: string }) => {
-              const [t1, t2] = s.set_score.split("-");
-              return { team_1: t1, team_2: t2 };
-            })
-          );
-        }
-      });
+      for (const liveMatch of liveRes.data) {
+        const matchId = parseInt(
+          liveMatch.connections?.match?.split("/").pop() || String(liveMatch.id)
+        );
+        liveScoreMap.set(matchId, liveDataToScore(liveMatch));
+      }
       matches = matches.map((m) => {
         const ls = liveScoreMap.get(m.id);
-        if (ls) return { ...m, score: ls };
+        if (ls && ls.length > 0) return { ...m, score: ls };
         return m;
       });
     }
