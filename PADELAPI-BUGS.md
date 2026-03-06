@@ -25,5 +25,11 @@ Report to: ferran@padelapi.org
 **Endpoint:** `GET /api/live` → match 7277
 **Impact:** Modal shows "0 2 / 0 2" instead of correct set scores.
 
+## 5. "1 null" score AGAIN — Match 7287 (Lebron/Augsburger vs Nieto/Sanz)
+**Date:** 2026-03-06
+**Match:** Lebron/Augsburger vs Nieto/Sanz (Gijón P2, Quarter, Men)
+**Issue:** Same "1 null" bug from match #2 above. Score field shows `1 null` on PadelAPI's own dashboard (padelapi.org/explore/resources/match-games/7287). Live endpoint returns set_score: "0-0" for completed sets.
+**Note:** This was supposed to be fixed per Ferran's email on March 5. Still happening next day on a CENTER COURT quarterfinal.
+
 ---
 *Batch these up and send to Ferran when we have a few more, or at end of tournament week.*

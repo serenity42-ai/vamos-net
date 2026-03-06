@@ -61,7 +61,8 @@ export default function ClickableMatchRow({
   const { score, currentPoint, status } = useLiveScore(
     match.id,
     isLive,
-    match.score
+    match.score,
+    match.status
   );
 
   const displayScore = score;

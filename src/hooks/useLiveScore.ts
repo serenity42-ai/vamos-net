@@ -12,11 +12,12 @@ import type { SetScore } from "@/lib/padel-api";
 export function useLiveScore(
   matchId: number,
   isLive: boolean,
-  initialScore: SetScore[] | null
+  initialScore: SetScore[] | null,
+  initialStatus: string = "finished"
 ) {
   const [score, setScore] = useState<SetScore[] | null>(initialScore);
   const [currentPoint, setCurrentPoint] = useState<string | null>(null);
-  const [status, setStatus] = useState<string>(isLive ? "live" : "finished");
+  const [status, setStatus] = useState<string>(initialStatus);
   const channelRef = useRef<any>(null);
 
   useEffect(() => {

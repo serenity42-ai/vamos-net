@@ -241,7 +241,11 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                         {players.length > 0
                           ? players.map((p) => {
                               const parts = p.name.trim().split(/\s+/);
-                              return parts.length <= 2 ? parts[parts.length - 1] : parts[1];
+                              if (parts.length <= 2) return parts[parts.length - 1];
+                              const surname = parts[1];
+                              const prefixes = ["di","de","da","do","del","van","von","le","la","el","al"];
+                              if (prefixes.includes(surname.toLowerCase()) && parts.length > 2) return `${surname} ${parts[2]}`;
+                              return surname;
                             }).join(" / ")
                           : "TBD"}
                       </p>

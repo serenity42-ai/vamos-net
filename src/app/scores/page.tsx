@@ -73,10 +73,16 @@ function getTournamentForMatch(match: Match, tournaments: Tournament[]): Tournam
   return tournaments.find((t) => t.id === id);
 }
 
+const SURNAME_PREFIXES = new Set(["di", "de", "da", "do", "del", "van", "von", "le", "la", "el", "al"]);
+
 function displaySurname(fullName: string): string {
   const parts = fullName.trim().split(/\s+/);
   if (parts.length <= 2) return parts[parts.length - 1];
-  return parts[1];
+  const surname = parts[1];
+  if (SURNAME_PREFIXES.has(surname.toLowerCase()) && parts.length > 2) {
+    return `${surname} ${parts[2]}`;
+  }
+  return surname;
 }
 
 function teamName(players: Match["players"]["team_1"]): string {
