@@ -294,8 +294,9 @@ export function liveDataToScore(liveData: LiveMatchData): SetScore[] {
     // In-progress set: use the last game's cumulative game_score
     if (set.games && set.games.length > 0) {
       const lastGame = set.games[set.games.length - 1];
-      const [g1, g2] = lastGame.game_score.split(" - ").map((s) => s.trim());
-      return { team_1: g1, team_2: g2 };
+      // Handle both "5 - 3" and "5-3" formats
+      const parts = lastGame.game_score.split(/\s*-\s*/);
+      return { team_1: parts[0] || "0", team_2: parts[1] || "0" };
     }
     return { team_1: "0", team_2: "0" };
   });

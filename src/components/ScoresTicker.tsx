@@ -25,7 +25,7 @@ function TickerMatch({ match }: { match: Match }) {
       </span>
       {displayScore && displayScore.length > 0 ? (
         <span className="text-xs font-bold text-white whitespace-nowrap">
-          {displayScore.map((s) => `${s.team_1}-${s.team_2}`).join(" ")}
+          {displayScore.map((s) => `${s.team_1 || "0"}-${s.team_2 || "0"}`).join(" ")}
         </span>
       ) : (
         <span className="text-xs text-gray-500 whitespace-nowrap">vs</span>
