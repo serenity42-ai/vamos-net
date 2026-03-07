@@ -47,21 +47,33 @@ async function fetchScoresData(date: string) {
 
   // Merge live scores into matches + fix stale "live" status
   const now = Date.now();
-  const allMatches = matchesRes.data.map((match) => {
-    const liveScore = liveScoreMap.get(match.id);
-    if (liveScore && liveScore.length > 0) {
-      return { ...match, score: liveScore };
-    }
-    // If match says "live" but has no score and played_at is >4 hours ago,
-    // it's likely a stale status from PadelAPI — downgrade to "scheduled"
-    if (match.status === "live" && (!match.score || match.score.length === 0)) {
-      const playedAt = new Date(match.played_at).getTime();
-      if (playedAt && now - playedAt > 4 * 60 * 60 * 1000) {
-        return { ...match, status: "finished" as Match["status"] };
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const isPastDate = date < today;
+
+  const allMatches = matchesRes.data
+    .map((match) => {
+      const liveScore = liveScoreMap.get(match.id);
+      if (liveScore && liveScore.length > 0) {
+        return { ...match, score: liveScore };
       }
-    }
-    return match;
-  });
+      // If match says "live" but has no score and played_at is >4 hours ago,
+      // it's likely a stale status from PadelAPI — downgrade to "finished"
+      if (match.status === "live" && (!match.score || match.score.length === 0)) {
+        const playedAt = new Date(match.played_at).getTime();
+        if (playedAt && now - playedAt > 4 * 60 * 60 * 1000) {
+          return { ...match, status: "finished" as Match["status"] };
+        }
+      }
+      return match;
+    })
+    // Hide scheduled matches with no scores on past dates — these are
+    // future matches that PadelAPI pre-created with yesterday's date
+    .filter((match) => {
+      if (isPastDate && match.status === "scheduled" && (!match.score || match.score.length === 0)) {
+        return false;
+      }
+      return true;
+    });
 
   return { allMatches, tournaments };
 }
