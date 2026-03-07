@@ -146,8 +146,13 @@ function deriveStatus(
     return "live"; // no winner yet, so assume live
   }
 
-  // Signal 5: API says live but no scores and match is old → stale
+  // Signal 5: API says live but no scores
   if (apiStatus === "live" && !hasScores) {
+    // If not in /live list either, match likely just ended — PadelAPI hasn't updated yet
+    if (!ctx.liveMatchIds.has(match.id)) {
+      return "finished";
+    }
+    // Still in /live list but no scores and very old → stale
     const playedAt = match.played_at ? new Date(match.played_at).getTime() : 0;
     const now = Date.now();
     if (playedAt && now - playedAt > 4 * 60 * 60 * 1000) {
