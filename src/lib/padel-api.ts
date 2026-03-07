@@ -281,6 +281,22 @@ export async function getLiveMatches(): Promise<PaginatedResponse<LiveMatchData>
 }
 
 /**
+ * Normalize a tiebreak score like "65" → "6(5)" or "713" → "7(13)".
+ * /live endpoint returns "65" format, /matches returns "6(5)" format.
+ * If score > 9 and starts with 6 or 7, it's a tiebreak: first digit is the game score.
+ */
+function normalizeTiebreak(score: string): string {
+  if (!score) return score;
+  const num = parseInt(score);
+  // Normal game scores are 0-7. If it's > 9 and not already formatted, it's a tiebreak.
+  if (num > 9 && !score.includes("(")) {
+    // First digit is game score (6 or 7), rest is tiebreak points
+    return `${score[0]}(${score.slice(1)})`;
+  }
+  return score;
+}
+
+/**
  * Convert live set data to SetScore array for display.
  * For completed sets, uses set_score. For in-progress sets, uses last game's cumulative score.
  */
@@ -289,7 +305,7 @@ export function liveDataToScore(liveData: LiveMatchData): SetScore[] {
   return liveData.sets.map((set) => {
     if (set.set_score) {
       const [t1, t2] = set.set_score.split("-");
-      return { team_1: t1, team_2: t2 };
+      return { team_1: normalizeTiebreak(t1), team_2: normalizeTiebreak(t2) };
     }
     // In-progress set: use the last game's cumulative game_score
     if (set.games && set.games.length > 0) {

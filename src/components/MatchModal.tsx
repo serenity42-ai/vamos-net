@@ -122,10 +122,17 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
         setPlayerDetails(map);
 
         if (liveData?.sets?.length > 0) {
+          // Normalize tiebreak scores: "65" → "6(5)"
+          const normTB = (s: string) => {
+            if (!s) return s;
+            const n = parseInt(s);
+            if (n > 9 && !s.includes("(")) return `${s[0]}(${s.slice(1)})`;
+            return s;
+          };
           setLiveScore(
             liveData.sets.map((s: { set_score: string }) => {
-              const [t1, t2] = s.set_score.split("-");
-              return { team_1: t1, team_2: t2 };
+              const [t1, t2] = (s.set_score || "0-0").split("-");
+              return { team_1: normTB(t1), team_2: normTB(t2) };
             })
           );
         }
@@ -265,6 +272,7 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                           const myScore = key === "team_1" ? s.team_1 : s.team_2;
                           const oppScore = key === "team_1" ? s.team_2 : s.team_1;
                           const wonSet = parseInt(myScore) > parseInt(oppScore);
+                          const tbMatch = myScore?.match(/^(\d+)\((\d+)\)$/);
                           return (
                             <span
                               key={i}
@@ -272,7 +280,14 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                                 wonSet ? "text-[#0F1F2E]" : "text-gray-300"
                               }`}
                             >
-                              {myScore}
+                              {tbMatch ? (
+                                <>
+                                  {tbMatch[1]}
+                                  <sup className="text-xs text-gray-400 ml-px">{tbMatch[2]}</sup>
+                                </>
+                              ) : (
+                                myScore
+                              )}
                             </span>
                           );
                         })}
