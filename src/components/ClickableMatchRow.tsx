@@ -4,6 +4,8 @@ import type { Match } from "@/lib/padel-api";
 import { useMatchModal } from "@/components/MatchModalProvider";
 import { useLiveScore } from "@/hooks/useLiveScore";
 import { teamName } from "@/lib/player-utils";
+import StatusBadge from "@/components/StatusBadge";
+import type { NormalizedMatch, DisplayStatus } from "@/lib/normalize-match";
 
 /** Render a set score, splitting tiebreak into superscript: "6(4)" → 6⁽⁴⁾ */
 function SetScoreCell({ value, isWinner }: { value: string; isWinner: boolean }) {
@@ -23,50 +25,26 @@ function SetScoreCell({ value, isWinner }: { value: string; isWinner: boolean })
   );
 }
 
-function StatusBadge({ status, currentPoint }: { status: string; currentPoint?: string | null }) {
-  if (status === "live") {
-    return (
-      <div className="flex flex-col items-center gap-0.5">
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          Live
-        </span>
-        {currentPoint && (
-          <span className="text-[10px] font-bold text-red-500 tabular-nums">
-            {currentPoint}
-          </span>
-        )}
-      </div>
-    );
-  }
-  if (status === "finished") {
-    return <span className="text-xs font-semibold text-gray-400">FT</span>;
-  }
-  return (
-    <span className="text-xs font-semibold text-[#4ABED9]">
-      {status === "scheduled" ? "Sched." : status}
-    </span>
-  );
-}
-
 export default function ClickableMatchRow({
   match,
   tournamentName,
 }: {
-  match: Match;
+  match: Match & { displayStatus?: DisplayStatus };
   tournamentName?: string;
 }) {
   const { openMatch } = useMatchModal();
-  const isLive = match.status === "live";
+  // Use displayStatus from normalizer if available, fallback to match.status
+  const initialStatus = (match as NormalizedMatch).displayStatus || match.status;
+  const isLive = initialStatus === "live";
   const { score, currentPoint, status } = useLiveScore(
     match.id,
     isLive,
     match.score,
-    match.status
+    initialStatus
   );
 
   const displayScore = score;
-  const displayStatus = status as Match["status"];
+  const displayStatus = status as DisplayStatus;
   const t1 = teamName(match.players.team_1);
   const t2 = teamName(match.players.team_2);
 

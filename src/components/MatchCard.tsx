@@ -4,43 +4,9 @@ import type { Match } from "@/lib/padel-api";
 import { formatScore } from "@/lib/padel-api";
 import { useMatchModal } from "@/components/MatchModalProvider";
 import { useLiveScore } from "@/hooks/useLiveScore";
-
-function StatusBadge({ status, currentPoint }: { status: string; currentPoint?: string | null }) {
-  if (status === "live") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600">
-        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-        Live
-        {currentPoint && (
-          <span className="text-[10px] font-bold text-red-500 tabular-nums ml-1">
-            {currentPoint}
-          </span>
-        )}
-      </span>
-    );
-  }
-  if (status === "finished") {
-    return (
-      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-        Score
-      </span>
-    );
-  }
-  if (status === "cancelled") {
-    return (
-      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-        Cancelled
-      </span>
-    );
-  }
-  return (
-    <span className="text-xs font-semibold uppercase tracking-wider text-[#4ABED9]">
-      Scheduled
-    </span>
-  );
-}
-
 import { teamName } from "@/lib/player-utils";
+import StatusBadge from "@/components/StatusBadge";
+import type { NormalizedMatch, DisplayStatus } from "@/lib/normalize-match";
 
 /** Render a set score, splitting tiebreak into superscript: "6(4)" → 6⁴ */
 function SetScoreCell({ value, isWinner }: { value: string; isWinner: boolean }) {
@@ -64,20 +30,21 @@ export default function MatchCard({
   match,
   tournamentName,
 }: {
-  match: Match;
+  match: Match & { displayStatus?: DisplayStatus };
   tournamentName?: string;
 }) {
   const { openMatch } = useMatchModal();
-  const isLive = match.status === "live";
+  const initialStatus = (match as NormalizedMatch).displayStatus || match.status;
+  const isLive = initialStatus === "live";
   const { score, currentPoint, status } = useLiveScore(
     match.id,
     isLive,
     match.score,
-    match.status
+    initialStatus
   );
 
   const displayScore = score;
-  const displayStatus = status as Match["status"];
+  const displayStatus = status as DisplayStatus;
   const scoreStr = formatScore(displayScore);
   const team1Label = teamName(match.players.team_1);
   const team2Label = teamName(match.players.team_2);
@@ -109,7 +76,7 @@ export default function MatchCard({
           </span>
         </div>
         <div className="shrink-0">
-          <StatusBadge status={displayStatus} currentPoint={isLive ? currentPoint : null} />
+          <StatusBadge status={displayStatus} currentPoint={isLive ? currentPoint : null} variant="compact" />
         </div>
       </div>
 

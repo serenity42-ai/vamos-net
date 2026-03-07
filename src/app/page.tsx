@@ -11,15 +11,15 @@ import {
   getSeasonTournaments,
   getTournamentMatches,
   getMatches,
-  getMatchLive,
   getLiveMatches,
-  liveDataToScore,
   countryFlag,
   levelLabel,
   type Player,
   type Match,
   type Tournament,
+  type LiveMatchData,
 } from "@/lib/padel-api";
+import { normalizeMatches, buildContext } from "@/lib/normalize-match";
 
 async function fetchHomeData() {
   const [menRes, womenRes, tournamentsRes] = await Promise.allSettled([
@@ -77,38 +77,10 @@ async function fetchHomeData() {
     (a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime()
   );
 
-  // Enrich live matches with real-time scores from /live endpoint
-  try {
-    const liveRes = await getLiveMatches().catch(() => ({ data: [] as any[] }));
-    if (liveRes.data.length > 0) {
-      const liveScoreMap = new Map<number, { team_1: string; team_2: string }[]>();
-      for (const liveMatch of liveRes.data) {
-        const matchId = parseInt(
-          liveMatch.connections?.match?.split("/").pop() || String(liveMatch.id)
-        );
-        liveScoreMap.set(matchId, liveDataToScore(liveMatch));
-      }
-      const now = Date.now();
-      matches = matches.map((m) => {
-        const ls = liveScoreMap.get(m.id);
-        if (ls && ls.length > 0) return { ...m, score: ls, status: "live" as typeof m.status };
-        // If match has scores but status is "scheduled", it's clearly playing or done
-        if (m.status === "scheduled" && m.score && m.score.length > 0) {
-          return { ...m, status: (m.winner ? "finished" : "live") as typeof m.status };
-        }
-        // Downgrade stale "live" matches with no score data
-        if (m.status === "live" && (!m.score || m.score.length === 0)) {
-          const playedAt = new Date(m.played_at).getTime();
-          if (playedAt && now - playedAt > 4 * 60 * 60 * 1000) {
-            return { ...m, status: "finished" as typeof m.status };
-          }
-        }
-        return m;
-      });
-    }
-  } catch {
-    // Live score enrichment failed — continue with base match data
-  }
+  // Normalize all matches through single pipeline (merges live scores, derives status)
+  const liveRes = await getLiveMatches().catch(() => ({ data: [] as LiveMatchData[] }));
+  const ctx = buildContext(liveRes.data);
+  const normalized = normalizeMatches(matches, ctx);
 
   // Build tournament name map from connections
   const tournamentNameMap = new Map<number, string>();
@@ -116,7 +88,7 @@ async function fetchHomeData() {
     tournamentNameMap.set(t.id, t.name);
   }
 
-  return { men, women, matches, tournaments, tournamentNameMap };
+  return { men, women, matches: normalized, tournaments, tournamentNameMap };
 }
 
 function formatDateRange(start: string, end: string): string {
@@ -148,10 +120,10 @@ export default async function Home() {
   const topMen = filterAnomalies(men).slice(0, 5);
 
   const recentMatches = matches
-    .filter((m) => m.status === "finished" && m.players.team_1.length > 0 && m.players.team_2.length > 0)
+    .filter((m) => m.displayStatus === "finished" && m.players.team_1.length > 0 && m.players.team_2.length > 0)
     .slice(0, 6);
 
-  const liveMatches = matches.filter((m) => m.status === "live");
+  const liveMatches = matches.filter((m) => m.displayStatus === "live");
 
   // Only show recent finished matches if they're from the last 3 days
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);

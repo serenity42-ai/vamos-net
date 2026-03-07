@@ -2,15 +2,13 @@ import Link from "next/link";
 import ClickableMatchRow from "@/components/ClickableMatchRow";
 import {
   getSeasonTournaments,
-  getTournamentMatches,
   getMatches,
   getLiveMatches,
-  liveDataToScore,
-  formatScore,
   type Match,
   type Tournament,
   type LiveMatchData,
 } from "@/lib/padel-api";
+import { normalizeMatches, buildContext, type NormalizedMatch } from "@/lib/normalize-match";
 
 export const metadata = {
   title: "Live Scores | VAMOS",
@@ -35,49 +33,9 @@ async function fetchScoresData(date: string) {
     getLiveMatches().catch(() => ({ data: [] as LiveMatchData[] })),
   ]);
 
-  // Build a map of live match scores from the /live endpoint
-  const liveScoreMap = new Map<number, Match["score"]>();
-  for (const liveMatch of liveRes.data) {
-    liveScoreMap.set(
-      // Extract match ID from connections.match (e.g. "/api/matches/7250")
-      parseInt(liveMatch.connections?.match?.split("/").pop() || String(liveMatch.id)),
-      liveDataToScore(liveMatch)
-    );
-  }
-
-  // Merge live scores into matches + fix stale "live" status
-  const now = Date.now();
-  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-  const isPastDate = date < today;
-
-  const allMatches = matchesRes.data
-    .map((match) => {
-      const liveScore = liveScoreMap.get(match.id);
-      if (liveScore && liveScore.length > 0) {
-        return { ...match, score: liveScore, status: "live" as Match["status"] };
-      }
-      // If match has scores but status is "scheduled", it's clearly playing or done
-      if (match.status === "scheduled" && match.score && match.score.length > 0) {
-        return { ...match, status: (match.winner ? "finished" : "live") as Match["status"] };
-      }
-      // If match says "live" but has no score and played_at is >4 hours ago,
-      // it's likely a stale status from PadelAPI — downgrade to "finished"
-      if (match.status === "live" && (!match.score || match.score.length === 0)) {
-        const playedAt = new Date(match.played_at).getTime();
-        if (playedAt && now - playedAt > 4 * 60 * 60 * 1000) {
-          return { ...match, status: "finished" as Match["status"] };
-        }
-      }
-      return match;
-    })
-    // Hide scheduled matches with no scores on past dates — these are
-    // future matches that PadelAPI pre-created with yesterday's date
-    .filter((match) => {
-      if (isPastDate && match.status === "scheduled" && (!match.score || match.score.length === 0)) {
-        return false;
-      }
-      return true;
-    });
+  // Normalize all matches through single pipeline
+  const ctx = buildContext(liveRes.data, date);
+  const allMatches = normalizeMatches(matchesRes.data, ctx);
 
   return { allMatches, tournaments };
 }
@@ -87,104 +45,6 @@ function getTournamentForMatch(match: Match, tournaments: Tournament[]): Tournam
   if (!tournamentPath) return undefined;
   const id = parseInt(tournamentPath.split("/").pop() || "0");
   return tournaments.find((t) => t.id === id);
-}
-
-const SURNAME_PREFIXES = new Set(["di", "de", "da", "do", "del", "van", "von", "le", "la", "el", "al"]);
-
-function displaySurname(fullName: string): string {
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length <= 2) return parts[parts.length - 1];
-  const surname = parts[1];
-  if (SURNAME_PREFIXES.has(surname.toLowerCase()) && parts.length > 2) {
-    return `${surname} ${parts[2]}`;
-  }
-  return surname;
-}
-
-function teamName(players: Match["players"]["team_1"]): string {
-  if (!players || players.length === 0) return "TBD";
-  return players.map((p) => displaySurname(p.name)).join(" / ");
-}
-
-function StatusBadge({ status }: { status: Match["status"] }) {
-  if (status === "live") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600">
-        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-        Live
-      </span>
-    );
-  }
-  if (status === "finished") {
-    return <span className="text-xs font-semibold text-gray-400">FT</span>;
-  }
-  return (
-    <span className="text-xs font-semibold text-[#4ABED9]">
-      {status === "scheduled" ? "Sched." : status}
-    </span>
-  );
-}
-
-function MatchRow({ match, tournamentName }: { match: Match; tournamentName?: string }) {
-  const score = match.score;
-  const t1 = teamName(match.players.team_1);
-  const t2 = teamName(match.players.team_2);
-
-  return (
-    <div
-      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer ${
-        match.status === "live" ? "bg-red-50/30" : ""
-      }`}
-      data-match={JSON.stringify(match)}
-      data-tournament-name={tournamentName}
-    >
-      {/* Status */}
-      <div className="w-12 sm:w-14 shrink-0 text-center">
-        <StatusBadge status={match.status} />
-      </div>
-
-      {/* Teams and Scores */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2 mb-0.5">
-          <span className={`text-sm font-semibold truncate ${match.winner === "team_1" ? "text-[#0F1F2E]" : match.winner === "team_2" ? "text-gray-400" : "text-[#0F1F2E]"}`}>
-            {t1}
-          </span>
-          {score && score.length > 0 && (
-            <div className="flex gap-1.5 sm:gap-2 shrink-0">
-              {score.map((s, i) => (
-                <span key={i} className={`text-sm font-bold tabular-nums w-4 text-center ${parseInt(s.team_1) > parseInt(s.team_2) ? "text-[#0F1F2E]" : "text-gray-400"}`}>
-                  {s.team_1}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className={`text-sm font-semibold truncate ${match.winner === "team_2" ? "text-[#0F1F2E]" : match.winner === "team_1" ? "text-gray-400" : "text-[#0F1F2E]"}`}>
-            {t2}
-          </span>
-          {score && score.length > 0 && (
-            <div className="flex gap-1.5 sm:gap-2 shrink-0">
-              {score.map((s, i) => (
-                <span key={i} className={`text-sm font-bold tabular-nums w-4 text-center ${parseInt(s.team_2) > parseInt(s.team_1) ? "text-[#0F1F2E]" : "text-gray-400"}`}>
-                  {s.team_2}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Category badge */}
-      <div className="shrink-0">
-        <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-          match.category === "women" ? "bg-pink-50 text-pink-600" : "bg-blue-50 text-blue-600"
-        }`}>
-          {match.category === "women" ? "W" : "M"}
-        </span>
-      </div>
-    </div>
-  );
 }
 
 export default async function ScoresPage({
@@ -202,12 +62,11 @@ export default async function ScoresPage({
 
   const { allMatches, tournaments } = await fetchScoresData(selectedDate);
 
-  // Filter out byes/cancelled, and optionally by category
-  let filtered = allMatches.filter(
+  // Filter by category
+  let filtered: NormalizedMatch[] = allMatches.filter(
     (m) =>
-      m.status !== "bye" &&
-      m.status !== "cancelled" &&
-      (m.players.team_1.length > 0 || m.players.team_2.length > 0 || (m.status === "finished" && m.score && m.score.length > 0))
+      m.displayStatus !== "cancelled" &&
+      (m.players.team_1.length > 0 || m.players.team_2.length > 0 || (m.displayStatus === "finished" && m.score && m.score.length > 0))
   );
 
   if (categoryFilter === "men" || categoryFilter === "women") {
@@ -218,10 +77,10 @@ export default async function ScoresPage({
   type TournamentGroup = {
     tournament: Tournament | undefined;
     tournamentId: number;
-    rounds: { roundName: string; round: number; matches: Match[] }[];
+    rounds: { roundName: string; round: number; matches: NormalizedMatch[] }[];
   };
 
-  const groupMap = new Map<number, { tournament: Tournament | undefined; matchesByRound: Map<string, { round: number; matches: Match[] }> }>();
+  const groupMap = new Map<number, { tournament: Tournament | undefined; matchesByRound: Map<string, { round: number; matches: NormalizedMatch[] }> }>();
 
   for (const match of filtered) {
     const tournament = getTournamentForMatch(match, tournaments);
@@ -239,12 +98,12 @@ export default async function ScoresPage({
   }
 
   // Sort matches within each round: live first, then scheduled, then finished
-  const statusOrder: Record<string, number> = { live: 0, scheduled: 1, finished: 2, cancelled: 3 };
+  const statusOrder: Record<string, number> = { live: 0, scheduled: 1, finished: 2, cancelled: 3, walkover: 3, unknown: 4 };
   groupMap.forEach((g) => {
     g.matchesByRound.forEach((roundData) => {
       roundData.matches.sort((a, b) => {
-        const aOrder = statusOrder[a.status] ?? 2;
-        const bOrder = statusOrder[b.status] ?? 2;
+        const aOrder = statusOrder[a.displayStatus] ?? 4;
+        const bOrder = statusOrder[b.displayStatus] ?? 4;
         return aOrder - bOrder;
       });
     });
@@ -258,7 +117,7 @@ export default async function ScoresPage({
       .sort((a, b) => a.round - b.round),
   }));
 
-  // Sort: live tournaments first, then by status
+  // Sort: live tournaments first
   tournamentGroups.sort((a, b) => {
     const aLive = a.tournament?.status === "live" ? 0 : 1;
     const bLive = b.tournament?.status === "live" ? 0 : 1;

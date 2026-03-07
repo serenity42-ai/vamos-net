@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { Match, Player, MatchPlayer } from "@/lib/padel-api";
+import { displaySurname } from "@/lib/player-utils";
 
 interface MatchModalProps {
   match: Match;
@@ -239,14 +240,7 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                         }`}
                       >
                         {players.length > 0
-                          ? players.map((p) => {
-                              const parts = p.name.trim().split(/\s+/);
-                              if (parts.length <= 2) return parts[parts.length - 1];
-                              const surname = parts[1];
-                              const prefixes = ["di","de","da","do","del","van","von","le","la","el","al"];
-                              if (prefixes.includes(surname.toLowerCase()) && parts.length > 2) return `${surname} ${parts[2]}`;
-                              return surname;
-                            }).join(" / ")
+                          ? players.map((p) => displaySurname(p.name)).join(" / ")
                           : "TBD"}
                       </p>
                       <div className="flex items-center gap-1 mt-1 flex-wrap">
