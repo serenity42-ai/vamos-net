@@ -66,7 +66,8 @@ export default async function ScoresPage({
   let filtered: NormalizedMatch[] = allMatches.filter(
     (m) =>
       m.displayStatus !== "cancelled" &&
-      (m.players.team_1.length > 0 || m.players.team_2.length > 0 || (m.displayStatus === "finished" && m.score && m.score.length > 0))
+      // Show if: has at least one team, or is scheduled (TBD vs TBD for future matches), or finished with scores
+      (m.players.team_1.length > 0 || m.players.team_2.length > 0 || m.displayStatus === "scheduled" || (m.displayStatus === "finished" && m.score && m.score.length > 0))
   );
 
   if (categoryFilter === "men" || categoryFilter === "women") {
@@ -182,32 +183,34 @@ export default async function ScoresPage({
       </div>
 
       {/* Date Navigation */}
-      <div className="flex items-center justify-center gap-4 mb-5 bg-gray-50 rounded-lg py-2.5 px-4">
-        <Link
-          href={buildUrl({ date: prevDateStr, category: categoryFilter, tournament: tournamentFilter })}
-          className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors"
-        >
-          &lt; {formatDateDisplay(prevDateStr)}
-        </Link>
-        <div className="flex items-center gap-2">
+      <div className="mb-5">
+        <div className="flex items-center justify-between bg-gray-50 rounded-lg py-2.5 px-4">
+          <Link
+            href={buildUrl({ date: prevDateStr, category: categoryFilter, tournament: tournamentFilter })}
+            className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors"
+          >
+            &larr; {formatDateDisplay(prevDateStr)}
+          </Link>
           <span className="text-sm font-bold text-[#0F1F2E] px-3 py-1 bg-white rounded shadow-sm">
             {formatDateDisplay(selectedDate)}
           </span>
-          {!isToday && (
+          <Link
+            href={buildUrl({ date: nextDateStr, category: categoryFilter, tournament: tournamentFilter })}
+            className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors"
+          >
+            {formatDateDisplay(nextDateStr)} &rarr;
+          </Link>
+        </div>
+        {!isToday && (
+          <div className="flex justify-center mt-2">
             <Link
               href={buildUrl({ category: categoryFilter, tournament: tournamentFilter })}
-              className="text-xs font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors"
+              className="text-xs font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors px-3 py-1 bg-[#4ABED9]/10 rounded-full"
             >
-              Today
+              ← Back to Today
             </Link>
-          )}
-        </div>
-        <Link
-          href={buildUrl({ date: nextDateStr, category: categoryFilter, tournament: tournamentFilter })}
-          className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors"
-        >
-          {formatDateDisplay(nextDateStr)} &gt;
-        </Link>
+          </div>
+        )}
       </div>
 
       {/* Men/Women Tab Filter */}
