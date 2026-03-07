@@ -91,7 +91,11 @@ async function fetchHomeData() {
       const now = Date.now();
       matches = matches.map((m) => {
         const ls = liveScoreMap.get(m.id);
-        if (ls && ls.length > 0) return { ...m, score: ls };
+        if (ls && ls.length > 0) return { ...m, score: ls, status: "live" as typeof m.status };
+        // If match has scores but status is "scheduled", it's clearly playing or done
+        if (m.status === "scheduled" && m.score && m.score.length > 0) {
+          return { ...m, status: (m.winner ? "finished" : "live") as typeof m.status };
+        }
         // Downgrade stale "live" matches with no score data
         if (m.status === "live" && (!m.score || m.score.length === 0)) {
           const playedAt = new Date(m.played_at).getTime();

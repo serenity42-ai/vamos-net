@@ -54,7 +54,11 @@ async function fetchScoresData(date: string) {
     .map((match) => {
       const liveScore = liveScoreMap.get(match.id);
       if (liveScore && liveScore.length > 0) {
-        return { ...match, score: liveScore };
+        return { ...match, score: liveScore, status: "live" as Match["status"] };
+      }
+      // If match has scores but status is "scheduled", it's clearly playing or done
+      if (match.status === "scheduled" && match.score && match.score.length > 0) {
+        return { ...match, status: (match.winner ? "finished" : "live") as Match["status"] };
       }
       // If match says "live" but has no score and played_at is >4 hours ago,
       // it's likely a stale status from PadelAPI — downgrade to "finished"
