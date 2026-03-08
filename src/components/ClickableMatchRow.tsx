@@ -109,8 +109,13 @@ export default function ClickableMatchRow({
         </div>
       </div>
 
-      {/* Category badge */}
-      <div className="shrink-0">
+      {/* Schedule time + Category badge */}
+      <div className="shrink-0 flex flex-col items-end gap-0.5">
+        {displayStatus === "scheduled" && match.schedule_label && (
+          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+            {match.schedule_label}
+          </span>
+        )}
         <span
           className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
             match.category === "women"

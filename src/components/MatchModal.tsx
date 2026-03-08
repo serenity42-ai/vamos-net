@@ -316,7 +316,11 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
             {match.category}
           </span>
           <span className="text-gray-200 text-xs">·</span>
-          <span className="text-xs text-gray-500">{formatDate(match.played_at)}</span>
+          {match.schedule_label ? (
+            <span className="text-xs font-medium text-[#4ABED9]">{match.schedule_label}</span>
+          ) : (
+            <span className="text-xs text-gray-500">{formatDate(match.played_at)}</span>
+          )}
           {match.duration && (
             <>
               <span className="text-gray-200 text-xs">·</span>

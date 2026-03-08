@@ -31,5 +31,10 @@ Report to: ferran@padelapi.org
 **Issue:** Same "1 null" bug from match #2 above. Score field shows `1 null` on PadelAPI's own dashboard (padelapi.org/explore/resources/match-games/7287). Live endpoint returns set_score: "0-0" for completed sets.
 **Note:** This was supposed to be fixed per Ferran's email on March 5. Still happening next day on a CENTER COURT quarterfinal.
 
+## 6. Tiebreak score format inconsistency — /live vs /matches
+**Date:** 2026-03-07
+**Match:** Coello/Tapia vs Yanguas/Stupaczuk (Gijón P2, Semi, Men, Match 7289)
+**Issue:** `/matches` endpoint returns tiebreak as `"6(5)"` (parenthesized) but `/live` and `/matches/{id}/live` return `"65"` (concatenated). `set_score: "7-65"` instead of `"7-6(5)"`. We added client-side normalization but the formats should be consistent.
+
 ---
 *Batch these up and send to Ferran when we have a few more, or at end of tournament week.*

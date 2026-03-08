@@ -141,7 +141,11 @@ export default function MatchCard({
         {/* Schedule / court for scheduled */}
         {displayStatus === "scheduled" && (
           <div className="flex items-center gap-2 pt-1 border-t border-gray-50">
-            <span className="text-xs text-gray-500">{match.played_at}</span>
+            {match.schedule_label ? (
+              <span className="text-xs font-medium text-[#4ABED9]">{match.schedule_label}</span>
+            ) : (
+              <span className="text-xs text-gray-500">{match.played_at}</span>
+            )}
             {match.court && (
               <>
                 <span className="text-xs text-gray-300">|</span>
