@@ -104,4 +104,17 @@
 - Match modal → player links
 
 ---
+
+## Autoresearch Experiments (Karpathy Pattern)
+*Added: 2026-03-10 | Start: 2026-03-11*
+
+Autonomous agent loop: modify → test → measure → keep/discard → repeat overnight.
+
+- [ ] **Vamos SEO headline optimizer** — Loop agent over existing article titles + metas, score by SEO metrics (keyword density, CTR prediction, readability), keep winners. Start with our 18 existing articles.
+- [ ] **Polymarket strategy backtester** — Agent tweaks entry/exit parameters, backtests against historical Polymarket data, ranks strategies by simulated P&L.
+
+Pattern: `agent + sandbox + one metric + autonomous loop = 100 experiments overnight`
+Ref: github.com/karpathy/autoresearch
+
+---
 *Backlog is alive. Check off items as completed. Last verified against live site: 2026-03-04 23:30.*

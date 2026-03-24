@@ -38,6 +38,22 @@ export interface RankedPlayer {
 
 export const articles: Article[] = [
   {
+    slug: "cancun-p2-2026-recap",
+    title: "Cancún Crowns Its Kings and Queens — But Not Without a Fight",
+    excerpt:
+      "The Golden Boys survive a three-set final, Chingalán fall to underdogs, and Triay-Brea make it two in a row in the most unpredictable week of Premier Padel this season.",
+    category: "Tour News",
+    author: "Vamos Editorial",
+    date: "2026-03-24",
+    imageUrl: "/images/news/cancun-p2-champions-2026.jpg",
+    body: `<p>The Cancún P2 closed out on Sunday night after the most unpredictable week of Premier Padel this season. Weather delays, outdoor court chaos, and a bracket that tore up the script from round one — Mexico gave the tour everything it could handle, and two finals to match.</p>
+<p>Arturo Coello and Agustín Tapia took the men's title, beating Juan Lebrón and Leo Augsburger 5-7, 6-3, 7-5 in just over two hours. The Golden Boys had to come from a set down to do it. El Lobo was vintage in the opener, threading chiquitas and millimetric lobs that had Coello scrambling all set. Augsburger — who won his first Premier Padel title alongside Di Nenno at the Madrid P1 last September — brought the firepower that got them the first set on a tiebreak, and for a moment it felt like the script had flipped. But Mozart found his range in the second set, shelving his usual flair for a defensive role that smothered everything Lebrón threw at him. The decider was a knife fight. When a second tiebreak looked inevitable, a Tapia drop volley that died on the line and a couple of costly net errors from the challengers settled it. Lebrón and Augsburger walked away without the trophy but having made one thing clear: this pair is here to stay.</p>
+<p>The road to the final was where the real chaos lived. Chingalán — the second seeds who arrived in Mexico on a tear — were knocked out in the quarterfinals by Sanyo Gutiérrez and Gonzalo Alfonso, 7-5, 6-4. It was an upset that blew the draw wide open and denied the tour the Golden Boys–Chingalán final everyone had expected. Just days before the loss, Fede Chingotto had spoken at a press conference about the sport needing fresh faces. "When this circuit was created, the goal was to bring out new contenders," he said. "I think padel needs that." Mexico obliged, though perhaps not the way he had in mind.</p>
+<p>Equally remarkable was the run of Tolito Aguirre and Alejandro Arroyo, a pair nobody had circled in the draw, who fought their way to the semifinals — coming back from a set down against Navarro and Guerrero in the round of 16, then taking out Stupaczuk and Yanguas in straight sets in the quarters, before eventually falling to the Golden Boys. Collado and Hernández caused an early stir too, eliminating Di Nenno and Momo González in a three-and-a-half-hour round of 32 marathon that went to two tiebreaks. Even Coello and Tapia had their own scare: Lijo and Arce took them to a third-set tiebreak in the round of 16 before the number ones scraped through.</p>
+<p>On the women's side, Gemma Triay and Delfina Brea made it two consecutive titles following Gijón. They beat Paula Josemaría and Bea González 7-6(4), 6-1 in a final that was tight for a set and completely one-sided after that. Triay was the difference — hunting every short ball and utterly locked in during the tiebreak when it could have gone either way. Perlamita hung in through a strong first set but couldn't keep the intensity up, and the second was a procession. The Nerone effect is real: since Sebastián Nerone took over coaching duties, Triay and Brea look like the pair that dominated 2023–24, but with an extra gear.</p>
+<p>The tour barely has time to breathe. The Miami P1 starts this week — a step up in category, deeper draw, bigger points. After Cancún proved that nobody is safe on any given week, Miami will tell us whether the upsets were a Mexican anomaly or the new normal.</p>`,
+  },
+  {
     slug: "coello-tapia-win-riyadh-p1-2026",
     title: "Coello and Tapia Open 2026 Season With Riyadh P1 Title",
     excerpt:
