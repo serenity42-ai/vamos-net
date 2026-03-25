@@ -95,15 +95,24 @@ function normalizeApiStatus(status: string): DisplayStatus {
     case "finished":
       return "finished";
     case "scheduled":
+    case "not_started":
+    case "upcoming":
+    case "pending":
+    case "pre_match":
       return "scheduled";
     case "cancelled":
+    case "canceled":
       return "cancelled";
     case "walkover":
     case "wo":
       return "walkover";
+    case "retired":
+    case "retirement":
+      return "finished";
     case "bye":
       return "scheduled"; // byes get hidden via visibility
     default:
+      console.warn(`[normalize-match] Unknown API status: "${status}"`);
       return "unknown";
   }
 }
