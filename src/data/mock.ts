@@ -54,6 +54,24 @@ export const articles: Article[] = [
 <p>We think it's a bit of both. And that's not a bad place to start.</p>`,
   },
   {
+    slug: "uk-padel-growth-2026",
+    title: "From 68 Courts to 1,000. How Padel Took Over Britain in Six Years.",
+    excerpt:
+      "400,000 players, £6 million in LTA investment, and a court count that grew 17x since 2019. The numbers behind Britain's padel explosion.",
+    category: "Business",
+    author: "Vamos Editorial",
+    date: "2026-03-25",
+    imageUrl: "/images/news/padel-big-money-2026.jpg",
+    body: `<p>In 2019, Great Britain had 68 padel courts. By July 2025, that number hit 1,000. A sport that most Brits hadn't heard of six years ago now has 400,000 annual players, £6 million in governing body investment, and a court-building pipeline that shows no sign of slowing down.</p>
+<iframe src="/images/news/uk-padel-dashboard.html" style="width:100%;height:520px;border:none;border-radius:12px;margin:1.5rem 0;" loading="lazy"></iframe>
+<p>The acceleration is visible at every level. The LTA, which took governance of padel in 2019, has invested £4.5 million directly into 80 courts across 42 venues — roughly 10% of all courts nationwide. Adult awareness of the sport nearly doubled from 23% in 2023 to 43% now, according to Sport England's Active Lives Survey. And the participation numbers are moving even faster: 51,000 adults in England play padel at least twice a month, more than double the figure from the previous year.</p>
+<p>David Lloyd Clubs, the UK's largest padel operator, tells the growth story in a single stat. Monthly padel participation across its venues jumped from 3,300 players in April 2023 to 18,100 by April 2025 — a five-fold increase in two years. Game4Padel, the country's biggest pay-and-play operator, ended 2025 with 26 UK venues and plans to build 50 new courts in 2026. The Padel Club sits third in the market and expanding rapidly. Between them, these three operators are reshaping Britain's racket sports landscape.</p>
+<p>What's driving it isn't hard to understand. Padel is easier to pick up than tennis, more social than squash, and fits the group fitness culture that dominates British leisure spending. A typical session costs £8–10 per person (£30/hour for a court, split four ways), making it cheaper than most gym classes and more fun than most treadmills. London courts average £48/hour at peak times, but in cities like Bristol and Edinburgh, off-peak rates start at £15–16/hour — accessible enough to attract casual players who would never book a tennis court.</p>
+<p>The shift toward indoor facilities is accelerating the build-out. Leisure DB research from late 2025 found that indoor courts are becoming the UK's default padel format — critical in a country where outdoor sports are weather-dependent for eight months of the year. This removes the single biggest barrier to year-round play and makes the business case for new venues significantly stronger.</p>
+<p>Industry analysts project the UK could support 7,000 to 8,000 courts within the next decade, which would put Britain roughly where Spain was five years ago. The LTA targets 400,000 active players by 2026 — a number they've essentially hit a year early. The question now isn't whether padel will grow in Britain, but how fast the infrastructure can keep up with demand.</p>
+<p>For anyone watching from a business perspective, the trajectory looks familiar. Padel in the UK is following the same adoption curve that the sport drew in Spain in the 2010s and in Sweden and Italy in the early 2020s. The difference is that Britain's curve is steeper — backed by institutional investment from the LTA, private capital from operators like Game4Padel and David Lloyd, and a Premier Padel tour that's actively targeting English-speaking markets. When the London Major eventually arrives — and it will — the audience will already be there.</p>`,
+  },
+  {
     slug: "padel-big-money-2026",
     title: "Rolex, NBA Owners, and $15 Million Rounds. Padel Isn't Small Anymore.",
     excerpt:
