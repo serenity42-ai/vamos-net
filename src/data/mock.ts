@@ -38,6 +38,23 @@ export interface RankedPlayer {
 
 export const articles: Article[] = [
   {
+    slug: "miami-p1-2026-preview",
+    title: "All Eyes on Miami P1 as Premier Padel Returns to Florida",
+    excerpt:
+      "Bigger draw, bigger stakes, and unfinished business from Cancún. Here's everything you need to know about the Miami P1.",
+    category: "Tour News",
+    author: "Vamos Editorial",
+    date: "2026-03-25",
+    imageUrl: "/images/news/miami-p1-2026-preview.jpg",
+    body: `<p>The Premier Padel tour barely had time to leave Mexico before landing in Florida. The Miami P1, padel's biggest event on American soil, is underway at the Miami Beach Convention Center through March 29 — a step up from Cancún's P2 category, with a larger draw (40 men's pairs, 28 women's), nearly double the prize money (€479,068), and more ranking points on the line. After a week of upsets in the Caribbean heat, the question is whether the top pairs can reassert control or whether the chaos follows them north.</p>
+<p>The men's draw has handed us the storyline everyone wanted: Arturo Coello and Agustín Tapia are in the same half as Juan Lebrón and Leo Augsburger. Just days after their three-set final in Cancún, the Golden Boys and El Lobo's new partnership could collide again before the final — this time in the semis. Their rivalry is fast becoming the defining thread of the 2026 season. Augsburger showed in Cancún that he can push Coello and Tapia to the limit, and the American crowd will get the rematch if both pairs survive the early rounds.</p>
+<p>On the other side, Chingalán arrive with something to prove. Their quarterfinal exit in Cancún — at the hands of Sanyo Gutiérrez and Gonzalo Alfonso — was a genuine shock for a pair that had started the year 9-1. They're the defending Miami champions from 2025 and second seeds here. Fede Chingotto's pre-Cancún comments about the sport needing new faces took on an ironic edge after the loss, and both he and Galán will be determined to respond. Stupaczuk and Yanguas sit third in the seedings in Chingalán's half, setting up a potential semifinal between two pairs that both underperformed in Mexico.</p>
+<p>One of the week's most interesting subplots is the return of Pablo Cardona, seeded 9th alongside Javi Leal. Cardona has been out for months with injury, and his comeback adds another variable to a draw that already feels wide open. Meanwhile, Aguirre and Arroyo — the revelation of Cancún who fought through to the semis from nowhere — are seeded 14th here. If their Mexico run was more than a flash, Miami is where they prove it.</p>
+<p>The women's draw is more straightforward on paper but no less compelling. Gemma Triay and Delfina Brea come in as top seeds with two consecutive titles — Gijón and Cancún — and the Nerone-coached pair look more dominant now than at any point since mid-2024. Paula Josemaría and Bea González are second seeds in the opposite half, giving them a more open route to the final, but they'll need to find an answer for Triay after being taken apart 6-1 in the second set of the Cancún final. Ari Sánchez and Andrea Ustero could be the pair to watch for an upset — they share Perlamita's half and have the power game to cause problems on indoor courts.</p>
+<p>Miami matters beyond the draw. This is padel's second year at the Convention Center, and the event is part of a deliberate push to build a US audience. Fernando Belasteguín, the sport's all-time greatest player, is behind the event, and the pressure to deliver a spectacle in front of an American crowd that's still learning the sport means every match carries extra weight. Last year's inaugural edition helped put padel on the map in South Florida. This year needs to take it further.</p>
+<p>The finals are set for Sunday, March 29 — 4pm local time for the women, followed by the men. After what Cancún delivered, nobody's making predictions. That feels about right.</p>`,
+  },
+  {
     slug: "cancun-p2-2026-recap",
     title: "Cancún Crowns Its Kings and Queens — But Not Without a Fight",
     excerpt:
