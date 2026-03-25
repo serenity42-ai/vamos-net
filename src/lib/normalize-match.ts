@@ -93,6 +93,7 @@ function normalizeApiStatus(status: string): DisplayStatus {
     case "live":
       return "live";
     case "finished":
+    case "ended":
       return "finished";
     case "scheduled":
     case "not_started":
