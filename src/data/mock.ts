@@ -38,6 +38,28 @@ export interface RankedPlayer {
 
 export const articles: Article[] = [
   {
+    slug: "padel-big-money-2026",
+    title: "Rolex, NBA Owners, and $15 Million Rounds. Padel Isn't Small Anymore.",
+    excerpt:
+      "The Pro Padel League just raised $15M from an NBA governor. Rolex and On signed padel's world number one. The sport's commercial boom is accelerating — here's the full picture.",
+    category: "Business",
+    author: "Vamos Editorial",
+    date: "2026-03-25",
+    imageUrl: "/images/news/padel-big-money-2026.jpg",
+    body: `<p>The Pro Padel League just raised $15 million. The Series A round, announced yesterday and led by Charlotte Hornets co-chairman Rick Schnall, values the North American league at roughly ten times its $10 million seed from a year ago. An NBA governor, betting eight figures on a sport most Americans still can't explain to their friends.</p>
+<p>It's the kind of headline that would have been absurd in 2022. It isn't anymore. And PPL's fundraise is just the latest in a string of moves that, taken together, paint a picture of a sport crossing from niche to mainstream at a pace nobody quite predicted.</p>
+<p>Three years ago, the world's best padel players were earning less than a mid-table tennis pro. Today, Rolex is signing them.</p>
+<p>In January 2026, Arturo Coello — the 21-year-old world number one — signed with On, the Swiss sportswear brand that built its reputation on running shoes and Roger Federer. A week later, Rolex added Coello to its athlete roster, making him the first padel player in the watchmaker's history to carry the crown. Two deals in eight days, both from brands that hadn't touched padel twelve months earlier.</p>
+<p>These aren't charitable gestures. On is co-developing padel-specific footwear with Coello, working from its Swiss labs with input from the sport's top player. Rolex, a brand that chooses its athletes with surgical precision — Federer, Tiger Woods, Carlos Alcaraz — doesn't write sponsorship cheques on a whim. When Rolex enters a sport, it signals that the audience and the commercial opportunity have reached a threshold worth their brand equity.</p>
+<p>At the tour level, the numbers tell the same story. Qatar Airways is title sponsor of the Premier Padel tour. Red Bull TV holds the global broadcast deal, pushing the sport into 130 countries. Tour sponsors now include Wilson, Bullpadel, Playtomic, Betsson, and NTT Data — a mix of endemic padel brands and multinational corporates that would have been unthinkable three years ago. The 2026 season spans 26 tournaments across 18 countries, with total prize money that dwarfs anything the sport has seen before.</p>
+<p>The player economics reflect the acceleration. Coello and Tapia each earned €492,375 in prize money alone in 2024, winning 14 titles across 21 tournaments. Their career earnings already exceed €1.17 million each — and prize money has more than doubled since 2022. Add sponsorship income, appearance fees, and exhibition payments, and the top tier of men's padel is approaching the kind of earning power that tennis players outside the top 30 can only dream of.</p>
+<p>The women's side is growing too, though unevenly. Gemma Triay and Delfina Brea dominate both the rankings and the commercial opportunities, with Triay in particular attracting brand interest beyond endemic padel sponsors. But the gap between the top women's pairs and the rest of the field remains wider than on the men's side, both in earnings and visibility.</p>
+<p>Underneath the headline deals, the market data supports the optimism. The Global Padel Report estimates the sport's total market value has tripled from €2 billion in 2022 to €6 billion in 2026, powered by a base of over 35 million players worldwide. Padel clubs grew 22 percent globally in 2024, with the sharpest expansion in Southern Europe. The US market is still in its infancy — Playtomic's report projects "real acceleration" in American padel for 2027 — but events like the Miami P1 and PPL's expansion are laying the groundwork.</p>
+<p>The equipment segment alone was worth €550 million in 2022 and is growing as traditional tennis brands (Wilson, Head, Babolat) compete with padel-native manufacturers (Bullpadel, Nox) for court share. Connected rackets and performance analytics are the next frontier, with brands investing in R&D that would have seemed absurd for a sport most Americans hadn't heard of five years ago.</p>
+<p>Not everything is moving smoothly. Prize money, while growing, still lags far behind tennis, and the gap between what the top four pairs earn and everyone else is stark. Player associations have pushed for better revenue sharing, and the rapid pace of pair changes — driven partly by the financial incentive to partner with higher-ranked players for better seedings — has raised questions about the sport's competitive stability.</p>
+<p>But the trajectory is clear. When Swiss watchmakers, NBA governors, and global airlines are all moving in the same direction, they're not chasing a fad. Padel's commercial moment isn't somewhere on the horizon. It arrived, and the numbers are only getting bigger.</p>`,
+  },
+  {
     slug: "augsburger-galan-feud-explained",
     title: "The Augsburger–Galán Feud, Explained",
     excerpt:
