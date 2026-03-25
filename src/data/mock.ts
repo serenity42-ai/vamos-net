@@ -38,6 +38,27 @@ export interface RankedPlayer {
 
 export const articles: Article[] = [
   {
+    slug: "augsburger-galan-feud-explained",
+    title: "The Augsburger–Galán Feud, Explained",
+    excerpt:
+      "A dismissed rival, a messy breakup, and an ex-partner caught in the middle. How a press conference quote became the biggest off-court story of the 2026 season.",
+    category: "Tour News",
+    author: "Vamos Editorial",
+    date: "2026-03-25",
+    imageUrl: "/images/news/augsburger-galan-feud-2026.jpg",
+    body: `<p>It started with a question from a journalist and ended up as the most talked-about moment off the court this season.</p>
+<p>During the Gijón P2 two weeks ago, reporter Joaquín Serna asked Leo Augsburger about Alejandro Galán. The young Argentine didn't soften it. "I'm not a fan of Galán, I don't watch him much and he's not a big deal," he said. Then, for contrast, he praised Agustín Tapia — his close friend and the man he faces across the net in almost every final — calling him someone born with talent to be at the top, a great person, very family-oriented. The implication was clear enough.</p>
+<p>The comments spread through padel social media within hours. By the time Galán reached the Gijón semifinal, he knew exactly what had been said. His response, at the post-match press conference, was measured but pointed. "He's a great guy, but I feel he's had a very bad environment for a long time," Galán said — a comment widely understood as a dig at Lebrón's influence on his young partner. Coming from the man who spent four years alongside El Lobo and knows exactly how that dynamic works, the words carried weight.</p>
+<p>He went further: "Leo is an ambitious and competitive player who likes confrontation. I think it's a tactic of his to motivate himself. That's all there is to it."</p>
+<p>To understand why this matters, you need the backstory.</p>
+<p>Galán spent four years alongside Juan Lebrón in what became the most successful partnership in modern padel — 33 titles, including the Rome Major and the 2024 Riyadh P1, where they beat Coello and Tapia in what many consider the greatest match ever played. But behind the trophies, the relationship deteriorated. Galán later admitted in interviews that he should have ended the partnership earlier, staying only because the results kept coming. When the split finally happened in early 2024, Galán said it was a relief. Lebrón has said the timing wasn't his choice.</p>
+<p>Now Lebrón plays with Augsburger. The kid from Posadas who just publicly dismissed his ex-partner's biggest rival. The same ex-partner who shared a court with Galán for years and knows every weakness.</p>
+<p>That's the subtext every time these pairs meet. When the Golden Boys faced Lebrón and Augsburger in the Cancún final last week, Galán and Chingotto had already been knocked out in the quarters. But Miami has put Coello/Tapia and Lebrón/Augsburger in the same half again, meaning a potential semifinal collision — while Chingalán sit in the other half as defending champions. If the draw plays out to seedings, the final could be Galán against his ex-partner's new teammate, the one who called him "nothing special" on camera.</p>
+<p>Augsburger, to his credit, isn't apologising. At 22, he's already shown he can back up the talk — his Cancún final performance against the world number ones went to three sets and could easily have gone his way. He plays with the kind of fearless aggression that makes good television and uncomfortable press conferences. Whether the Galán comments are genuine disrespect or calculated psychological warfare, they've done what they were always going to do: make every future meeting between these players unmissable.</p>
+<p>Galán closed the Gijón episode with a line that was either gracious or devastating, depending on how you read it. "I'm not holding it against him. We've known each other for a long time, and I wish him all the best. He's going to be a great player — who knows, maybe years from now I'll have to call him for help." The smile said one thing. The emphasis on "years from now" said another.</p>
+<p>Padel has never had a rivalry quite like this — personal, generational, and tangled up in the sport's most famous breakup. Miami won't settle it. But it might make it louder.</p>`,
+  },
+  {
     slug: "miami-p1-2026-preview",
     title: "All Eyes on Miami P1 as Premier Padel Returns to Florida",
     excerpt:
