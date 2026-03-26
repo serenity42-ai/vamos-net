@@ -23,16 +23,27 @@ async function fetchRankings() {
     }),
   ]);
 
-  const filterAnomalies = (players: Player[]): Player[] => {
+  const filterAndSort = (players: Player[]): Player[] => {
     if (players.length < 3) return players;
+    // Filter anomalies: remove players with points < 10% of 3rd-highest
     const topPoints = players.slice(0, 10).map((p) => p.points || 0).filter((p) => p > 0).sort((a, b) => b - a);
     const threshold = topPoints.length > 2 ? topPoints[2] * 0.1 : 0;
-    return players.filter((p) => !p.points || p.points >= threshold);
+    const filtered = players.filter((p) => !p.points || p.points >= threshold);
+    // Re-sort by points descending and re-assign rankings (API ranking field is unreliable)
+    filtered.sort((a, b) => (b.points || 0) - (a.points || 0));
+    let currentRank = 1;
+    for (let i = 0; i < filtered.length; i++) {
+      if (i > 0 && (filtered[i].points || 0) < (filtered[i - 1].points || 0)) {
+        currentRank = i + 1;
+      }
+      filtered[i].ranking = currentRank;
+    }
+    return filtered;
   };
 
   return {
-    men: filterAnomalies(menRes.status === "fulfilled" ? menRes.value.data : []),
-    women: filterAnomalies(womenRes.status === "fulfilled" ? womenRes.value.data : []),
+    men: filterAndSort(menRes.status === "fulfilled" ? menRes.value.data : []),
+    women: filterAndSort(womenRes.status === "fulfilled" ? womenRes.value.data : []),
   };
 }
 

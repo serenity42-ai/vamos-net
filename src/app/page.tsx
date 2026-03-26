@@ -112,12 +112,22 @@ export default async function Home() {
     return tournamentNameMap.get(id);
   }
 
-  const filterAnomalies = (players: Player[]) => {
+  const filterAndSort = (players: Player[]) => {
     const topPoints = players.slice(0, 10).map((p) => p.points || 0).filter((p) => p > 0).sort((a, b) => b - a);
     const threshold = topPoints.length > 2 ? topPoints[2] * 0.1 : 0;
-    return players.filter((p) => !p.points || p.points >= threshold);
+    const filtered = players.filter((p) => !p.points || p.points >= threshold);
+    // Re-sort by points descending and re-assign rankings (API ranking field is unreliable)
+    filtered.sort((a, b) => (b.points || 0) - (a.points || 0));
+    let currentRank = 1;
+    for (let i = 0; i < filtered.length; i++) {
+      if (i > 0 && (filtered[i].points || 0) < (filtered[i - 1].points || 0)) {
+        currentRank = i + 1;
+      }
+      filtered[i].ranking = currentRank;
+    }
+    return filtered;
   };
-  const topMen = filterAnomalies(men).slice(0, 5);
+  const topMen = filterAndSort(men).slice(0, 5);
 
   const recentMatches = matches
     .filter((m) => m.displayStatus === "finished" && m.players.team_1.length > 0 && m.players.team_2.length > 0)
