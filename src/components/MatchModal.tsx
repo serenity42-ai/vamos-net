@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { Match, Player, MatchPlayer } from "@/lib/padel-api";
 import { displaySurname } from "@/lib/player-utils";
+import { useLiveScore } from "@/hooks/useLiveScore";
 
 interface MatchModalProps {
   match: Match;
@@ -75,17 +76,19 @@ function formatDate(dateStr: string): string {
 
 export default function MatchModal({ match, tournamentName, onClose }: MatchModalProps) {
   const [playerDetails, setPlayerDetails] = useState<Map<number, Player>>(new Map());
-  const [liveScore, setLiveScore] = useState<{ team_1: string; team_2: string }[] | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch player details + live scores
+  // Use the same live score hook as the ticker for real-time Pusher updates
+  const isLive = match.status === "live";
+  const { score: liveScore } = useLiveScore(match.id, isLive, match.score, match.status);
+
+  // Fetch player details only
   useEffect(() => {
     const allPlayers = [...match.players.team_1, ...match.players.team_2];
     const ids = allPlayers.map((p) => p.id);
 
     setLoading(true);
     setPlayerDetails(new Map());
-    setLiveScore(null);
 
     const validIds = ids.filter((id) => id && !isNaN(id));
 
@@ -102,17 +105,8 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
         )
       : Promise.resolve([]);
 
-    const fetchLive = match.status === "live" && match.id
-      ? fetch(`/api/matches/${match.id}/live`)
-          .then((r) => {
-            if (!r.ok) throw new Error("not ok");
-            return r.json();
-          })
-          .catch(() => null)
-      : Promise.resolve(null);
-
-    Promise.all([fetchPlayers, fetchLive])
-      .then(([playerResults, liveData]) => {
+    fetchPlayers
+      .then((playerResults) => {
         const map = new Map<number, Player>();
         (playerResults as PromiseSettledResult<Player | null>[]).forEach((r, i) => {
           if (r.status === "fulfilled" && r.value && !("error" in r.value)) {
@@ -120,29 +114,12 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
           }
         });
         setPlayerDetails(map);
-
-        if (liveData?.sets?.length > 0) {
-          // Normalize tiebreak scores: "65" → "6(5)"
-          const normTB = (s: string) => {
-            if (!s) return s;
-            const n = parseInt(s);
-            if (n > 9 && !s.includes("(")) return `${s[0]}(${s.slice(1)})`;
-            return s;
-          };
-          setLiveScore(
-            liveData.sets.map((s: { set_score: string }) => {
-              const [t1, t2] = (s.set_score || "0-0").split("-");
-              return { team_1: normTB(t1), team_2: normTB(t2) };
-            })
-          );
-        }
-
         setLoading(false);
       })
       .catch(() => {
         setLoading(false);
       });
-  }, [match.id, match.status]);
+  }, [match.id]);
 
   // Escape key handler
   useEffect(() => {
@@ -163,7 +140,7 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
 
   const t1 = match.players.team_1;
   const t2 = match.players.team_2;
-  const score = liveScore || match.score;
+  const score = liveScore;
 
   const teams = [
     { players: t1, isWinner: match.winner === "team_1", key: "team_1" as const },
