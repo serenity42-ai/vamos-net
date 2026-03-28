@@ -28,7 +28,18 @@ async function fetchRankings() {
     // Filter anomalies: remove players with points < 10% of 3rd-highest
     const topPoints = players.slice(0, 10).map((p) => p.points || 0).filter((p) => p > 0).sort((a, b) => b - a);
     const threshold = topPoints.length > 2 ? topPoints[2] * 0.1 : 0;
-    const filtered = players.filter((p) => !p.points || p.points >= threshold);
+    // Filter out juniors leaked into senior rankings (PadelAPI data bug)
+    const cutoffDate = new Date();
+    cutoffDate.setFullYear(cutoffDate.getFullYear() - 19);
+    const filtered = players.filter((p) => {
+      if (!p.points || p.points < threshold) return false;
+      // Exclude players under 19 — likely junior/Promises ranking leak
+      if (p.birthdate) {
+        const bd = new Date(p.birthdate);
+        if (bd > cutoffDate) return false;
+      }
+      return true;
+    });
     // Re-sort by points descending and re-assign rankings (API ranking field is unreliable)
     filtered.sort((a, b) => (b.points || 0) - (a.points || 0));
     let currentRank = 1;
