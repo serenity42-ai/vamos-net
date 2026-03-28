@@ -38,6 +38,22 @@ export interface RankedPlayer {
 
 export const articles: Article[] = [
   {
+    slug: "miami-p1-2026-semifinal-preview",
+    title: "Miami P1 Semifinal Day: Lebrón Wants Revenge, the Golden Boys Look Beatable",
+    excerpt:
+      "The quarterfinals delivered a 6-0 6-0 destruction, three set points saved, and a rivalry rematch nobody expected to be this close.",
+    category: "Tour News",
+    author: "Vamos Editorial",
+    date: "2026-03-28",
+    imageUrl: "/images/news/miami-p1-2026-semis.jpg",
+    body: `<p>The Miami P1 quarterfinals answered some questions and raised bigger ones. Chingalán look unstoppable, the Golden Boys look vulnerable, and Juan Lebrón is playing the best padel of his 2026 season at exactly the right moment.</p>
+<p>Arturo Coello and Agustín Tapia survived against Paquito Navarro and Fran Guerrero, but "survived" is the right word. The Pacos had three set points at 5-4 in the opener and couldn't convert any of them. Coello and Tapia ran away from there — 7-5 — and then needed a tiebreak in the second to close it out 7-6. The number ones have that ability to flip a switch in the moments that matter, and they did it again in Miami, but they're making more unforced errors than usual and the body language between points hasn't been as relaxed as we're used to seeing. Something is a fraction off. Whether that fraction matters against Lebrón today is the question.</p>
+<p>Because El Lobo looks sharp. Lebrón and Augsburger took apart Jon Sanz and Coki Nieto 6-3, 7-5 — a pair that had beaten them in Gijón earlier this season. Lebrón controlled the tempo from the back of the court, dictating rallies with a patience he doesn't always show, while Augsburger was rock-solid in defence and increasingly dangerous when stepping into the net. The best Juan Lebrón is back. After Cancún's three-set final loss, they know they can push the Golden Boys to the edge. The difference is that in Cancún, Coello and Tapia found a way. In Miami, with both pairs in the same half, the rematch comes one round earlier — in the semis, not the final.</p>
+<p>The other half of the draw barely required discussion. Ale Galán and Fede Chingotto dismantled Javi Barahona and Javi García 6-1, 6-0. The defending Miami champions from 2025 needed just over 40 minutes. After their quarterfinal exit in Cancún — the upset that blew the Mexican bracket apart — Chingalán have responded with something close to fury. Not a single break point conceded against a pair that simply couldn't find a way into the rallies. They face Stupaczuk and Yanguas in the semis, a pair that had to work hard against Di Nenno and Momo González in the quarters. If the draw holds, the final everyone expected in Cancún but never got — Golden Boys versus Chingalán — could finally happen on Sunday.</p>
+<p>On the women's side, the top four seeds all came through, restoring order after Cancún's upsets. Gemma Triay and Delfina Brea were brutal: 6-0, 6-3 against Icardo and Jensen, barely breaking a sweat on their way to a potential third consecutive title. They face Fernández and Araújo, who beat Ortega and Calvo 6-2, 6-1 in the day's other convincing performance. In the bottom half, Josemaría and González held off a competitive Guinart and Virseda 6-3, 7-5 and meet Sánchez and Ustero, who won 6-3, 6-3 against Caldera and Goenaga.</p>
+<p>Today's semifinal schedule: women first, men after. The match everyone's watching is Coello/Tapia versus Lebrón/Augsburger — a rematch of the Cancún P2 final that went to 5-7, 6-3, 7-5. This time it's not for a title, but it might be for something more: proof of which pair controls the 2026 narrative. Lebrón and Augsburger arrive with momentum and nothing to lose. The Golden Boys arrive with the ranking and a growing list of tight escapes. Something has to give. Semifinals live on Red Bull TV from 5pm CET.</p>`,
+  },
+  {
     slug: "opinion-ppl-15-million-padel",
     title: "Vamos Opinion: What PPL's $15 Million Actually Means for Padel",
     excerpt:
