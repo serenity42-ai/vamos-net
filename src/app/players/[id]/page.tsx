@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 
 async function fetchPlayerData(id: number) {
   try {
-    const [player, matchesRes, tournamentsRes] = await Promise.all([
+    const [player, matchesRes, s5Res, s6Res] = await Promise.all([
       getPlayer(id),
       getPlayerMatches(id, {
         per_page: "10",
@@ -34,11 +34,12 @@ async function fetchPlayerData(id: number) {
         order_by: "desc",
       }),
       getSeasonTournaments(5, { per_page: "50" }).catch(() => ({ data: [] as Tournament[] })),
+      getSeasonTournaments(6, { per_page: "50" }).catch(() => ({ data: [] as Tournament[] })),
     ]);
 
-    // Build tournament name map
+    // Build tournament name map from both seasons
     const tournamentNameMap = new Map<number, string>();
-    for (const t of tournamentsRes.data) {
+    for (const t of [...s5Res.data, ...s6Res.data]) {
       tournamentNameMap.set(t.id, t.name);
     }
 

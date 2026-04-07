@@ -22,7 +22,7 @@ import {
 import { normalizeMatches, buildContext } from "@/lib/normalize-match";
 
 async function fetchHomeData() {
-  const [menRes, womenRes, tournamentsRes] = await Promise.allSettled([
+  const [menRes, womenRes, s5Res, s6Res] = await Promise.allSettled([
     getPlayers({
       category: "men",
       sort_by: "ranking",
@@ -35,12 +35,16 @@ async function fetchHomeData() {
       order_by: "asc",
       per_page: "10",
     }),
-    getSeasonTournaments(5, { per_page: "10" }),
+    getSeasonTournaments(5, { per_page: "50" }),
+    getSeasonTournaments(6, { per_page: "50" }),
   ]);
 
   const men: Player[] = menRes.status === "fulfilled" ? menRes.value.data : [];
   const women: Player[] = womenRes.status === "fulfilled" ? womenRes.value.data : [];
-  const tournaments: Tournament[] = tournamentsRes.status === "fulfilled" ? tournamentsRes.value.data : [];
+  const tournaments: Tournament[] = [
+    ...(s5Res.status === "fulfilled" ? s5Res.value.data : []),
+    ...(s6Res.status === "fulfilled" ? s6Res.value.data : []),
+  ];
 
   const relevantTournaments = tournaments.filter(
     (t) => t.status === "live" || t.status === "finished"

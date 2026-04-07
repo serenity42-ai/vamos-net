@@ -16,10 +16,14 @@ export const metadata = {
 };
 
 async function fetchScoresData(date: string) {
-  const tournamentsRes = await getSeasonTournaments(5, { per_page: "30" }).catch(
-    () => ({ data: [] as Tournament[] })
-  );
-  const tournaments = tournamentsRes.data;
+  const [s5Res, s6Res] = await Promise.allSettled([
+    getSeasonTournaments(5, { per_page: "50" }),
+    getSeasonTournaments(6, { per_page: "50" }),
+  ]);
+  const tournaments = [
+    ...(s5Res.status === "fulfilled" ? s5Res.value.data : []),
+    ...(s6Res.status === "fulfilled" ? s6Res.value.data : []),
+  ];
 
   // Fetch matches for the specific date + live match data in parallel
   const [matchesRes, liveRes] = await Promise.all([
@@ -125,18 +129,8 @@ export default async function ScoresPage({
     return aLive - bLive;
   });
 
-  // Filter by tournament if specified
-  if (tournamentFilter && tournamentFilter !== "all") {
-    const tId = parseInt(tournamentFilter);
-    filtered = filtered.filter((m) => {
-      const tournamentPath = m.connections?.tournament;
-      if (!tournamentPath) return false;
-      const id = parseInt(tournamentPath.split("/").pop() || "0");
-      return id === tId;
-    });
-  }
-
   // Only show tournaments that actually have matches on the selected date
+  // Compute BEFORE tournament filter so filter buttons don't shrink when one is selected
   const tournamentIdsWithMatches = new Set<number>();
   for (const match of filtered) {
     const tournamentPath = match.connections?.tournament;
@@ -148,6 +142,17 @@ export default async function ScoresPage({
   const activeTournaments = tournaments
     .filter((t) => tournamentIdsWithMatches.has(t.id))
     .slice(0, 10);
+
+  // Filter displayed groups by tournament if specified
+  if (tournamentFilter && tournamentFilter !== "all") {
+    const tId = parseInt(tournamentFilter);
+    const idx = tournamentGroups.findIndex((g) => g.tournamentId === tId);
+    if (idx !== -1) {
+      tournamentGroups.splice(0, tournamentGroups.length, tournamentGroups[idx]);
+    } else {
+      tournamentGroups.splice(0);
+    }
+  }
 
   // Date navigation
   const formatDateDisplay = (dateStr: string) => {

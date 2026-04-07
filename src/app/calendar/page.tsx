@@ -7,7 +7,7 @@ import {
 
 export const metadata = {
   title: "Calendar | VAMOS",
-  description: "2026 Premier Padel tournament calendar — dates, locations, and levels for every event this season.",
+  description: "2026 padel tournament calendar — Premier Padel and Cupra FIP Tour dates, locations, and levels for every event this season.",
 };
 
 function getMonthName(month: number): string {
@@ -66,12 +66,14 @@ function statusDot(status: string) {
 }
 
 export default async function CalendarPage() {
-  const tournamentsRes = await getSeasonTournaments(5, { per_page: "50" }).catch(
-    () => ({ data: [] as Tournament[] })
-  );
-  const tournaments = tournamentsRes.data.sort(
-    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-  );
+  const [s5Res, s6Res] = await Promise.allSettled([
+    getSeasonTournaments(5, { per_page: "50" }),
+    getSeasonTournaments(6, { per_page: "50" }),
+  ]);
+  const tournaments = [
+    ...(s5Res.status === "fulfilled" ? s5Res.value.data : []),
+    ...(s6Res.status === "fulfilled" ? s6Res.value.data : []),
+  ].sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
 
   // Determine which months to show (from first tournament to last)
   const today = new Date();
@@ -107,7 +109,7 @@ export default async function CalendarPage() {
           2026 Calendar
         </h1>
         <p className="text-sm text-gray-500">
-          Premier Padel tournament schedule
+          Premier Padel &amp; Cupra FIP Tour schedule
         </p>
       </div>
 
