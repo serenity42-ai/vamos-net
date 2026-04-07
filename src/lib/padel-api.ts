@@ -415,6 +415,10 @@ export function levelLabel(level: string): string {
     p2: "Premier 2",
     major: "Major",
     finals: "Finals",
+    fip_platinum: "FIP Platinum",
+    fip_gold: "FIP Gold",
+    fip_silver: "FIP Silver",
+    fip_bronze: "FIP Bronze",
     fip_rise: "FIP Rise",
     fip_star: "FIP Star",
   };
