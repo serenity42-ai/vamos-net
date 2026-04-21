@@ -7,30 +7,27 @@ export const metadata = {
 };
 
 function StatusBadge({ status }: { status: Tournament["status"] }) {
+  const base = {
+    fontFamily: "var(--mono)",
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: "0.14em",
+    textTransform: "uppercase" as const,
+  };
   if (status === "live") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600">
-        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-        Live
+      <span
+        className="badge-live"
+        style={{ padding: "2px 6px" }}
+      >
+        LIVE
       </span>
     );
   }
   if (status === "finished") {
-    return <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Finished</span>;
+    return <span style={{ ...base, color: "var(--mute)" }}>Finished</span>;
   }
-  return <span className="text-xs font-semibold uppercase tracking-wider text-[#3CB371]">Upcoming</span>;
-}
-
-function levelColor(level: string): string {
-  const colors: Record<string, string> = {
-    finals: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    major: "bg-purple-50 text-purple-700 border-purple-200",
-    p1: "bg-blue-50 text-blue-700 border-blue-200",
-    p2: "bg-cyan-50 text-cyan-700 border-cyan-200",
-    fip_rise: "bg-green-50 text-green-700 border-green-200",
-    fip_star: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  };
-  return colors[level] || "bg-gray-50 text-gray-700 border-gray-200";
+  return <span style={{ ...base, color: "var(--red)" }}>■ Upcoming</span>;
 }
 
 function formatDateRange(start: string, end: string): string {
@@ -38,9 +35,9 @@ function formatDateRange(start: string, end: string): string {
   const e = new Date(end);
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   if (s.getMonth() === e.getMonth()) {
-    return `${months[s.getMonth()]} ${s.getDate()}-${e.getDate()}, ${s.getFullYear()}`;
+    return `${s.getDate()}–${e.getDate()} ${months[s.getMonth()]} ${s.getFullYear()}`;
   }
-  return `${months[s.getMonth()]} ${s.getDate()} - ${months[e.getMonth()]} ${e.getDate()}, ${s.getFullYear()}`;
+  return `${s.getDate()} ${months[s.getMonth()]} – ${e.getDate()} ${months[e.getMonth()]} ${s.getFullYear()}`;
 }
 
 function groupByMonth(tournaments: Tournament[]): Record<string, Tournament[]> {
@@ -83,94 +80,182 @@ export default async function TournamentsPage({
     (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
   );
 
-  // Get unique levels for filter
   const levels = Array.from(new Set(allTournaments.map((t) => t.level))).sort();
-
-  // Apply level filter
   const filteredTournaments = levelFilter
     ? allTournaments.filter((t) => t.level === levelFilter)
     : allTournaments;
-
   const grouped = groupByMonth(filteredTournaments);
 
+  const chipStyle = (active: boolean) => ({
+    padding: "8px 14px",
+    fontFamily: "var(--mono)" as const,
+    fontSize: 11,
+    fontWeight: 700 as const,
+    letterSpacing: "0.14em",
+    textTransform: "uppercase" as const,
+    border: `1px solid ${active ? "var(--red)" : "var(--ink)"}`,
+    background: active ? "var(--red)" : "transparent",
+    color: active ? "#fff" : "var(--ink)",
+    whiteSpace: "nowrap" as const,
+  });
+
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1F2E] mb-2">Tournaments</h1>
-        <p className="text-sm sm:text-base text-gray-500">
-          Premier Padel 2026 season -- {filteredTournaments.length} tournaments
-        </p>
-      </div>
-
-      {/* Level filter */}
-      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto mb-6 sm:mb-8">
-        <div className="flex gap-2 pb-2 sm:pb-0 sm:flex-wrap">
-          <Link
-            href="/tournaments"
-            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
-              !levelFilter ? "bg-[#4ABED9] text-white" : "bg-gray-100 text-[#0F1F2E] hover:bg-gray-200"
-            }`}
-          >
-            All Levels
-          </Link>
-          {levels.map((level) => (
-            <Link
-              key={level}
-              href={`/tournaments?level=${level}`}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
-                levelFilter === level ? "bg-[#4ABED9] text-white" : "bg-gray-100 text-[#0F1F2E] hover:bg-gray-200"
-              }`}
-            >
-              {levelLabel(level)}
-            </Link>
-          ))}
+    <main style={{ background: "var(--paper)" }}>
+      {/* Header band */}
+      <section style={{ borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>■ 2026 Season</div>
+          <h1 className="display" style={{ marginBottom: 12 }}>
+            The <span className="italic-serif">calendar</span>.
+          </h1>
+          <p style={{ fontFamily: "var(--sans)", fontSize: 16, color: "var(--ink-soft)" }}>
+            Premier Padel 2026 · {filteredTournaments.length} tournaments
+          </p>
         </div>
-      </div>
+      </section>
 
-      {Object.entries(grouped).length === 0 && (
-        <div className="text-center py-12 text-gray-400">No tournaments found.</div>
-      )}
-
-      {Object.entries(grouped).map(([month, tournaments]) => (
-        <section key={month} className="mb-8">
-          <h2 className="text-lg font-bold text-[#0F1F2E] mb-4 sticky top-16 bg-white py-2 z-10 border-b border-gray-100">
-            {month}
-          </h2>
-          <div className="space-y-3">
-            {tournaments.map((t) => (
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Level filter */}
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto mb-10">
+          <div className="flex gap-2">
+            <span
+              className="eyebrow shrink-0 flex items-center"
+              style={{ color: "var(--mute)", paddingRight: 14, borderRight: "1px solid var(--ink)" }}
+            >
+              ■ Level
+            </span>
+            <Link href="/tournaments" style={{ ...chipStyle(!levelFilter), flexShrink: 0 }}>
+              All
+            </Link>
+            {levels.map((level) => (
               <Link
-                key={t.id}
-                href={`/tournaments/${t.id}`}
-                className={`block rounded-xl border p-4 sm:p-5 transition-shadow hover:shadow-md ${
-                  t.status === "live"
-                    ? "border-red-200 bg-red-50/30"
-                    : t.status === "finished"
-                    ? "border-gray-100 bg-gray-50/50"
-                    : "border-gray-100 bg-white"
-                }`}
+                key={level}
+                href={`/tournaments?level=${level}`}
+                style={{ ...chipStyle(levelFilter === level), flexShrink: 0 }}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${levelColor(t.level)}`}>
-                        {levelLabel(t.level)}
-                      </span>
-                      <StatusBadge status={t.status} />
-                    </div>
-                    <h3 className="text-sm sm:text-base font-bold text-[#0F1F2E] mb-1">{t.name}</h3>
-                    <p className="text-xs sm:text-sm text-gray-500">{t.location}, {t.country}</p>
-                  </div>
-                  <div className="sm:text-right shrink-0">
-                    <div className="text-sm font-semibold text-[#0F1F2E]">
-                      {formatDateRange(t.start_date, t.end_date)}
-                    </div>
-                  </div>
-                </div>
+                {levelLabel(level)}
               </Link>
             ))}
           </div>
-        </section>
-      ))}
+        </div>
+
+        {Object.entries(grouped).length === 0 && (
+          <div
+            style={{
+              padding: "60px 24px",
+              border: "1px solid var(--ink)",
+              textAlign: "center",
+              fontFamily: "var(--mono)",
+              fontSize: 12,
+              letterSpacing: "0.08em",
+              color: "var(--mute)",
+            }}
+          >
+            No tournaments found.
+          </div>
+        )}
+
+        {Object.entries(grouped).map(([month, tournaments]) => (
+          <section key={month} className="mb-12">
+            <div
+              className="flex items-baseline gap-4 mb-4"
+              style={{ paddingBottom: 12, borderBottom: "1px solid var(--ink)" }}
+            >
+              <h2
+                style={{
+                  fontFamily: "var(--sans)",
+                  fontWeight: 900,
+                  fontStyle: "italic",
+                  fontSize: 32,
+                  letterSpacing: "-0.03em",
+                  color: "var(--ink)",
+                }}
+              >
+                {month}
+              </h2>
+              <span
+                style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "var(--mute)",
+                }}
+              >
+                · {tournaments.length} {tournaments.length === 1 ? "event" : "events"}
+              </span>
+            </div>
+            <div style={{ border: "1px solid var(--ink)" }}>
+              {tournaments.map((t, i) => (
+                <Link
+                  key={t.id}
+                  href={`/tournaments/${t.id}`}
+                  className={`block transition-colors ${t.status !== "live" ? "hover:bg-[var(--paper-2)]" : ""}`}
+                  style={{
+                    padding: "20px 24px",
+                    borderBottom: i < tournaments.length - 1 ? "1px solid rgba(0,0,0,0.1)" : "none",
+                    background:
+                      t.status === "live" ? "rgba(193,68,58,0.05)" : "transparent",
+                  }}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <span
+                          style={{
+                            fontFamily: "var(--mono)",
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: "0.16em",
+                            textTransform: "uppercase",
+                            padding: "3px 8px",
+                            border: "1px solid var(--ink)",
+                            color: "var(--ink)",
+                          }}
+                        >
+                          {levelLabel(t.level)}
+                        </span>
+                        <StatusBadge status={t.status} />
+                      </div>
+                      <h3
+                        style={{
+                          fontFamily: "var(--sans)",
+                          fontSize: 18,
+                          fontWeight: 800,
+                          letterSpacing: "-0.02em",
+                          color: "var(--ink)",
+                          marginBottom: 4,
+                        }}
+                      >
+                        {t.name}
+                      </h3>
+                      <p
+                        style={{
+                          fontFamily: "var(--mono)",
+                          fontSize: 11,
+                          letterSpacing: "0.1em",
+                          color: "var(--mute)",
+                        }}
+                      >
+                        {t.location}, {t.country}
+                      </p>
+                    </div>
+                    <div className="sm:text-right shrink-0">
+                      <div
+                        className="score-mono"
+                        style={{ fontSize: 14, color: "var(--ink)" }}
+                      >
+                        {formatDateRange(t.start_date, t.end_date)}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </main>
   );
 }

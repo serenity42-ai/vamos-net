@@ -6,13 +6,25 @@ import { fetchArticleBySlug, fetchArticles } from "@/lib/ghost";
 // Revalidate every 60 seconds so article edits in Ghost appear quickly.
 export const revalidate = 60;
 
+/** Pretty date: '2026-03-30T00:00:00.000Z' -> '30 Mar 2026'. */
+function formatEditorialDate(input: string): string {
+  if (!input) return "";
+  const d = new Date(input);
+  if (Number.isNaN(d.getTime())) return input;
+  const day = d.getUTCDate();
+  const month = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+  const year = d.getUTCFullYear();
+  return `${day} ${month} ${year}`;
+}
+
 function ShareButton({ label, href }: { label: string; href: string }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#0F1F2E] transition-colors whitespace-nowrap"
+      className="btn"
+      style={{ fontSize: 10, letterSpacing: "0.14em" }}
     >
       {label}
     </a>
@@ -55,87 +67,137 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <main style={{ background: "var(--paper)" }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
 
-      <div className="lg:grid lg:grid-cols-3 lg:gap-12">
-        {/* Main content */}
-        <article className="lg:col-span-2">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-400 mb-4 sm:mb-6">
-            <Link href="/news" className="hover:text-[#4ABED9] transition-colors">
-              News
-            </Link>
-            <span>/</span>
-            <span className="text-[#4ABED9] truncate">{article.category}</span>
-          </nav>
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-12">
+          {/* Main content */}
+          <article className="lg:col-span-8">
+            {/* Breadcrumb */}
+            <nav
+              className="flex items-center gap-2 mb-6"
+              style={{
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+              }}
+            >
+              <Link href="/news" className="transition-colors" style={{ color: "var(--mute)" }}>
+                News
+              </Link>
+              <span style={{ color: "var(--mute)" }}>/</span>
+              <span style={{ color: "var(--red)" }}>■ {article.category}</span>
+            </nav>
 
-          <span className="inline-block text-xs font-semibold uppercase tracking-wider text-[#4ABED9] mb-3">
-            {article.category}
-          </span>
+            <h1
+              className="display break-words"
+              style={{ marginBottom: 20 }}
+            >
+              {article.title}
+            </h1>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#0F1F2E] leading-tight mb-4 break-words">
-            {article.title}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-500 mb-6">
-            <span>By {article.author}</span>
-            <span className="text-gray-300">|</span>
-            <span>{article.date}</span>
-          </div>
-
-          <div className="aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl mb-6 sm:mb-8 overflow-hidden relative">
-            {article.imageUrl ? (
-              <img
-                src={article.imageUrl}
-                alt={article.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-4xl font-black text-gray-300">VAMOS</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 mb-6 sm:mb-8">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mr-1">Share:</span>
-            <ShareButton label="X / Twitter" href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(article.title)}`} />
-            <ShareButton label="Facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} />
-            <ShareButton label="LinkedIn" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`} />
-            <ShareButton label="Copy Link" href="#" />
-          </div>
-
-          <div
-            className="prose prose-base sm:prose-lg max-w-none text-gray-700 break-words
-              prose-p:mb-5 prose-p:leading-relaxed
-              prose-headings:text-[#0F1F2E] prose-headings:font-bold prose-headings:mt-8 prose-headings:mb-4
-              prose-a:text-[#4ABED9] prose-a:no-underline hover:prose-a:underline
-              prose-img:rounded-xl
-              prose-strong:text-[#0F1F2E]"
-            dangerouslySetInnerHTML={{ __html: article.body }}
-          />
-        </article>
-
-        {/* Sidebar */}
-        <aside className="lg:col-span-1 mt-10 lg:mt-0">
-          <div className="sticky top-24">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">
-              Related Articles
-            </h3>
-            <div className="space-y-4">
-              {related.map((a) => (
-                <NewsCard key={a.slug} article={a} />
-              ))}
+            <div
+              className="flex flex-wrap items-center gap-3 mb-8"
+              style={{
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--mute)",
+              }}
+            >
+              <span>By {article.author}</span>
+              <span>·</span>
+              <span>{formatEditorialDate(article.date)}</span>
             </div>
-            {related.length === 0 && (
-              <p className="text-sm text-gray-400">No related articles found.</p>
-            )}
-          </div>
-        </aside>
+
+            <div
+              className="aspect-[16/9] mb-10 overflow-hidden relative"
+              style={{ border: "1px solid var(--ink)", background: "var(--paper-2)" }}
+            >
+              {article.imageUrl ? (
+                <img
+                  src={article.imageUrl}
+                  alt={article.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{ transform: "skewX(-6deg)" }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--sans)",
+                      fontStyle: "italic",
+                      fontWeight: 900,
+                      fontSize: 96,
+                      color: "var(--paper)",
+                      letterSpacing: "-0.045em",
+                    }}
+                  >
+                    Vamos<span style={{ color: "var(--red)" }}>!</span>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 mb-10">
+              <span
+                className="eyebrow"
+                style={{ color: "var(--mute)", marginRight: 8 }}
+              >
+                Share:
+              </span>
+              <ShareButton label="X" href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(article.title)}`} />
+              <ShareButton label="Facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} />
+              <ShareButton label="LinkedIn" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`} />
+              <ShareButton label="Copy" href="#" />
+            </div>
+
+            <div
+              className="prose prose-base sm:prose-lg max-w-none break-words
+                prose-p:mb-5 prose-p:leading-relaxed
+                prose-headings:mt-10 prose-headings:mb-4"
+              dangerouslySetInnerHTML={{ __html: article.body }}
+            />
+          </article>
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-4 mt-12 lg:mt-0">
+            <div className="sticky top-24">
+              <div
+                className="eyebrow"
+                style={{ color: "var(--red)", marginBottom: 20 }}
+              >
+                ■ Related
+              </div>
+              <div className="space-y-6">
+                {related.map((a) => (
+                  <NewsCard key={a.slug} article={a} />
+                ))}
+              </div>
+              {related.length === 0 && (
+                <p
+                  style={{
+                    fontFamily: "var(--mono)",
+                    fontSize: 11,
+                    letterSpacing: "0.1em",
+                    color: "var(--mute)",
+                  }}
+                >
+                  No related articles.
+                </p>
+              )}
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );

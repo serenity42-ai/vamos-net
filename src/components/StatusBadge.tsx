@@ -2,6 +2,8 @@
  * StatusBadge — single shared component for match status display.
  * Used by: ClickableMatchRow, MatchCard, ScoresTicker, scores/page.
  * Do NOT duplicate this. Import from here.
+ *
+ * Editorial brand: lime for LIVE (per guidelines), mono eyebrows for everything else.
  */
 
 import type { DisplayStatus } from "@/lib/normalize-match";
@@ -14,24 +16,66 @@ interface StatusBadgeProps {
   variant?: "default" | "compact";
 }
 
-export default function StatusBadge({ status, currentPoint, variant = "default" }: StatusBadgeProps) {
+const EYEBROW_BASE = {
+  fontFamily: "var(--mono)",
+  fontWeight: 700,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase" as const,
+};
+
+export default function StatusBadge({
+  status,
+  currentPoint,
+  variant = "default",
+}: StatusBadgeProps) {
   if (status === "live") {
+    // Lime LIVE badge per brand guidelines
     if (variant === "compact") {
       return (
-        <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-red-600">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-          Live
+        <span
+          style={{
+            ...EYEBROW_BASE,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            padding: "2px 6px",
+            fontSize: 9,
+            fontWeight: 800,
+            background: "var(--lime)",
+            color: "var(--ink)",
+          }}
+        >
+          ● LIVE
         </span>
       );
     }
     return (
-      <div className="flex flex-col items-center gap-0.5">
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          Live
+      <div className="flex flex-col items-end gap-1">
+        <span
+          style={{
+            ...EYEBROW_BASE,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "3px 8px",
+            fontSize: 10,
+            fontWeight: 800,
+            background: "var(--lime)",
+            color: "var(--ink)",
+          }}
+        >
+          ● LIVE
         </span>
         {currentPoint && (
-          <span className="text-[10px] font-bold text-red-500 tabular-nums">
+          <span
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              fontWeight: 800,
+              color: "var(--red)",
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
             {currentPoint}
           </span>
         )}
@@ -40,26 +84,40 @@ export default function StatusBadge({ status, currentPoint, variant = "default" 
   }
 
   if (status === "finished") {
-    return <span className="text-xs font-semibold text-gray-400">FT</span>;
+    return (
+      <span style={{ ...EYEBROW_BASE, fontSize: 10, color: "var(--mute)" }}>
+        FT
+      </span>
+    );
   }
 
   if (status === "cancelled") {
-    return <span className="text-xs font-semibold text-gray-400">Canc.</span>;
+    return (
+      <span style={{ ...EYEBROW_BASE, fontSize: 10, color: "var(--mute)" }}>
+        Canc.
+      </span>
+    );
   }
 
   if (status === "walkover") {
-    return <span className="text-xs font-semibold text-gray-400">W/O</span>;
+    return (
+      <span style={{ ...EYEBROW_BASE, fontSize: 10, color: "var(--mute)" }}>
+        W/O
+      </span>
+    );
   }
 
   if (status === "scheduled") {
     return (
-      <span className="text-xs font-semibold text-[#4ABED9]">Sched.</span>
+      <span style={{ ...EYEBROW_BASE, fontSize: 10, color: "var(--red)" }}>
+        Sched.
+      </span>
     );
   }
 
   // Unknown / fallback
   return (
-    <span className="text-xs font-semibold text-gray-400">
+    <span style={{ ...EYEBROW_BASE, fontSize: 10, color: "var(--mute)" }}>
       {status || "—"}
     </span>
   );

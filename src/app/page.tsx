@@ -171,7 +171,10 @@ export default async function Home() {
     <main>
       {/* Section 1: Live Scores Ticker */}
       {tickerMatches.length > 0 && (
-        <section className="bg-[#0F1F2E] overflow-hidden">
+        <section
+          className="overflow-hidden"
+          style={{ background: "var(--ink)", borderBottom: "1px solid var(--ink)" }}
+        >
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center">
               <div className="flex-1 overflow-x-auto scrollbar-hide">
@@ -182,15 +185,18 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Section 2: Hero — Featured Story + Sidebar */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            {/* Featured Article (2/3) */}
-            <div className="lg:col-span-2">
+      {/* Section 2: Hero — Editorial featured story + sidebar */}
+      <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* Featured article — spans 8 of 12 */}
+            <div className="lg:col-span-8">
               {featuredArticle && (
                 <Link href={`/news/${featuredArticle.slug}`} className="group block">
-                  <div className="aspect-[16/9] bg-gradient-to-br from-[#0F1F2E] to-[#1a3a52] rounded-xl overflow-hidden relative mb-4">
+                  <div
+                    className="aspect-[16/9] overflow-hidden relative mb-6"
+                    style={{ border: "1px solid var(--ink)", background: "var(--paper-2)" }}
+                  >
                     {featuredArticle.imageUrl && (
                       <img
                         src={featuredArticle.imageUrl}
@@ -199,82 +205,108 @@ export default async function Home() {
                       />
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#4ABED9]">
-                      {featuredArticle.category}
-                    </span>
-                    <span className="text-xs text-gray-400">{featuredArticle.date}</span>
+                  <div className="flex items-center gap-3 mb-4" style={{ fontFamily: "var(--mono)", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                    <span style={{ color: "var(--red)" }}>■ Cover story</span>
+                    <span style={{ color: "var(--mute)" }}>{featuredArticle.category}</span>
+                    <span style={{ color: "var(--mute)" }}>· {featuredArticle.date}</span>
                   </div>
-                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#0F1F2E] group-hover:text-[#4ABED9] transition-colors mb-2 leading-tight">
+                  <h1
+                    className="display transition-opacity group-hover:opacity-80"
+                    style={{ marginBottom: 20 }}
+                  >
                     {featuredArticle.title}
-                  </h2>
-                  <p className="text-sm sm:text-base text-gray-500 leading-relaxed line-clamp-2">
+                  </h1>
+                  <p
+                    className="line-clamp-2"
+                    style={{ fontFamily: "var(--sans)", fontSize: 17, lineHeight: 1.55, color: "var(--ink-soft)", maxWidth: 640 }}
+                  >
                     {featuredArticle.excerpt}
                   </p>
-                  <p className="text-xs text-gray-400 mt-2">{featuredArticle.author}</p>
+                  <div className="mt-4" style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--mute)" }}>
+                    By {featuredArticle.author}
+                  </div>
                 </Link>
               )}
             </div>
 
-            {/* Sidebar (1/3) */}
-            <div className="space-y-6">
-              {/* Newsletter Signup */}
-              <div className="bg-[#0F1F2E] rounded-xl p-5">
-                <h3 className="text-base font-bold text-white mb-1">The Padel Brief</h3>
-                <p className="text-xs text-gray-400 mb-4">
-                  Get the latest padel scores, rankings, and news. Join thousands of fans.
+            {/* Sidebar — spans 4 of 12 */}
+            <div className="lg:col-span-4 space-y-8">
+              {/* Newsletter signup */}
+              <div style={{ background: "var(--ink)", color: "var(--paper)", padding: 24 }}>
+                <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 8 }}>■ Newsletter</div>
+                <h3 style={{ fontFamily: "var(--sans)", fontWeight: 900, fontStyle: "italic", fontSize: 28, lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 10 }}>
+                  The Padel <span className="italic-serif">Brief</span>
+                </h3>
+                <p style={{ fontSize: 13, lineHeight: 1.5, color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
+                  Weekly. Rankings, recaps, one gear recommendation. No fluff.
                 </p>
                 <form className="space-y-2">
                   <input
                     type="email"
-                    placeholder="Your email address"
-                    className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 outline-none focus:border-[#4ABED9] text-sm"
+                    placeholder="your@email.com"
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      background: "transparent",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      color: "var(--paper)",
+                      fontFamily: "var(--mono)",
+                      fontSize: 13,
+                      outline: "none",
+                    }}
                   />
                   <button
                     type="button"
-                    className="w-full px-4 py-2.5 bg-[#4ABED9] hover:bg-[#3ba8c2] text-white font-bold rounded-lg transition-colors text-sm"
+                    className="btn btn-primary"
+                    style={{ width: "100%", justifyContent: "center" }}
                   >
-                    Subscribe
+                    Subscribe →
                   </button>
                 </form>
               </div>
 
-              {/* Top 5 Rankings Widget */}
-              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F1F2E]">
-                    Men&apos;s Top 5
-                  </h3>
-                  <Link href="/rankings" className="text-xs font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors">
-                    Full Rankings
+              {/* Top 5 Men scoreboard widget */}
+              <div style={{ border: "1px solid var(--ink)", background: "var(--paper)" }}>
+                <div
+                  className="flex items-center justify-between"
+                  style={{ padding: "12px 16px", borderBottom: "1px solid var(--ink)", background: "var(--ink)", color: "var(--paper)" }}
+                >
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                    Men’s Top 5
+                  </span>
+                  <Link
+                    href="/rankings"
+                    style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--paper)", opacity: 0.7 }}
+                  >
+                    Full →
                   </Link>
                 </div>
                 <table className="w-full">
                   <tbody>
-                    {topMen.map((p) => (
-                      <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                        <td className="py-2 px-3 text-center w-10">
-                          <span className={`text-xs font-bold ${p.ranking <= 3 ? "text-[#4ABED9]" : "text-[#0F1F2E]"}`}>
+                    {topMen.map((p, i) => (
+                      <tr key={p.id} style={{ borderBottom: i < topMen.length - 1 ? "1px solid rgba(0,0,0,0.08)" : "none" }}>
+                        <td style={{ padding: "10px 12px", width: 40, textAlign: "center" }}>
+                          <span className="score-mono" style={{ fontSize: 14, color: "var(--red)" }}>
                             {p.ranking}
                           </span>
                         </td>
-                        <td className="py-2 px-2">
+                        <td style={{ padding: "10px 8px" }}>
                           <Link href={`/players/${p.id}`} className="flex items-center gap-2 group">
                             {p.photo_url ? (
-                              <Image src={p.photo_url} alt={p.name} width={24} height={24} className="w-6 h-6 rounded-full object-cover bg-gray-100" />
+                              <Image src={p.photo_url} alt={p.name} width={24} height={24} className="w-6 h-6 rounded-full object-cover" style={{ background: "var(--paper-2)" }} />
                             ) : (
-                              <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "var(--paper-2)", fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--mute)" }}>
                                 {p.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                               </div>
                             )}
-                            <span className="text-xs font-semibold text-[#0F1F2E] group-hover:text-[#4ABED9] transition-colors truncate">
+                            <span style={{ fontFamily: "var(--sans)", fontSize: 13, fontWeight: 700, color: "var(--ink)" }} className="truncate">
                               {countryFlag(p.nationality)} {p.name}
                             </span>
                           </Link>
                         </td>
-                        <td className="py-2 px-3 text-right">
-                          <span className="text-xs font-semibold text-[#0F1F2E] tabular-nums">
-                            {p.points?.toLocaleString() ?? "-"}
+                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          <span className="score-mono" style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+                            {p.points?.toLocaleString() ?? "—"}
                           </span>
                         </td>
                       </tr>
@@ -287,16 +319,25 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Section 3: Latest News */}
-      <section className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">Latest News</h2>
-            <Link href="/news" className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors">
-              View All News
+      {/* Section 3: Latest News — editorial grid */}
+      <section style={{ background: "var(--paper-2)", borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+          <div className="flex items-baseline justify-between mb-10">
+            <div>
+              <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 8 }}>■ Section 02</div>
+              <h2 className="display" style={{ fontSize: "clamp(32px, 4.5vw, 56px)" }}>
+                The <span className="italic-serif">latest</span>.
+              </h2>
+            </div>
+            <Link
+              href="/news"
+              style={{ fontFamily: "var(--mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink)" }}
+              className="hover:text-[var(--red)] transition-colors hidden sm:inline"
+            >
+              All news →
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
             {latestNews.map((article) => (
               <NewsCard key={article.slug} article={article} />
             ))}
@@ -304,47 +345,44 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Section 4: Current/Upcoming Tournament Banner */}
+      {/* Section 4: Active tournament — ink band */}
       {activeTournament && (
-        <section className="bg-[#0F1F2E]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <section style={{ background: "var(--ink)", color: "var(--paper)" }}>
+          <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
               <div>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <div
+                  className="flex items-center gap-3 mb-4 flex-wrap"
+                  style={{ fontFamily: "var(--mono)", fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" }}
+                >
                   {activeTournament.status === "live" && (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-400">
-                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                      Live Now
-                    </span>
+                    <span className="badge-live">Live Now</span>
                   )}
                   {activeTournament.status === "pending" && (
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#3CB371]">
-                      Upcoming
-                    </span>
+                    <span style={{ color: "var(--lime)" }}>■ Upcoming</span>
                   )}
-                  <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#4ABED9]/20 text-[#4ABED9]">
-                    {levelLabel(activeTournament.level)}
-                  </span>
+                  <span style={{ color: "var(--red)" }}>{levelLabel(activeTournament.level)}</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">
+                <h2
+                  className="display"
+                  style={{ fontSize: "clamp(28px, 4.5vw, 56px)", color: "var(--paper)", marginBottom: 10 }}
+                >
                   {activeTournament.name}
                 </h2>
-                <p className="text-gray-400 text-sm">
-                  {activeTournament.location}, {activeTournament.country} | {formatDateRange(activeTournament.start_date, activeTournament.end_date)}
+                <p style={{ fontFamily: "var(--mono)", fontSize: 13, letterSpacing: "0.08em", color: "rgba(243,238,228,0.65)" }}>
+                  {activeTournament.location}, {activeTournament.country} · {formatDateRange(activeTournament.start_date, activeTournament.end_date)}
                 </p>
               </div>
-              <div className="flex gap-3 self-start">
-                <Link
-                  href={`/tournaments/${activeTournament.id}`}
-                  className="px-5 py-2.5 bg-[#4ABED9] text-white text-sm font-bold rounded-lg hover:bg-[#3ba8c2] transition-colors"
-                >
-                  View Draws
+              <div className="flex gap-3 self-start sm:self-end">
+                <Link href={`/tournaments/${activeTournament.id}`} className="btn btn-primary">
+                  View draws →
                 </Link>
                 <Link
                   href="/scores"
-                  className="px-5 py-2.5 bg-white/10 text-white text-sm font-bold rounded-lg hover:bg-white/20 transition-colors"
+                  className="btn"
+                  style={{ borderColor: "var(--paper)", color: "var(--paper)" }}
                 >
-                  View Schedule
+                  Schedule
                 </Link>
               </div>
             </div>
@@ -352,38 +390,58 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Section 5: Recent Results */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">Recent Results</h2>
-            <Link href="/scores" className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors">
-              View All Results
+      {/* Section 5: Recent results */}
+      <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+          <div className="flex items-baseline justify-between mb-10">
+            <div>
+              <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 8 }}>■ Section 03 · Scoreboard</div>
+              <h2 className="display" style={{ fontSize: "clamp(32px, 4.5vw, 56px)" }}>
+                Recent <span className="italic-serif">results</span>.
+              </h2>
+            </div>
+            <Link
+              href="/scores"
+              style={{ fontFamily: "var(--mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink)" }}
+              className="hover:text-[var(--red)] transition-colors hidden sm:inline"
+            >
+              All results →
             </Link>
           </div>
           {recentMatches.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {recentMatches.map((match) => (
                 <MatchCard key={match.id} match={match} tournamentName={getTournamentName(match)} />
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-sm">No recent results available.</p>
+            <p style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--mute)" }}>
+              No recent results available.
+            </p>
           )}
         </div>
       </section>
 
-      {/* Section 6: Business/Featured Articles */}
+      {/* Section 6: Business of Padel */}
       {businessArticles.length > 0 && (
-        <section className="bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-[#0F1F2E]">Business of Padel</h2>
-              <Link href="/business" className="text-sm font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors">
-                Explore Business of Padel
+        <section style={{ background: "var(--paper-2)", borderBottom: "1px solid var(--ink)" }}>
+          <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+            <div className="flex items-baseline justify-between mb-10">
+              <div>
+                <div className="eyebrow" style={{ color: "var(--clay)", marginBottom: 8 }}>■ Section 04</div>
+                <h2 className="display" style={{ fontSize: "clamp(32px, 4.5vw, 56px)" }}>
+                  The <span className="italic-serif">business</span> of padel.
+                </h2>
+              </div>
+              <Link
+                href="/business"
+                style={{ fontFamily: "var(--mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink)" }}
+                className="hover:text-[var(--red)] transition-colors hidden sm:inline"
+              >
+                Explore →
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
               {businessArticles.map((article) => (
                 <NewsCard key={article.slug} article={article} />
               ))}
@@ -392,29 +450,45 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Section 7: Newsletter CTA (bottom) */}
-      <section className="bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          <div className="bg-gradient-to-r from-[#4ABED9] to-[#3CB371] rounded-2xl px-6 py-10 sm:px-10 sm:py-12 text-center">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3">
-              Never Miss a Match
-            </h2>
-            <p className="text-white/80 text-sm sm:text-base mb-6 max-w-md mx-auto">
-              The Padel Brief -- scores, rankings, and news delivered to your inbox. Free.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 outline-none focus:border-white focus:ring-2 focus:ring-white/20 transition-all text-sm"
-              />
-              <button
-                type="button"
-                className="px-6 py-3 bg-[#0F1F2E] hover:bg-[#1a2f42] text-white font-bold rounded-xl transition-colors text-sm whitespace-nowrap"
+      {/* Section 7: Newsletter CTA (bottom, editorial) */}
+      <section style={{ background: "var(--ink)", color: "var(--paper)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+            <div className="lg:col-span-7">
+              <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>
+                ■ The padel brief
+              </div>
+              <h2 className="display" style={{ color: "var(--paper)" }}>
+                Never miss a <span className="italic-serif">match</span>.
+              </h2>
+              <p
+                className="mt-6"
+                style={{ fontFamily: "var(--sans)", fontSize: 17, lineHeight: 1.5, color: "rgba(243,238,228,0.7)", maxWidth: 560 }}
               >
-                Subscribe
-              </button>
-            </form>
+                Weekly. Recaps, rankings, one gear recommendation. Delivered to your inbox. Free.
+              </p>
+            </div>
+            <div className="lg:col-span-5">
+              <form className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  style={{
+                    flex: 1,
+                    padding: "12px 16px",
+                    background: "transparent",
+                    border: "1px solid rgba(243,238,228,0.3)",
+                    color: "var(--paper)",
+                    fontFamily: "var(--mono)",
+                    fontSize: 14,
+                    outline: "none",
+                  }}
+                />
+                <button type="button" className="btn btn-primary">
+                  Subscribe →
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </section>

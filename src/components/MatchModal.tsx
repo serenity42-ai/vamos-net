@@ -31,8 +31,13 @@ function PlayerAvatar({
 
   return (
     <div
-      className="rounded-full overflow-hidden bg-[#0F1F2E]/10 flex items-center justify-center shrink-0 border-2 border-white"
-      style={{ width: size, height: size }}
+      className="rounded-full overflow-hidden flex items-center justify-center shrink-0"
+      style={{
+        width: size,
+        height: size,
+        background: "var(--paper-2)",
+        border: "2px solid var(--paper)",
+      }}
     >
       {photo ? (
         <Image
@@ -43,7 +48,9 @@ function PlayerAvatar({
           className="object-cover w-full h-full"
         />
       ) : (
-        <span className="text-xs font-bold text-[#0F1F2E]/60">{initials}</span>
+        <span style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, color: "var(--mute)" }}>
+          {initials}
+        </span>
       )}
     </div>
   );
@@ -51,7 +58,19 @@ function PlayerAvatar({
 
 function NationalityBadge({ code }: { code: string }) {
   return (
-    <span className="inline-block text-[10px] font-bold uppercase bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded tracking-wider">
+    <span
+      style={{
+        display: "inline-block",
+        fontFamily: "var(--mono)",
+        fontSize: 9,
+        fontWeight: 700,
+        letterSpacing: "0.16em",
+        textTransform: "uppercase",
+        padding: "2px 6px",
+        border: "1px solid var(--ink)",
+        color: "var(--ink)",
+      }}
+    >
       {code.toUpperCase()}
     </span>
   );
@@ -60,7 +79,10 @@ function NationalityBadge({ code }: { code: string }) {
 function Spinner() {
   return (
     <div className="flex items-center justify-center py-12">
-      <div className="w-8 h-8 border-2 border-[#4ABED9] border-t-transparent rounded-full animate-spin" />
+      <div
+        className="w-8 h-8 rounded-full animate-spin"
+        style={{ border: "2px solid var(--red)", borderTopColor: "transparent" }}
+      />
     </div>
   );
 }
@@ -150,43 +172,58 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.72)" }}
+      style={{ backgroundColor: "rgba(21,18,16,0.82)" }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
+        className="w-full max-w-lg overflow-hidden"
+        style={{ background: "var(--paper)", border: "1px solid var(--ink)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#0F1F2E] px-5 py-4 flex items-start justify-between gap-3">
+        <div
+          className="flex items-start justify-between gap-3"
+          style={{ background: "var(--ink)", padding: "14px 20px", color: "var(--paper)" }}
+        >
           <div className="min-w-0">
             {tournamentName && (
-              <p className="text-[11px] font-semibold text-[#4ABED9] uppercase tracking-wider truncate mb-0.5">
-                {tournamentName}
+              <p
+                className="truncate"
+                style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "var(--red)",
+                  marginBottom: 4,
+                }}
+              >
+                ■ {tournamentName}
               </p>
             )}
-            <p className="text-white font-bold text-base leading-tight flex items-center gap-2">
+            <p
+              className="flex items-center gap-3"
+              style={{
+                fontFamily: "var(--sans)",
+                fontSize: 18,
+                fontWeight: 800,
+                letterSpacing: "-0.01em",
+                color: "var(--paper)",
+              }}
+            >
               {match.round_name}
-              {match.status === "live" && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-red-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  Live
-                </span>
-              )}
+              {match.status === "live" && <span className="badge-live">LIVE</span>}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-white/50 hover:text-white transition-colors shrink-0 mt-0.5 p-1 -mr-1"
+            style={{ color: "rgba(243,238,228,0.6)" }}
+            className="hover:text-[var(--paper)] transition-colors shrink-0 mt-0.5 p-1 -mr-1"
             aria-label="Close"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path
-                d="M14 4L4 14M4 4l10 10"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+            <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
+              <path d="M14 4L4 14M4 4l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
         </div>
@@ -215,19 +252,25 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                     {/* Names + nationalities */}
                     <div className="flex-1 min-w-0">
                       <p
-                        className={`text-sm font-bold truncate ${
-                          isWinner
-                            ? "text-[#0F1F2E]"
-                            : match.winner
-                            ? "text-gray-400"
-                            : "text-[#0F1F2E]"
-                        }`}
+                        className="truncate"
+                        style={{
+                          fontFamily: "var(--sans)",
+                          fontSize: 15,
+                          fontWeight: isWinner ? 800 : 600,
+                          letterSpacing: "-0.01em",
+                          color:
+                            isWinner
+                              ? "var(--ink)"
+                              : match.winner
+                              ? "var(--mute)"
+                              : "var(--ink)",
+                        }}
                       >
                         {players.length > 0
                           ? players.map((p) => displaySurname(p.name)).join(" / ")
                           : "TBD"}
                       </p>
-                      <div className="flex items-center gap-1 mt-1 flex-wrap">
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         {players.map((p) => {
                           const detail = playerDetails.get(p.id);
                           return detail?.nationality ? (
@@ -235,8 +278,17 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                           ) : null;
                         })}
                         {isWinner && (
-                          <span className="text-[10px] font-bold text-[#3CB371] uppercase tracking-wider ml-0.5">
-                            Won
+                          <span
+                            style={{
+                              fontFamily: "var(--mono)",
+                              fontSize: 9,
+                              fontWeight: 800,
+                              letterSpacing: "0.18em",
+                              textTransform: "uppercase",
+                              color: "var(--red)",
+                            }}
+                          >
+                            ✓ Won
                           </span>
                         )}
                       </div>
@@ -244,7 +296,7 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
 
                     {/* Set scores */}
                     {score && score.length > 0 && (
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-3 shrink-0">
                         {score.map((s, i) => {
                           const myScore = key === "team_1" ? s.team_1 : s.team_2;
                           const oppScore = key === "team_1" ? s.team_2 : s.team_1;
@@ -253,14 +305,21 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                           return (
                             <span
                               key={i}
-                              className={`text-xl font-black tabular-nums w-7 text-center leading-none ${
-                                wonSet ? "text-[#0F1F2E]" : "text-gray-300"
-                              }`}
+                              className="score-mono"
+                              style={{
+                                fontSize: 24,
+                                width: 24,
+                                textAlign: "center",
+                                lineHeight: 1,
+                                color: wonSet ? "var(--ink)" : "var(--mute)",
+                              }}
                             >
                               {tbMatch ? (
                                 <>
                                   {tbMatch[1]}
-                                  <sup className="text-xs text-gray-400 ml-px">{tbMatch[2]}</sup>
+                                  <sup style={{ fontSize: 10, marginLeft: 1, color: "var(--mute)" }}>
+                                    {tbMatch[2]}
+                                  </sup>
                                 </>
                               ) : (
                                 myScore
@@ -273,7 +332,7 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
                   </div>
 
                   {teamIdx === 0 && (
-                    <div className="my-4 border-t border-gray-100" />
+                    <div className="my-5" style={{ borderTop: "1px solid rgba(0,0,0,0.12)" }} />
                   )}
                 </div>
               ))}
@@ -282,32 +341,44 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center gap-2 flex-wrap">
+        <div
+          className="flex items-center gap-3 flex-wrap"
+          style={{
+            padding: "12px 20px",
+            background: "var(--paper-2)",
+            borderTop: "1px solid var(--ink)",
+            fontFamily: "var(--mono)",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+          }}
+        >
           <span
-            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-              match.category === "women"
-                ? "bg-pink-50 text-pink-600"
-                : "bg-blue-50 text-blue-600"
-            }`}
+            style={{
+              padding: "3px 7px",
+              border: `1px solid ${match.category === "women" ? "#A83362" : "var(--ink)"}`,
+              color: match.category === "women" ? "#A83362" : "var(--ink)",
+            }}
           >
             {match.category}
           </span>
-          <span className="text-gray-200 text-xs">·</span>
+          <span style={{ color: "var(--mute)" }}>·</span>
           {match.schedule_label ? (
-            <span className="text-xs font-medium text-[#4ABED9]">{match.schedule_label}</span>
+            <span style={{ color: "var(--red)" }}>{match.schedule_label}</span>
           ) : (
-            <span className="text-xs text-gray-500">{formatDate(match.played_at)}</span>
+            <span style={{ color: "var(--mute)" }}>{formatDate(match.played_at)}</span>
           )}
           {match.duration && (
             <>
-              <span className="text-gray-200 text-xs">·</span>
-              <span className="text-xs text-gray-500">{match.duration}</span>
+              <span style={{ color: "var(--mute)" }}>·</span>
+              <span style={{ color: "var(--mute)" }}>{match.duration}</span>
             </>
           )}
           {match.court && (
             <>
-              <span className="text-gray-200 text-xs">·</span>
-              <span className="text-xs text-gray-500">{match.court}</span>
+              <span style={{ color: "var(--mute)" }}>·</span>
+              <span style={{ color: "var(--mute)" }}>{match.court}</span>
             </>
           )}
         </div>

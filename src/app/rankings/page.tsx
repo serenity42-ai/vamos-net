@@ -61,13 +61,22 @@ async function fetchRankings() {
 function PlayerRow({ player }: { player: Player }) {
   const flag = countryFlag(player.nationality);
   return (
-    <tr className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-      <td className="py-3 px-3 text-center">
-        <span className={`text-sm font-bold ${player.ranking <= 3 ? "text-[#4ABED9]" : "text-[#0F1F2E]"}`}>
+    <tr
+      style={{ borderBottom: "1px solid rgba(0,0,0,0.08)" }}
+      className="transition-colors hover:bg-[var(--paper-2)]"
+    >
+      <td style={{ padding: "12px 16px", textAlign: "center", width: 56 }}>
+        <span
+          className="score-mono"
+          style={{
+            fontSize: 16,
+            color: player.ranking <= 3 ? "var(--red)" : "var(--ink)",
+          }}
+        >
           {player.ranking}
         </span>
       </td>
-      <td className="py-3 px-3">
+      <td style={{ padding: "12px 8px" }}>
         <Link href={`/players/${player.id}`} className="flex items-center gap-3 group">
           {player.photo_url ? (
             <Image
@@ -75,29 +84,58 @@ function PlayerRow({ player }: { player: Player }) {
               alt={player.name}
               width={36}
               height={36}
-              className="w-9 h-9 rounded-full object-cover bg-gray-100 shrink-0"
+              className="w-9 h-9 rounded-full object-cover shrink-0"
+              style={{ background: "var(--paper-2)" }}
             />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 shrink-0">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+              style={{
+                background: "var(--paper-2)",
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                fontWeight: 700,
+                color: "var(--mute)",
+              }}
+            >
               {player.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
             </div>
           )}
           <div className="min-w-0">
-            <span className="text-sm font-semibold text-[#0F1F2E] group-hover:text-[#4ABED9] transition-colors block truncate">
+            <span
+              className="block truncate transition-colors"
+              style={{
+                fontFamily: "var(--sans)",
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: "-0.01em",
+                color: "var(--ink)",
+              }}
+            >
               {player.name}
             </span>
-            <span className="text-xs text-gray-400 sm:hidden">
+            <span
+              className="sm:hidden"
+              style={{
+                fontFamily: "var(--mono)",
+                fontSize: 10,
+                letterSpacing: "0.08em",
+                color: "var(--mute)",
+              }}
+            >
               {flag} {player.nationality}
             </span>
           </div>
         </Link>
       </td>
-      <td className="py-3 px-3 hidden sm:table-cell">
-        <span className="text-sm text-gray-500">{flag} {player.nationality}</span>
+      <td style={{ padding: "12px 8px" }} className="hidden sm:table-cell">
+        <span style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.1em", color: "var(--mute)" }}>
+          {flag} {player.nationality}
+        </span>
       </td>
-      <td className="py-3 px-3 text-right">
-        <span className="text-sm font-semibold text-[#0F1F2E] tabular-nums">
-          {player.points?.toLocaleString() ?? "-"}
+      <td style={{ padding: "12px 16px", textAlign: "right" }}>
+        <span className="score-mono" style={{ fontSize: 14, color: "var(--ink)" }}>
+          {player.points?.toLocaleString() ?? "—"}
         </span>
       </td>
     </tr>
@@ -147,101 +185,137 @@ export default async function RankingsPage({
     })),
   };
 
+  const chipStyle = (active: boolean) => ({
+    padding: "8px 20px",
+    fontFamily: "var(--mono)" as const,
+    fontSize: 11,
+    fontWeight: 700 as const,
+    letterSpacing: "0.14em",
+    textTransform: "uppercase" as const,
+    border: `1px solid ${active ? "var(--red)" : "var(--ink)"}`,
+    background: active ? "var(--red)" : "transparent",
+    color: active ? "#fff" : "var(--ink)",
+  });
+
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <main style={{ background: "var(--paper)" }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(rankingsSchema) }}
       />
 
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1F2E] mb-2">Rankings</h1>
-        <p className="text-sm sm:text-base text-gray-500">Official Premier Padel rankings</p>
-      </div>
+      {/* Header band */}
+      <section style={{ borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>
+            ■ Official Premier Padel
+          </div>
+          <h1 className="display" style={{ marginBottom: 12 }}>
+            The <span className="italic-serif">rankings</span>.
+          </h1>
+          <p style={{ fontFamily: "var(--sans)", fontSize: 16, color: "var(--ink-soft)" }}>
+            Live rankings, points, and player profiles across the tour.
+          </p>
+        </div>
+      </section>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-5 bg-gray-100 rounded-lg p-1 w-fit">
-        <Link
-          href="/rankings?tab=men"
-          className={`px-5 sm:px-6 py-2 sm:py-2.5 text-sm font-bold rounded-md transition-colors ${
-            tab === "men" ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
-          }`}
-        >
-          Men
-        </Link>
-        <Link
-          href="/rankings?tab=women"
-          className={`px-5 sm:px-6 py-2 sm:py-2.5 text-sm font-bold rounded-md transition-colors ${
-            tab === "women" ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
-          }`}
-        >
-          Women
-        </Link>
-      </div>
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Tabs */}
+        <div className="flex items-center gap-2 mb-6">
+          <span
+            className="eyebrow shrink-0"
+            style={{ color: "var(--mute)", paddingRight: 14, borderRight: "1px solid var(--ink)" }}
+          >
+            ■ Division
+          </span>
+          <Link href="/rankings?tab=men" style={chipStyle(tab === "men")}>
+            Men
+          </Link>
+          <Link href="/rankings?tab=women" style={chipStyle(tab === "women")}>
+            Women
+          </Link>
+        </div>
 
-      {/* Search */}
-      <div className="mb-6">
-        <form action="/rankings" method="get" className="flex gap-2">
+        {/* Search */}
+        <form action="/rankings" method="get" className="flex gap-3 mb-8 max-w-xl">
           <input type="hidden" name="tab" value={tab} />
           <input
             name="search"
             type="text"
-            placeholder="Search player by name..."
+            placeholder="Search by name…"
             defaultValue={searchQuery}
-            className="flex-1 max-w-sm px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-[#0F1F2E] placeholder-gray-400 outline-none focus:border-[#4ABED9] focus:ring-2 focus:ring-[#4ABED9]/20 transition-all"
+            style={{
+              flex: 1,
+              padding: "10px 14px",
+              background: "var(--paper)",
+              border: "1px solid var(--ink)",
+              fontFamily: "var(--sans)",
+              fontSize: 14,
+              color: "var(--ink)",
+              outline: "none",
+            }}
           />
-          <button
-            type="submit"
-            className="px-5 py-2.5 bg-[#4ABED9] text-white text-sm font-bold rounded-lg hover:bg-[#3ba8c2] transition-colors"
-          >
+          <button type="submit" className="btn btn-primary">
             Search
           </button>
           {searchQuery && (
-            <Link
-              href={`/rankings?tab=${tab}`}
-              className="px-4 py-2.5 bg-gray-100 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors"
-            >
+            <Link href={`/rankings?tab=${tab}`} className="btn">
               Clear
             </Link>
           )}
         </form>
-      </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[360px]">
-            <thead>
-              <tr className="text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100 bg-gray-50">
-                <th className="py-3 px-3 text-center w-14">Rank</th>
-                <th className="py-3 px-3 text-left">Player</th>
-                <th className="py-3 px-3 text-left hidden sm:table-cell">Country</th>
-                <th className="py-3 px-3 text-right">Points</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayRankings.map((player) => (
-                <PlayerRow key={player.id} player={player} />
-              ))}
-            </tbody>
-          </table>
+        {/* Table */}
+        <div style={{ border: "1px solid var(--ink)", background: "var(--paper)" }}>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[360px]">
+              <thead>
+                <tr
+                  style={{
+                    background: "var(--ink)",
+                    color: "var(--paper)",
+                    fontFamily: "var(--mono)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  <th style={{ padding: "12px 16px", textAlign: "center", width: 56 }}>Rank</th>
+                  <th style={{ padding: "12px 8px", textAlign: "left" }}>Player</th>
+                  <th style={{ padding: "12px 8px", textAlign: "left" }} className="hidden sm:table-cell">Country</th>
+                  <th style={{ padding: "12px 16px", textAlign: "right" }}>Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayRankings.map((player) => (
+                  <PlayerRow key={player.id} player={player} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {/* Show More / Count */}
-      <div className="mt-6 text-center">
-        {hasMore ? (
-          <Link
-            href={`/rankings?tab=${tab}&show=all`}
-            className="inline-block px-6 py-2.5 bg-gray-100 text-[#0F1F2E] text-sm font-bold rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Show All {rankings.length} Players
-          </Link>
-        ) : (
-          <p className="text-sm text-gray-400">
-            Showing {displayRankings.length} of {rankings.length} players.
-          </p>
-        )}
+        {/* Show more / count */}
+        <div className="mt-8 text-center">
+          {hasMore ? (
+            <Link href={`/rankings?tab=${tab}&show=all`} className="btn">
+              Show all {rankings.length} players →
+            </Link>
+          ) : (
+            <p
+              style={{
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--mute)",
+              }}
+            >
+              Showing {displayRankings.length} of {rankings.length} players
+            </p>
+          )}
+        </div>
       </div>
     </main>
   );
