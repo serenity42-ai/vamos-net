@@ -83,26 +83,9 @@ export default function NewsPageClient({ articles, categories }: Props) {
       <section>
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
           {filtered.length > 0 ? (
-            <div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0"
-              style={{ border: "1px solid var(--ink)" }}
-            >
-              {filtered.map((article, i) => (
-                <div
-                  key={article.slug}
-                  style={{
-                    borderRight:
-                      (i + 1) % 3 !== 0 && i !== filtered.length - 1
-                        ? "1px solid rgba(0,0,0,0.12)"
-                        : "none",
-                    borderBottom:
-                      i < filtered.length - (filtered.length % 3 || 3)
-                        ? "1px solid rgba(0,0,0,0.12)"
-                        : "none",
-                  }}
-                >
-                  <NewsCard article={article} />
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+              {filtered.map((article) => (
+                <NewsCard key={article.slug} article={article} />
               ))}
             </div>
           ) : (

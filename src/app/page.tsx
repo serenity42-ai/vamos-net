@@ -337,16 +337,9 @@ export default async function Home() {
               All news →
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0" style={{ border: "1px solid var(--ink)" }}>
-            {latestNews.map((article, i) => (
-              <div
-                key={article.slug}
-                style={{
-                  borderRight: i < latestNews.length - 1 ? "1px solid rgba(0,0,0,0.12)" : "none",
-                }}
-              >
-                <NewsCard article={article} />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+            {latestNews.map((article) => (
+              <NewsCard key={article.slug} article={article} />
             ))}
           </div>
         </div>
@@ -448,16 +441,9 @@ export default async function Home() {
                 Explore →
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0" style={{ border: "1px solid var(--ink)" }}>
-              {businessArticles.map((article, i) => (
-                <div
-                  key={article.slug}
-                  style={{
-                    borderRight: i < businessArticles.length - 1 ? "1px solid rgba(0,0,0,0.12)" : "none",
-                  }}
-                >
-                  <NewsCard article={article} />
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+              {businessArticles.map((article) => (
+                <NewsCard key={article.slug} article={article} />
               ))}
             </div>
           </div>
