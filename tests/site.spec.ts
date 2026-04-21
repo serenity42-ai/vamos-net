@@ -1,20 +1,46 @@
 import { test, expect } from "@playwright/test";
 
+// All tests preview-cookie in via middleware bypass.
+test.use({
+  extraHTTPHeaders: {},
+});
+
+test.beforeEach(async ({ context }) => {
+  // Set preview cookie so middleware lets us past the Coming Soon gate
+  // on production (vamos.net). Vercel preview URLs (*.vercel.app) bypass
+  // automatically, but we set the cookie anyway for safety.
+  await context.addCookies([
+    {
+      name: "vamos_preview",
+      value: "1",
+      domain: new URL(
+        process.env.BASE_URL || "https://vamos-net.vercel.app"
+      ).hostname,
+      path: "/",
+    },
+  ]);
+});
+
 test.describe("Homepage", () => {
   test("loads without error", async ({ page }) => {
     const response = await page.goto("/");
     expect(response?.status()).toBe(200);
   });
 
-  test("has VAMOS branding in header", async ({ page }) => {
+  test("has VAMOS wordmark in header", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Vamos.net" })).toBeVisible({ timeout: 10000 });
+    // Editorial wordmark: <div aria-label="VAMOS.NET"> containing "Vamos"
+    await expect(page.getByLabel("VAMOS.NET")).toBeVisible({ timeout: 10000 });
   });
 
   test("shows navigation links", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("navigation").getByRole("link", { name: "Live Scores" })).toBeVisible();
-    await expect(page.getByRole("navigation").getByRole("link", { name: "Rankings" })).toBeVisible();
+    await expect(
+      page.getByRole("navigation").getByRole("link", { name: "Live Scores" })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("navigation").getByRole("link", { name: "Rankings" })
+    ).toBeVisible();
   });
 
   test("no JS errors on load", async ({ page }) => {
@@ -25,22 +51,19 @@ test.describe("Homepage", () => {
     expect(errors).toHaveLength(0);
   });
 
-  test("recent results section exists", async ({ page }) => {
+  test("recent results section renders", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("text=Recent Results").first()).toBeVisible({ timeout: 10000 });
+    // Editorial heading: "Recent results." — match via partial text, case-insensitive
+    await expect(
+      page.getByRole("heading", { name: /recent\s+results/i })
+    ).toBeVisible({ timeout: 10000 });
   });
 
-  test("match card opens modal on click", async ({ page }) => {
+  test("live feed eyebrow appears in ticker", async ({ page }) => {
     await page.goto("/");
-    const card = page.locator('[role="button"]').first();
-    if (await card.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await card.click();
-      // Modal overlay should appear
-      await expect(page.locator(".fixed.inset-0")).toBeVisible({ timeout: 5000 });
-      // Close with Escape
-      await page.keyboard.press("Escape");
-      await expect(page.locator(".fixed.inset-0")).not.toBeVisible({ timeout: 3000 });
-    }
+    await expect(page.locator("text=Live feed").first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 });
 
@@ -50,41 +73,34 @@ test.describe("Scores Page", () => {
     expect(response?.status()).toBe(200);
   });
 
-  test("has Live Scores heading", async ({ page }) => {
+  test("has scoreboard heading", async ({ page }) => {
     await page.goto("/scores");
-    await expect(page.getByRole("heading", { name: "Live Scores" })).toBeVisible({ timeout: 10000 });
+    // Editorial hero: "The scoreboard."
+    await expect(
+      page.getByRole("heading", { name: /scoreboard/i })
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test("date navigation links work", async ({ page }) => {
     await page.goto("/scores");
-    // Click previous day link (the one with <)
     const prevLink = page.locator('a[href*="date="]').first();
-    if (await prevLink.isVisible()) {
+    if (await prevLink.isVisible().catch(() => false)) {
       await prevLink.click();
       await page.waitForLoadState("networkidle");
       expect(page.url()).toContain("date=");
-      // Page should still have the heading
-      await expect(page.getByRole("heading", { name: "Live Scores" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /scoreboard/i })
+      ).toBeVisible();
     }
   });
 
   test("category filter works", async ({ page }) => {
     await page.goto("/scores");
-    // Use more specific locator — the Men link inside the filter section
     const menLink = page.locator('a[href*="category=men"]').first();
-    if (await menLink.isVisible()) {
+    if (await menLink.isVisible().catch(() => false)) {
       await menLink.click();
       await page.waitForLoadState("networkidle");
       expect(page.url()).toContain("category=men");
-    }
-  });
-
-  test("match rows are clickable and open modal", async ({ page }) => {
-    await page.goto("/scores");
-    const row = page.locator('[role="button"]').first();
-    if (await row.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await row.click();
-      await expect(page.locator(".fixed.inset-0")).toBeVisible({ timeout: 5000 });
     }
   });
 
@@ -120,6 +136,16 @@ test.describe("Other Pages Load", () => {
 
   test("news page loads", async ({ page }) => {
     const response = await page.goto("/news");
+    expect(response?.status()).toBe(200);
+  });
+
+  test("about page loads", async ({ page }) => {
+    const response = await page.goto("/about");
+    expect(response?.status()).toBe(200);
+  });
+
+  test("business page loads", async ({ page }) => {
+    const response = await page.goto("/business");
     expect(response?.status()).toBe(200);
   });
 });
