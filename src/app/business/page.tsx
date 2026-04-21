@@ -7,108 +7,185 @@ export const metadata = {
     "Padel industry insights: market growth, court economics, sponsorships, contracts, and investment opportunities in the world's fastest-growing sport.",
 };
 
+/** Pretty date: '2026-03-30T00:00:00.000Z' -> '30 Mar 2026'. */
+function formatEditorialDate(input: string): string {
+  if (!input) return "";
+  const d = new Date(input);
+  if (Number.isNaN(d.getTime())) return input;
+  const day = d.getUTCDate();
+  const month = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+  return `${day} ${month} ${d.getUTCFullYear()}`;
+}
+
 export default function BusinessPage() {
-  const businessArticles = articles.filter(
-    (a) => a.category === "Business"
-  );
+  const businessArticles = articles.filter((a) => a.category === "Business");
+
+  const topics = [
+    ["Market Growth", "Global padel market size, growth rates, and regional expansion trends."],
+    ["Court Economics", "Build costs, revenue models, ROI timelines, and club profitability."],
+    ["Sponsorships & Deals", "Brand partnerships, player endorsements, and broadcast rights."],
+    ["Player Earnings", "Prize money distribution, contracts, and income breakdown by tier."],
+    ["Investment", "Venture capital, franchise models, and where smart money is going."],
+    ["Industry News", "Mergers, expansions, new markets, and regulatory developments."],
+  ];
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="mb-8 sm:mb-10">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1F2E] mb-2">
-          Business of Padel
-        </h1>
-        <p className="text-sm sm:text-base text-gray-500 max-w-2xl">
-          Market insights, court economics, sponsorship deals, player contracts,
-          and investment opportunities in the world&apos;s fastest-growing sport.
-        </p>
-      </div>
-
-      {/* Topic cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-12">
-        {[
-          {
-            title: "Market Growth",
-            description: "Global padel market size, growth rates, and regional expansion trends.",
-            color: "bg-[#4ABED9]/10 text-[#4ABED9]",
-          },
-          {
-            title: "Court Economics",
-            description: "Build costs, revenue models, ROI timelines, and club profitability.",
-            color: "bg-[#3CB371]/10 text-[#3CB371]",
-          },
-          {
-            title: "Sponsorships & Deals",
-            description: "Brand partnerships, player endorsements, and broadcast rights.",
-            color: "bg-purple-100 text-purple-600",
-          },
-          {
-            title: "Player Earnings",
-            description: "Prize money distribution, contracts, and income breakdown by tier.",
-            color: "bg-orange-100 text-orange-600",
-          },
-          {
-            title: "Investment",
-            description: "Venture capital, franchise models, and where smart money is going.",
-            color: "bg-blue-100 text-blue-600",
-          },
-          {
-            title: "Industry News",
-            description: "Mergers, expansions, new markets, and regulatory developments.",
-            color: "bg-red-100 text-red-600",
-          },
-        ].map((topic) => (
-          <div
-            key={topic.title}
-            className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-shadow"
+    <main style={{ background: "var(--paper)" }}>
+      {/* Hero band */}
+      <section style={{ borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+          <div className="eyebrow" style={{ color: "var(--clay)", marginBottom: 12 }}>■ Section 04 · Business</div>
+          <h1 className="display" style={{ marginBottom: 20 }}>
+            The <span className="italic-serif">business</span> of padel.
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--sans)",
+              fontSize: 18,
+              lineHeight: 1.55,
+              color: "var(--ink-soft)",
+              maxWidth: 680,
+            }}
           >
-            <span
-              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${topic.color}`}
-            >
-              {topic.title}
-            </span>
-            <p className="text-sm text-gray-500 mt-3">{topic.description}</p>
-          </div>
-        ))}
-      </div>
+            Market insights, court economics, sponsorship deals, player contracts, and
+            investment opportunities in the world&rsquo;s fastest-growing sport.
+          </p>
+        </div>
+      </section>
 
-      {/* Articles */}
-      <div className="mb-6">
-        <h2 className="text-lg sm:text-xl font-bold text-[#0F1F2E] mb-6">
-          Latest Business Articles
-        </h2>
-
-        {businessArticles.length > 0 ? (
-          <div className="space-y-4">
-            {businessArticles.map((article) => (
-              <Link
-                key={article.slug}
-                href={`/news/${article.slug}`}
-                className="block bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-shadow group"
+      {/* Topic grid */}
+      <section style={{ borderBottom: "1px solid var(--ink)", background: "var(--paper-2)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+          <div className="eyebrow" style={{ color: "var(--ink)", marginBottom: 20 }}>■ Topics</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0" style={{ border: "1px solid var(--ink)" }}>
+            {topics.map(([title, description], i) => (
+              <div
+                key={title}
+                style={{
+                  padding: 28,
+                  background: "var(--paper)",
+                  borderRight: (i + 1) % 3 !== 0 && i !== topics.length - 1 ? "1px solid rgba(0,0,0,0.12)" : "none",
+                  borderBottom: i < topics.length - (topics.length % 3 || 3) ? "1px solid rgba(0,0,0,0.12)" : "none",
+                }}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-base font-bold text-[#0F1F2E] group-hover:text-[#4ABED9] transition-colors">
-                      {article.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                      {article.excerpt}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-2">{article.date}</p>
-                  </div>
+                <div
+                  style={{
+                    fontFamily: "var(--mono)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: "var(--clay)",
+                    marginBottom: 12,
+                  }}
+                >
+                  ■ {String(i + 1).padStart(2, "0")}
                 </div>
-              </Link>
+                <div
+                  style={{
+                    fontFamily: "var(--sans)",
+                    fontSize: 18,
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: "var(--ink)",
+                    marginBottom: 10,
+                  }}
+                >
+                  {title}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--sans)",
+                    fontSize: 13,
+                    lineHeight: 1.55,
+                    color: "var(--ink-soft)",
+                  }}
+                >
+                  {description}
+                </div>
+              </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-12 text-gray-400">
-            <p className="text-base">Business articles coming soon.</p>
-            <p className="text-sm mt-1">
-              Subscribe to our newsletter to get notified.
-            </p>
-          </div>
-        )}
-      </div>
+        </div>
+      </section>
+
+      {/* Latest business articles */}
+      <section>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>■ Latest</div>
+          <h2 className="display" style={{ fontSize: "clamp(28px, 3.5vw, 44px)", marginBottom: 28 }}>
+            Business <span className="italic-serif">coverage</span>.
+          </h2>
+
+          {businessArticles.length > 0 ? (
+            <div style={{ border: "1px solid var(--ink)", background: "var(--paper)" }}>
+              {businessArticles.map((article, i) => (
+                <Link
+                  key={article.slug}
+                  href={`/news/${article.slug}`}
+                  className="block group transition-colors hover:bg-[var(--paper-2)]"
+                  style={{
+                    padding: "24px 28px",
+                    borderBottom: i < businessArticles.length - 1 ? "1px solid rgba(0,0,0,0.1)" : "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "var(--mono)",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "0.16em",
+                      textTransform: "uppercase",
+                      color: "var(--mute)",
+                      marginBottom: 8,
+                    }}
+                  >
+                    {formatEditorialDate(article.date)}
+                  </div>
+                  <h3
+                    style={{
+                      fontFamily: "var(--sans)",
+                      fontSize: 20,
+                      fontWeight: 800,
+                      letterSpacing: "-0.02em",
+                      color: "var(--ink)",
+                      marginBottom: 8,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {article.title}
+                  </h3>
+                  <p
+                    className="line-clamp-2"
+                    style={{
+                      fontFamily: "var(--sans)",
+                      fontSize: 14,
+                      lineHeight: 1.55,
+                      color: "var(--ink-soft)",
+                    }}
+                  >
+                    {article.excerpt}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div
+              style={{
+                padding: "60px 24px",
+                border: "1px solid var(--ink)",
+                textAlign: "center",
+                fontFamily: "var(--mono)",
+                fontSize: 12,
+                letterSpacing: "0.08em",
+                color: "var(--mute)",
+              }}
+            >
+              Business articles coming soon.
+            </div>
+          )}
+        </div>
+      </section>
     </main>
   );
 }

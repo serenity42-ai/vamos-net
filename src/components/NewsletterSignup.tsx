@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 
+/**
+ * Editorial newsletter signup block — ink band with big italic display
+ * "The padel brief" treatment.
+ */
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -14,37 +18,89 @@ export default function NewsletterSignup() {
   };
 
   return (
-    <section className="bg-[#0F1F2E] rounded-2xl px-4 py-10 sm:px-8 sm:py-12 md:px-12 text-center">
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3">
-        Stay in the Game
-      </h2>
-      <p className="text-gray-400 text-sm sm:text-base mb-6 sm:mb-8 max-w-md mx-auto">
-        Get the latest padel scores, rankings, and news delivered to your inbox. No spam, just padel.
-      </p>
+    <section style={{ background: "var(--ink)", color: "var(--paper)" }}>
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+          <div className="lg:col-span-7">
+            <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>
+              ■ The padel brief
+            </div>
+            <h2 className="display" style={{ color: "var(--paper)" }}>
+              Stay in the <span className="italic-serif">game</span>.
+            </h2>
+            <p
+              className="mt-6"
+              style={{
+                fontFamily: "var(--sans)",
+                fontSize: 17,
+                lineHeight: 1.5,
+                color: "rgba(243,238,228,0.7)",
+                maxWidth: 560,
+              }}
+            >
+              Weekly. Scores, rankings, and the stories behind them. Delivered to your inbox.
+              No spam, just padel.
+            </p>
+          </div>
 
-      {!submitted ? (
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-            className="flex-1 px-4 sm:px-5 py-3 sm:py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 outline-none focus:border-[#4ABED9] focus:ring-2 focus:ring-[#4ABED9]/20 transition-all text-sm"
-          />
-          <button
-            type="submit"
-            className="px-6 sm:px-8 py-3 sm:py-3.5 bg-[#4ABED9] hover:bg-[#3ba8c2] text-white font-bold rounded-xl transition-colors text-sm whitespace-nowrap"
-          >
-            Subscribe
-          </button>
-        </form>
-      ) : (
-        <div className="bg-[#3CB371]/15 border border-[#3CB371]/30 rounded-xl px-4 sm:px-6 py-4 max-w-md mx-auto">
-          <p className="text-[#3CB371] font-semibold">You are on the list.</p>
-          <p className="text-gray-400 text-sm mt-1">We will notify you with the latest updates.</p>
+          <div className="lg:col-span-5">
+            {!submitted ? (
+              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  style={{
+                    flex: 1,
+                    padding: "12px 16px",
+                    background: "transparent",
+                    border: "1px solid rgba(243,238,228,0.3)",
+                    color: "var(--paper)",
+                    fontFamily: "var(--mono)",
+                    fontSize: 14,
+                    outline: "none",
+                  }}
+                />
+                <button type="submit" className="btn btn-primary">
+                  Subscribe →
+                </button>
+              </form>
+            ) : (
+              <div
+                style={{
+                  padding: "16px 20px",
+                  border: "1px solid var(--lime)",
+                  background: "rgba(212,255,58,0.08)",
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: "var(--sans)",
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: "var(--lime)",
+                  }}
+                >
+                  You're on the list.
+                </p>
+                <p
+                  style={{
+                    fontFamily: "var(--mono)",
+                    fontSize: 11,
+                    letterSpacing: "0.1em",
+                    color: "rgba(243,238,228,0.6)",
+                    marginTop: 4,
+                  }}
+                >
+                  We'll notify you with the latest.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </section>
   );
 }

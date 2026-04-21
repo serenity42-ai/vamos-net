@@ -22,7 +22,6 @@ async function fetchPlayers(category: "men" | "women", search?: string) {
     data: [] as Player[],
   }));
 
-  // Filter anomalies
   const players = res.data;
   if (players.length < 3) return players;
   const topPoints = players.slice(0, 10).map((p) => p.points || 0).filter((p) => p > 0).sort((a, b) => b - a);
@@ -35,39 +34,107 @@ function PlayerCard({ player }: { player: Player }) {
   return (
     <Link
       href={`/players/${player.id}`}
-      className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow group"
+      className="group transition-colors h-full flex flex-col"
+      style={{ border: "1px solid var(--ink)", background: "var(--paper)", padding: 20 }}
     >
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 mb-4">
         {player.photo_url ? (
           <Image
             src={player.photo_url}
             alt={player.name}
-            width={48}
-            height={48}
-            className="w-12 h-12 rounded-full object-cover bg-gray-100 shrink-0"
+            width={52}
+            height={52}
+            className="w-13 h-13 rounded-full object-cover shrink-0"
+            style={{ background: "var(--paper-2)", width: 52, height: 52 }}
           />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-400 shrink-0">
+          <div
+            className="w-13 h-13 rounded-full flex items-center justify-center shrink-0"
+            style={{
+              background: "var(--paper-2)",
+              width: 52,
+              height: 52,
+              fontFamily: "var(--mono)",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--mute)",
+            }}
+          >
             {player.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-[#0F1F2E] group-hover:text-[#4ABED9] transition-colors truncate">
+          <h3
+            className="truncate transition-colors"
+            style={{
+              fontFamily: "var(--sans)",
+              fontSize: 15,
+              fontWeight: 800,
+              letterSpacing: "-0.01em",
+              color: "var(--ink)",
+              marginBottom: 2,
+            }}
+          >
             {player.name}
           </h3>
-          <p className="text-xs text-gray-500">{flag} {player.nationality}</p>
+          <p
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 10,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--mute)",
+            }}
+          >
+            {flag} {player.nationality}
+          </p>
         </div>
       </div>
-      <div className="flex items-center justify-between text-xs">
+      <div
+        className="flex items-center justify-between pt-3 mt-auto"
+        style={{ borderTop: "1px solid rgba(0,0,0,0.1)" }}
+      >
         <div>
-          <span className="text-gray-400 uppercase tracking-wider font-semibold">Rank</span>
-          <span className={`ml-1.5 font-bold ${player.ranking <= 10 ? "text-[#4ABED9]" : "text-[#0F1F2E]"}`}>
+          <div
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--mute)",
+              marginBottom: 2,
+            }}
+          >
+            Rank
+          </div>
+          <span
+            className="score-mono"
+            style={{
+              fontSize: 16,
+              color: player.ranking && player.ranking <= 10 ? "var(--red)" : "var(--ink)",
+            }}
+          >
             #{player.ranking}
           </span>
         </div>
-        <div>
-          <span className="text-gray-400 uppercase tracking-wider font-semibold">Points</span>
-          <span className="ml-1.5 font-bold text-[#0F1F2E]">{player.points?.toLocaleString() ?? "-"}</span>
+        <div className="text-right">
+          <div
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--mute)",
+              marginBottom: 2,
+            }}
+          >
+            Points
+          </div>
+          <span className="score-mono" style={{ fontSize: 14, color: "var(--ink)" }}>
+            {player.points?.toLocaleString() ?? "—"}
+          </span>
         </div>
       </div>
     </Link>
@@ -81,81 +148,118 @@ export default async function PlayersPage({
 }) {
   const tab = searchParams.tab === "women" ? "women" : "men";
   const searchQuery = searchParams.search || "";
-
   const players = await fetchPlayers(tab as "men" | "women", searchQuery || undefined);
 
+  const chipStyle = (active: boolean) => ({
+    padding: "8px 20px",
+    fontFamily: "var(--mono)" as const,
+    fontSize: 11,
+    fontWeight: 700 as const,
+    letterSpacing: "0.14em",
+    textTransform: "uppercase" as const,
+    border: `1px solid ${active ? "var(--red)" : "var(--ink)"}`,
+    background: active ? "var(--red)" : "transparent",
+    color: active ? "#fff" : "var(--ink)",
+  });
+
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1F2E] mb-2">Players</h1>
-        <p className="text-sm sm:text-base text-gray-500">Browse professional padel players</p>
-      </div>
+    <main style={{ background: "var(--paper)" }}>
+      {/* Header */}
+      <section style={{ borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>■ Directory</div>
+          <h1 className="display" style={{ marginBottom: 12 }}>
+            The <span className="italic-serif">players</span>.
+          </h1>
+          <p style={{ fontFamily: "var(--sans)", fontSize: 16, color: "var(--ink-soft)" }}>
+            Browse professional padel players, ranked and filtered.
+          </p>
+        </div>
+      </section>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-5 bg-gray-100 rounded-lg p-1 w-fit">
-        <Link
-          href={`/players?tab=men${searchQuery ? `&search=${searchQuery}` : ""}`}
-          className={`px-5 sm:px-6 py-2 sm:py-2.5 text-sm font-bold rounded-md transition-colors ${
-            tab === "men" ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
-          }`}
-        >
-          Men
-        </Link>
-        <Link
-          href={`/players?tab=women${searchQuery ? `&search=${searchQuery}` : ""}`}
-          className={`px-5 sm:px-6 py-2 sm:py-2.5 text-sm font-bold rounded-md transition-colors ${
-            tab === "women" ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
-          }`}
-        >
-          Women
-        </Link>
-      </div>
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Tabs */}
+        <div className="flex items-center gap-2 mb-6">
+          <span
+            className="eyebrow shrink-0"
+            style={{ color: "var(--mute)", paddingRight: 14, borderRight: "1px solid var(--ink)" }}
+          >
+            ■ Division
+          </span>
+          <Link
+            href={`/players?tab=men${searchQuery ? `&search=${searchQuery}` : ""}`}
+            style={chipStyle(tab === "men")}
+          >
+            Men
+          </Link>
+          <Link
+            href={`/players?tab=women${searchQuery ? `&search=${searchQuery}` : ""}`}
+            style={chipStyle(tab === "women")}
+          >
+            Women
+          </Link>
+        </div>
 
-      {/* Search */}
-      <div className="mb-6">
-        <form action="/players" method="get" className="flex gap-2">
+        {/* Search */}
+        <form action="/players" method="get" className="flex gap-3 mb-8 max-w-xl">
           <input type="hidden" name="tab" value={tab} />
           <input
             name="search"
             type="text"
-            placeholder="Search players..."
+            placeholder="Search players…"
             defaultValue={searchQuery}
-            className="flex-1 max-w-sm px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-[#0F1F2E] placeholder-gray-400 outline-none focus:border-[#4ABED9] focus:ring-2 focus:ring-[#4ABED9]/20 transition-all"
+            style={{
+              flex: 1,
+              padding: "10px 14px",
+              background: "var(--paper)",
+              border: "1px solid var(--ink)",
+              fontFamily: "var(--sans)",
+              fontSize: 14,
+              color: "var(--ink)",
+              outline: "none",
+            }}
           />
-          <button
-            type="submit"
-            className="px-5 py-2.5 bg-[#4ABED9] text-white text-sm font-bold rounded-lg hover:bg-[#3ba8c2] transition-colors"
-          >
-            Search
-          </button>
+          <button type="submit" className="btn btn-primary">Search</button>
           {searchQuery && (
-            <Link
-              href={`/players?tab=${tab}`}
-              className="px-4 py-2.5 bg-gray-100 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              Clear
-            </Link>
+            <Link href={`/players?tab=${tab}`} className="btn">Clear</Link>
           )}
         </form>
-      </div>
 
-      {/* Players Grid */}
-      {players.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {players.map((player) => (
-            <PlayerCard key={player.id} player={player} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12 sm:py-16 text-gray-400">
-          <p className="text-base sm:text-lg">
+        {/* Grid */}
+        {players.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {players.map((player) => (
+              <PlayerCard key={player.id} player={player} />
+            ))}
+          </div>
+        ) : (
+          <div
+            style={{
+              padding: "80px 24px",
+              border: "1px solid var(--ink)",
+              textAlign: "center",
+              fontFamily: "var(--mono)",
+              fontSize: 13,
+              letterSpacing: "0.08em",
+              color: "var(--mute)",
+            }}
+          >
             {searchQuery ? `No players found for "${searchQuery}".` : "No players found."}
-          </p>
-        </div>
-      )}
+          </div>
+        )}
 
-      <div className="mt-6 text-center text-sm text-gray-400">
-        Showing {players.length} players.
+        <div
+          className="mt-8 text-center"
+          style={{
+            fontFamily: "var(--mono)",
+            fontSize: 11,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "var(--mute)",
+          }}
+        >
+          Showing {players.length} players
+        </div>
       </div>
     </main>
   );

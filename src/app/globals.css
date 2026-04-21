@@ -221,6 +221,76 @@ body {
   }
 }
 
+/* -- Global legacy-color remapping -----------------------------------
+   Many pages still use the old navy/turquoise palette as Tailwind arbitrary
+   values (bg-[#0F1F2E], text-[#4ABED9], etc). Until every page is migrated
+   by hand, remap them at the utility level so the whole site reads as
+   editorial paper/ink/red. Component-level edits always take precedence. */
+
+/* Old navy (#0F1F2E) -> ink */
+.bg-\[\#0F1F2E\] { background-color: var(--ink) !important; }
+.text-\[\#0F1F2E\] { color: var(--ink) !important; }
+.border-\[\#0F1F2E\] { border-color: var(--ink) !important; }
+.hover\:text-\[\#0F1F2E\]:hover { color: var(--ink) !important; }
+.hover\:bg-\[\#0F1F2E\]:hover { background-color: var(--ink) !important; }
+.hover\:bg-\[\#1a2f42\]:hover { background-color: var(--red-deep) !important; }
+
+/* Old turquoise (#4ABED9) -> red accent */
+.text-\[\#4ABED9\] { color: var(--red) !important; }
+.bg-\[\#4ABED9\] { background-color: var(--red) !important; }
+.border-\[\#4ABED9\] { border-color: var(--red) !important; }
+.hover\:text-\[\#4ABED9\]:hover { color: var(--red) !important; }
+.hover\:bg-\[\#4ABED9\]:hover { background-color: var(--red) !important; }
+.hover\:bg-\[\#3ba8c2\]:hover { background-color: var(--red-deep) !important; }
+
+/* Old green (#3CB371) -> clay (business accent) */
+.text-\[\#3CB371\] { color: var(--clay) !important; }
+.bg-\[\#3CB371\] { background-color: var(--clay) !important; }
+.border-\[\#3CB371\] { border-color: var(--clay) !important; }
+
+/* Neutral backgrounds: flat paper, not white */
+.bg-white { background-color: var(--paper) !important; }
+.bg-gray-50 { background-color: var(--paper-2) !important; }
+
+/* Neutral text colors map to editorial ink hierarchy */
+.text-gray-400 { color: var(--mute) !important; }
+.text-gray-500 { color: var(--ink-soft) !important; }
+.text-gray-700 { color: var(--ink-soft) !important; }
+
+/* Neutral borders -> hairline */
+.border-gray-50,
+.border-gray-100,
+.border-gray-200 { border-color: rgba(21,18,16,0.12) !important; }
+
+/* No shadows anywhere — editorial rule */
+.shadow-sm,
+.shadow,
+.shadow-md,
+.shadow-lg,
+.shadow-xl,
+.hover\:shadow-sm:hover,
+.hover\:shadow:hover,
+.hover\:shadow-md:hover,
+.hover\:shadow-lg:hover,
+.hover\:shadow-xl:hover { box-shadow: none !important; }
+
+/* No large rounded corners — editorial rule (radii 2px max) */
+.rounded,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl { border-radius: var(--r-sm) !important; }
+
+/* Keep circular avatars/dots */
+.rounded-full { border-radius: 9999px !important; }
+
+/* Default Tailwind typography tends to render thin body type.
+   The editorial system uses Archivo across the board. */
+body, h1, h2, h3, h4, h5, h6, p, span, a, li, td, th, input, button, textarea {
+  font-family: var(--sans);
+}
+
 /* -- Prose overrides for article body --------------------------------- */
 
 .prose {

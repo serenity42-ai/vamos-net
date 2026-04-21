@@ -179,149 +179,255 @@ export default async function ScoresPage({
     return `/scores${qs ? `?${qs}` : ""}`;
   }
 
-  return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      {/* Header */}
-      <div className="mb-5 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1F2E] mb-1">Live Scores</h1>
-        <p className="text-sm text-gray-500">Results and upcoming matches</p>
-      </div>
+  const chipStyle = (active: boolean) => ({
+    padding: "8px 14px",
+    fontFamily: "var(--mono)",
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: "0.14em",
+    textTransform: "uppercase" as const,
+    border: `1px solid ${active ? "var(--red)" : "var(--ink)"}`,
+    background: active ? "var(--red)" : "transparent",
+    color: active ? "#fff" : "var(--ink)",
+    whiteSpace: "nowrap" as const,
+  });
 
-      {/* Date Navigation */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between bg-gray-50 rounded-lg py-2.5 px-4">
+  return (
+    <main style={{ background: "var(--paper)" }}>
+      {/* Page header band */}
+      <section style={{ borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>
+            ■ Live feed
+          </div>
+          <h1 className="display" style={{ marginBottom: 12 }}>
+            The <span className="italic-serif">scoreboard</span>.
+          </h1>
+          <p style={{ fontFamily: "var(--sans)", fontSize: 16, color: "var(--ink-soft)" }}>
+            Live, results, and upcoming matches across every tour.
+          </p>
+        </div>
+      </section>
+
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Date navigation */}
+        <div
+          className="flex items-center justify-between"
+          style={{
+            padding: "12px 16px",
+            border: "1px solid var(--ink)",
+            background: "var(--paper-2)",
+            marginBottom: 20,
+          }}
+        >
           <Link
             href={buildUrl({ date: prevDateStr, category: categoryFilter, tournament: tournamentFilter })}
-            className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors"
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--mute)",
+            }}
+            className="hover:text-[var(--red)] transition-colors"
           >
-            &larr; {formatDateDisplay(prevDateStr)}
+            ← {formatDateDisplay(prevDateStr)}
           </Link>
-          <span className="text-sm font-bold text-[#0F1F2E] px-3 py-1 bg-white rounded shadow-sm">
+          <span
+            style={{
+              fontFamily: "var(--sans)",
+              fontWeight: 800,
+              fontSize: 16,
+              letterSpacing: "-0.02em",
+              color: "var(--ink)",
+            }}
+          >
             {formatDateDisplay(selectedDate)}
+            {isToday && (
+              <span
+                style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.14em",
+                  color: "var(--red)",
+                  marginLeft: 10,
+                  padding: "3px 7px",
+                  background: "rgba(193,68,58,0.1)",
+                }}
+              >
+                TODAY
+              </span>
+            )}
           </span>
           <Link
             href={buildUrl({ date: nextDateStr, category: categoryFilter, tournament: tournamentFilter })}
-            className="text-sm font-semibold text-gray-400 hover:text-[#4ABED9] transition-colors"
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--mute)",
+            }}
+            className="hover:text-[var(--red)] transition-colors"
           >
-            {formatDateDisplay(nextDateStr)} &rarr;
+            {formatDateDisplay(nextDateStr)} →
           </Link>
         </div>
-        {!isToday && (
-          <div className="flex justify-center mt-2">
-            <Link
-              href={buildUrl({ category: categoryFilter, tournament: tournamentFilter })}
-              className="text-xs font-semibold text-[#4ABED9] hover:text-[#0F1F2E] transition-colors px-3 py-1 bg-[#4ABED9]/10 rounded-full"
+
+        {/* Men / Women tabs */}
+        <div className="flex items-center gap-2 mb-4">
+          <span
+            className="eyebrow shrink-0"
+            style={{ color: "var(--mute)", paddingRight: 14, borderRight: "1px solid var(--ink)" }}
+          >
+            ■ Division
+          </span>
+          <Link href={buildUrl({ date: selectedDate, tournament: tournamentFilter })} style={chipStyle(!categoryFilter)}>
+            All
+          </Link>
+          <Link
+            href={buildUrl({ date: selectedDate, category: "men", tournament: tournamentFilter })}
+            style={chipStyle(categoryFilter === "men")}
+          >
+            Men
+          </Link>
+          <Link
+            href={buildUrl({ date: selectedDate, category: "women", tournament: tournamentFilter })}
+            style={chipStyle(categoryFilter === "women")}
+          >
+            Women
+          </Link>
+        </div>
+
+        {/* Tournament filter */}
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto mb-8">
+          <div className="flex gap-2">
+            <span
+              className="eyebrow shrink-0"
+              style={{
+                color: "var(--mute)",
+                paddingRight: 14,
+                borderRight: "1px solid var(--ink)",
+                display: "flex",
+                alignItems: "center",
+              }}
             >
-              ← Back to Today
+              ■ Tournament
+            </span>
+            <Link
+              href={buildUrl({ date: selectedDate, category: categoryFilter })}
+              style={{ ...chipStyle(!tournamentFilter || tournamentFilter === "all"), flexShrink: 0 }}
+            >
+              All
             </Link>
+            {activeTournaments.map((t) => (
+              <Link
+                key={t.id}
+                href={buildUrl({ date: selectedDate, category: categoryFilter, tournament: String(t.id) })}
+                style={{ ...chipStyle(tournamentFilter === String(t.id)), flexShrink: 0 }}
+              >
+                {t.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Grouped matches */}
+        {tournamentGroups.length > 0 ? (
+          <div className="space-y-10">
+            {tournamentGroups.map((group) => (
+              <div key={group.tournamentId} style={{ border: "1px solid var(--ink)", background: "var(--paper)" }}>
+                {/* Tournament header */}
+                <div
+                  className="flex items-center gap-3"
+                  style={{
+                    padding: "12px 16px",
+                    background: "var(--ink)",
+                    color: "var(--paper)",
+                  }}
+                >
+                  {group.tournament?.status === "live" && (
+                    <span className="badge-live">LIVE</span>
+                  )}
+                  <h3
+                    style={{
+                      fontFamily: "var(--sans)",
+                      fontSize: 15,
+                      fontWeight: 800,
+                      letterSpacing: "-0.01em",
+                      color: "var(--paper)",
+                    }}
+                  >
+                    {group.tournament?.name || "Unknown Tournament"}
+                  </h3>
+                  {group.tournament && (
+                    <span
+                      className="ml-auto"
+                      style={{
+                        fontFamily: "var(--mono)",
+                        fontSize: 11,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        color: "rgba(243,238,228,0.6)",
+                      }}
+                    >
+                      {group.tournament.location}, {group.tournament.country}
+                    </span>
+                  )}
+                </div>
+
+                {/* Rounds */}
+                {group.rounds.map((round) => (
+                  <div key={round.roundName}>
+                    <div
+                      style={{
+                        padding: "10px 16px",
+                        borderTop: "1px solid var(--ink)",
+                        borderBottom: "1px solid rgba(0,0,0,0.1)",
+                        background: "var(--paper-2)",
+                      }}
+                    >
+                      <span
+                        className="eyebrow"
+                        style={{ color: "var(--red)", fontSize: 10 }}
+                      >
+                        ■ {round.roundName}
+                      </span>
+                    </div>
+                    <div>
+                      {round.matches.map((match) => (
+                        <ClickableMatchRow
+                          key={match.id}
+                          match={match}
+                          tournamentName={group.tournament?.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            className="text-center"
+            style={{
+              padding: "80px 24px",
+              border: "1px solid var(--ink)",
+              background: "var(--paper)",
+              fontFamily: "var(--mono)",
+              fontSize: 13,
+              letterSpacing: "0.08em",
+              color: "var(--mute)",
+            }}
+          >
+            No matches found. Try a different filter.
           </div>
         )}
       </div>
-
-      {/* Men/Women Tab Filter */}
-      <div className="flex gap-1 mb-5 bg-gray-100 rounded-lg p-1 w-fit">
-        <Link
-          href={buildUrl({ date: selectedDate, tournament: tournamentFilter })}
-          className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${
-            !categoryFilter ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
-          }`}
-        >
-          All
-        </Link>
-        <Link
-          href={buildUrl({ date: selectedDate, category: "men", tournament: tournamentFilter })}
-          className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${
-            categoryFilter === "men" ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
-          }`}
-        >
-          Men
-        </Link>
-        <Link
-          href={buildUrl({ date: selectedDate, category: "women", tournament: tournamentFilter })}
-          className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${
-            categoryFilter === "women" ? "bg-white text-[#0F1F2E] shadow-sm" : "text-gray-500 hover:text-[#0F1F2E]"
-          }`}
-        >
-          Women
-        </Link>
-      </div>
-
-      {/* Tournament filter */}
-      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto mb-6">
-        <div className="flex gap-2 pb-2 sm:pb-0 sm:flex-wrap">
-          <Link
-            href={buildUrl({ date: selectedDate, category: categoryFilter })}
-            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
-              !tournamentFilter || tournamentFilter === "all"
-                ? "bg-[#4ABED9] text-white"
-                : "bg-gray-100 text-[#0F1F2E] hover:bg-gray-200"
-            }`}
-          >
-            All Tournaments
-          </Link>
-          {activeTournaments.map((t) => (
-            <Link
-              key={t.id}
-              href={buildUrl({ date: selectedDate, category: categoryFilter, tournament: String(t.id) })}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
-                tournamentFilter === String(t.id)
-                  ? "bg-[#4ABED9] text-white"
-                  : "bg-gray-100 text-[#0F1F2E] hover:bg-gray-200"
-              }`}
-            >
-              {t.name}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Grouped Matches */}
-      {tournamentGroups.length > 0 ? (
-        <div className="space-y-6">
-          {tournamentGroups.map((group) => (
-            <div key={group.tournamentId} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-              {/* Tournament header */}
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
-                {group.tournament?.status === "live" && (
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
-                )}
-                <h3 className="text-sm font-bold text-[#0F1F2E]">
-                  {group.tournament?.name || "Unknown Tournament"}
-                </h3>
-                {group.tournament && (
-                  <span className="text-xs text-gray-400 ml-auto">
-                    {group.tournament.location}, {group.tournament.country}
-                  </span>
-                )}
-              </div>
-
-              {/* Rounds */}
-              {group.rounds.map((round) => (
-                <div key={round.roundName}>
-                  <div className="px-4 py-2 bg-gray-50/50 border-b border-gray-100">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                      {round.roundName}
-                    </span>
-                  </div>
-                  <div>
-                    {round.matches.map((match) => (
-                      <ClickableMatchRow
-                        key={match.id}
-                        match={match}
-                        tournamentName={group.tournament?.name}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12 sm:py-16 text-gray-400">
-          <p className="text-base sm:text-lg">No matches found. Try a different filter.</p>
-        </div>
-      )}
     </main>
   );
 }

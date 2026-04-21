@@ -1,6 +1,20 @@
 import Link from "next/link";
 import type { Article } from "@/data/mock";
 
+/** Pretty date: '2026-03-30T00:00:00.000Z' -> '30 Mar 2026'. */
+function formatEditorialDate(input: string): string {
+  if (!input) return "";
+  const d = new Date(input);
+  if (Number.isNaN(d.getTime())) {
+    // Fallback to the raw string if it's not an ISO date.
+    return input;
+  }
+  const day = d.getUTCDate();
+  const month = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+  const year = d.getUTCFullYear();
+  return `${day} ${month} ${year}`;
+}
+
 /**
  * Editorial news card — hairline border, eyebrow metadata in mono,
  * tight headline in Archivo 800, body in soft ink.
@@ -54,7 +68,7 @@ export default function NewsCard({ article }: { article: Article }) {
             }}
           >
             <span style={{ color: "var(--red)" }}>■ {article.category}</span>
-            <span style={{ color: "var(--mute)" }}>{article.date}</span>
+            <span style={{ color: "var(--mute)" }}>{formatEditorialDate(article.date)}</span>
           </div>
 
           {/* Title */}

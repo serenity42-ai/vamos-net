@@ -7,19 +7,25 @@ import { teamName } from "@/lib/player-utils";
 import StatusBadge from "@/components/StatusBadge";
 import type { NormalizedMatch, DisplayStatus } from "@/lib/normalize-match";
 
-/** Render a set score, splitting tiebreak into superscript: "6(4)" → 6⁽⁴⁾ */
+/**
+ * Editorial match row (used on /scores and tournament detail pages).
+ * Hairline-divided, mono scores, winners in ink, losers in --mute.
+ */
+
+/** Render a set score, splitting tiebreak into superscript */
 function SetScoreCell({ value, isWinner }: { value: string; isWinner: boolean }) {
-  const match = value.match(/^(\d+)\((\d+)\)$/);
-  if (match) {
+  const tb = value.match(/^(\d+)\((\d+)\)$/);
+  const color = isWinner ? "var(--ink)" : "var(--mute)";
+  if (tb) {
     return (
-      <span className={`text-sm font-bold tabular-nums text-center ${isWinner ? "text-[#0F1F2E]" : "text-gray-400"}`}>
-        {match[1]}
-        <sup className="text-[9px] text-gray-400 ml-px">{match[2]}</sup>
+      <span className="score-mono" style={{ fontSize: 14, color, textAlign: "center", minWidth: 20 }}>
+        {tb[1]}
+        <sup style={{ fontSize: 9, marginLeft: 1, color: "var(--mute)" }}>{tb[2]}</sup>
       </span>
     );
   }
   return (
-    <span className={`text-sm font-bold tabular-nums w-4 text-center ${isWinner ? "text-[#0F1F2E]" : "text-gray-400"}`}>
+    <span className="score-mono" style={{ fontSize: 14, color, textAlign: "center", minWidth: 16 }}>
       {value}
     </span>
   );
@@ -33,15 +39,9 @@ export default function ClickableMatchRow({
   tournamentName?: string;
 }) {
   const { openMatch } = useMatchModal();
-  // Use displayStatus from normalizer if available, fallback to match.status
   const initialStatus = (match as NormalizedMatch).displayStatus || match.status;
   const isLive = initialStatus === "live";
-  const { score, currentPoint, status } = useLiveScore(
-    match.id,
-    isLive,
-    match.score,
-    initialStatus
-  );
+  const { score, currentPoint, status } = useLiveScore(match.id, isLive, match.score, initialStatus);
 
   const displayScore = score;
   const displayStatus = status as DisplayStatus;
@@ -50,9 +50,21 @@ export default function ClickableMatchRow({
 
   return (
     <div
-      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer ${
-        displayStatus === "live" ? "bg-red-50/30" : ""
-      }`}
+      className="flex items-center gap-3 sm:gap-4 transition-colors cursor-pointer"
+      style={{
+        padding: "12px 16px",
+        borderBottom: "1px solid rgba(0,0,0,0.08)",
+        background: displayStatus === "live" ? "rgba(193,68,58,0.04)" : "transparent",
+      }}
+      onMouseEnter={(e) => {
+        if (displayStatus !== "live") {
+          (e.currentTarget as HTMLDivElement).style.background = "var(--paper-2)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLDivElement).style.background =
+          displayStatus === "live" ? "rgba(193,68,58,0.04)" : "transparent";
+      }}
       onClick={() => openMatch(match, tournamentName)}
       role="button"
       tabIndex={0}
@@ -61,26 +73,27 @@ export default function ClickableMatchRow({
       }}
     >
       {/* Status */}
-      <div className="w-12 sm:w-14 shrink-0 text-center">
+      <div className="w-14 sm:w-16 shrink-0 text-center">
         <StatusBadge status={displayStatus} currentPoint={isLive ? currentPoint : null} />
       </div>
 
-      {/* Teams and Scores */}
+      {/* Teams + scores */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2 mb-0.5">
+        <div className="flex items-center justify-between gap-2 mb-1">
           <span
-            className={`text-sm font-semibold truncate ${
-              match.winner === "team_1"
-                ? "text-[#0F1F2E]"
-                : match.winner === "team_2"
-                ? "text-gray-400"
-                : "text-[#0F1F2E]"
-            }`}
+            className="truncate"
+            style={{
+              fontFamily: "var(--sans)",
+              fontSize: 14,
+              fontWeight: match.winner === "team_1" ? 800 : 600,
+              color: match.winner === "team_2" ? "var(--mute)" : "var(--ink)",
+              letterSpacing: "-0.01em",
+            }}
           >
             {t1}
           </span>
           {displayScore && displayScore.length > 0 && (
-            <div className="flex gap-2 sm:gap-3 shrink-0">
+            <div className="flex gap-3 shrink-0">
               {displayScore.map((s, i) => (
                 <SetScoreCell key={i} value={s.team_1} isWinner={parseInt(s.team_1) > parseInt(s.team_2)} />
               ))}
@@ -89,18 +102,19 @@ export default function ClickableMatchRow({
         </div>
         <div className="flex items-center justify-between gap-2">
           <span
-            className={`text-sm font-semibold truncate ${
-              match.winner === "team_2"
-                ? "text-[#0F1F2E]"
-                : match.winner === "team_1"
-                ? "text-gray-400"
-                : "text-[#0F1F2E]"
-            }`}
+            className="truncate"
+            style={{
+              fontFamily: "var(--sans)",
+              fontSize: 14,
+              fontWeight: match.winner === "team_2" ? 800 : 600,
+              color: match.winner === "team_1" ? "var(--mute)" : "var(--ink)",
+              letterSpacing: "-0.01em",
+            }}
           >
             {t2}
           </span>
           {displayScore && displayScore.length > 0 && (
-            <div className="flex gap-2 sm:gap-3 shrink-0">
+            <div className="flex gap-3 shrink-0">
               {displayScore.map((s, i) => (
                 <SetScoreCell key={i} value={s.team_2} isWinner={parseInt(s.team_2) > parseInt(s.team_1)} />
               ))}
@@ -109,19 +123,32 @@ export default function ClickableMatchRow({
         </div>
       </div>
 
-      {/* Schedule time + Category badge */}
-      <div className="shrink-0 flex flex-col items-end gap-0.5">
+      {/* Schedule + category */}
+      <div className="shrink-0 flex flex-col items-end gap-1">
         {displayStatus === "scheduled" && match.schedule_label && (
-          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+          <span
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              color: "var(--mute)",
+              whiteSpace: "nowrap",
+            }}
+          >
             {match.schedule_label}
           </span>
         )}
         <span
-          className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-            match.category === "women"
-              ? "bg-pink-50 text-pink-600"
-              : "bg-blue-50 text-blue-600"
-          }`}
+          style={{
+            fontFamily: "var(--mono)",
+            fontSize: 9,
+            fontWeight: 800,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            padding: "2px 6px",
+            border: `1px solid ${match.category === "women" ? "#A83362" : "var(--ink)"}`,
+            color: match.category === "women" ? "#A83362" : "var(--ink)",
+          }}
         >
           {match.category === "women" ? "W" : "M"}
         </span>

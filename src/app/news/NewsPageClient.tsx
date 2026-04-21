@@ -12,48 +12,115 @@ interface Props {
 export default function NewsPageClient({ articles, categories }: Props) {
   const [category, setCategory] = useState<string>("All");
 
-  const filtered = category === "All"
-    ? articles
-    : articles.filter((a) => a.category === category);
+  const filtered =
+    category === "All"
+      ? articles
+      : articles.filter((a) => a.category === category);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1F2E] mb-2">News</h1>
-        <p className="text-sm sm:text-base text-gray-500">The latest from the world of padel</p>
-      </div>
-
-      {/* Category filter — horizontally scrollable on mobile */}
-      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto mb-6 sm:mb-8">
-        <div className="flex gap-2 pb-2 sm:pb-0 sm:flex-wrap">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
-                category === cat
-                  ? "bg-[#4ABED9] text-white"
-                  : "bg-gray-100 text-[#0F1F2E] hover:bg-gray-200"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+    <main style={{ background: "var(--paper)" }}>
+      {/* Header band */}
+      <section style={{ borderBottom: "1px solid var(--ink)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>
+            ■ Section 02 · Editorial
+          </div>
+          <h1 className="display" style={{ marginBottom: 16 }}>
+            The <span className="italic-serif">news</span>.
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--sans)",
+              fontSize: 17,
+              lineHeight: 1.5,
+              color: "var(--ink-soft)",
+              maxWidth: 560,
+            }}
+          >
+            Recaps, previews, and the stories that shape the world of professional padel.
+          </p>
         </div>
-      </div>
+      </section>
+
+      {/* Filter chips */}
+      <section style={{ borderBottom: "1px solid var(--ink)", background: "var(--paper-2)" }}>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+          <div className="flex items-center gap-3 overflow-x-auto">
+            <span
+              className="eyebrow shrink-0"
+              style={{ color: "var(--mute)", paddingRight: 16, borderRight: "1px solid var(--ink)" }}
+            >
+              ■ Filter
+            </span>
+            {categories.map((cat) => {
+              const active = category === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className="transition-colors whitespace-nowrap shrink-0"
+                  style={{
+                    padding: "8px 14px",
+                    fontFamily: "var(--mono)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    border: `1px solid ${active ? "var(--red)" : "var(--ink)"}`,
+                    background: active ? "var(--red)" : "transparent",
+                    color: active ? "#fff" : "var(--ink)",
+                  }}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* Articles grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filtered.map((article) => (
-          <NewsCard key={article.slug} article={article} />
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="text-center py-12 sm:py-16 text-gray-400">
-          <p className="text-base sm:text-lg">No articles found in this category.</p>
+      <section>
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+          {filtered.length > 0 ? (
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0"
+              style={{ border: "1px solid var(--ink)" }}
+            >
+              {filtered.map((article, i) => (
+                <div
+                  key={article.slug}
+                  style={{
+                    borderRight:
+                      (i + 1) % 3 !== 0 && i !== filtered.length - 1
+                        ? "1px solid rgba(0,0,0,0.12)"
+                        : "none",
+                    borderBottom:
+                      i < filtered.length - (filtered.length % 3 || 3)
+                        ? "1px solid rgba(0,0,0,0.12)"
+                        : "none",
+                  }}
+                >
+                  <NewsCard article={article} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <p
+                style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 13,
+                  letterSpacing: "0.1em",
+                  color: "var(--mute)",
+                }}
+              >
+                No articles found in this category.
+              </p>
+            </div>
+          )}
         </div>
-      )}
+      </section>
     </main>
   );
 }
