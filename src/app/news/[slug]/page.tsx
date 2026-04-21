@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import NewsCard from "@/components/NewsCard";
-import { articles } from "@/data/mock";
+import { fetchArticleBySlug, fetchArticles } from "@/lib/ghost";
+
+// Revalidate every 60 seconds so article edits in Ghost appear quickly.
+export const revalidate = 60;
 
 function ShareButton({ label, href }: { label: string; href: string }) {
   return (
@@ -18,13 +21,14 @@ function ShareButton({ label, href }: { label: string; href: string }) {
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article = articles.find((a) => a.slug === slug);
+  const article = await fetchArticleBySlug(slug);
 
   if (!article) {
     notFound();
   }
 
-  const related = articles
+  const allArticles = await fetchArticles();
+  const related = allArticles
     .filter((a) => a.slug !== slug)
     .filter((a) => a.category === article.category)
     .slice(0, 3);
