@@ -116,7 +116,7 @@ export default function ScoresTicker({ matches }: { matches: Match[] }) {
     <div className="flex items-center gap-0 min-w-max">
       {/* LIVE eyebrow at start of ticker */}
       <span
-        className="flex items-center"
+        className="flex items-center gap-2"
         style={{
           fontFamily: "var(--mono)",
           fontSize: 10,
@@ -124,12 +124,23 @@ export default function ScoresTicker({ matches }: { matches: Match[] }) {
           letterSpacing: "0.22em",
           textTransform: "uppercase",
           color: "var(--red)",
-          padding: "0 20px 0 4px",
+          padding: "0 20px 0 12px",
           borderRight: "1px solid rgba(243,238,228,0.15)",
           whiteSpace: "nowrap",
         }}
       >
-        ● Live feed
+        <span
+          aria-hidden
+          className="live-dot"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: "var(--red)",
+            display: "inline-block",
+          }}
+        />
+        Live feed
       </span>
       {matches.map((match) => (
         <TickerMatch key={match.id} match={match} />
