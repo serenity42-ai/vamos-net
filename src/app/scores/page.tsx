@@ -1,5 +1,8 @@
 import Link from "next/link";
 import ClickableMatchRow from "@/components/ClickableMatchRow";
+
+// Live scores: revalidate every 30s
+export const revalidate = 30;
 import {
   getSeasonTournaments,
   getMatches,

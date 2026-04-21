@@ -3,6 +3,11 @@ import Image from "next/image";
 import MatchCard from "@/components/MatchCard";
 import ScoresTicker from "@/components/ScoresTicker";
 import RankingRow from "@/components/RankingRow";
+
+// Revalidate the homepage every 30s so live scores show up without waiting
+// the default ISR window. Individual API fetches still use their own shorter
+// revalidate (15s for /live) inside padel-api.ts.
+export const revalidate = 30;
 import NewsCard from "@/components/NewsCard";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import { fetchArticles } from "@/lib/ghost";

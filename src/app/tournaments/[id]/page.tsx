@@ -9,6 +9,9 @@ import {
   type Match,
 } from "@/lib/padel-api";
 
+// Tournament page shows live match state — short revalidate
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: { params: { id: string } }) {
   try {
     const tournament = await getTournament(parseInt(params.id));
