@@ -5,7 +5,7 @@ import ScoresTicker from "@/components/ScoresTicker";
 import RankingRow from "@/components/RankingRow";
 import NewsCard from "@/components/NewsCard";
 import NewsletterSignup from "@/components/NewsletterSignup";
-import { articles } from "@/data/mock";
+import { fetchArticles } from "@/lib/ghost";
 import {
   getPlayers,
   getSeasonTournaments,
@@ -162,6 +162,7 @@ export default async function Home() {
 
   const activeTournament = tournaments.find((t) => t.status === "live") || tournaments.find((t) => t.status === "pending");
 
+  const articles = await fetchArticles();
   const featuredArticle = articles[0];
   const latestNews = articles.slice(1, 5);
   const businessArticles = articles.filter((a) => a.category === "Business").slice(0, 3);
