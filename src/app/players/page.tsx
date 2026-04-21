@@ -2,6 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPlayers, countryFlag, type Player } from "@/lib/padel-api";
 
+// Player directory rarely changes; 1h
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Players | VAMOS",
   description: "Browse professional padel players. Rankings, profiles, stats, and more.",

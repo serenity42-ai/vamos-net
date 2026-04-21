@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { getSeasonTournaments, levelLabel, type Tournament } from "@/lib/padel-api";
 
+// Tournament list changes weekly when events start/finish
+export const revalidate = 1800;
+
 export const metadata = {
   title: "Tournaments | VAMOS",
   description: "2026 Premier Padel tournament calendar. Dates, locations, draws, and results for all events.",

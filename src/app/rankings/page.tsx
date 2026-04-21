@@ -2,6 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPlayers, countryFlag, type Player } from "@/lib/padel-api";
 
+// Rankings update weekly post-tournament; 1h is plenty
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Rankings | VAMOS",
   description: "Official Premier Padel rankings for men and women. Live rankings, points, and player profiles.",

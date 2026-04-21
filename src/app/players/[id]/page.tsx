@@ -2,6 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import MatchCard from "@/components/MatchCard";
+
+// Player profile: form table can update mid-day; 10 min
+export const revalidate = 600;
 import {
   getPlayer,
   getPlayerMatches,
