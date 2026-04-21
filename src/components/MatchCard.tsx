@@ -8,19 +8,37 @@ import { teamName } from "@/lib/player-utils";
 import StatusBadge from "@/components/StatusBadge";
 import type { NormalizedMatch, DisplayStatus } from "@/lib/normalize-match";
 
+/**
+ * Editorial match card.
+ *
+ * Palette:
+ *   paper (#F3EEE4)  — surface
+ *   ink   (#151210)  — winner + chrome
+ *   mute  (#8A7D71)  — loser + metadata
+ *   red   (#C1443A)  — live highlights + schedule chips
+ *   lime  (#D4FF3A)  — LIVE-only badge
+ */
+
 /** Render a set score, splitting tiebreak into superscript: "6(4)" → 6⁴ */
 function SetScoreCell({ value, isWinner }: { value: string; isWinner: boolean }) {
-  const match = value.match(/^(\d+)\((\d+)\)$/);
-  if (match) {
+  const tb = value.match(/^(\d+)\((\d+)\)$/);
+  const color = isWinner ? "var(--ink)" : "var(--mute)";
+  if (tb) {
     return (
-      <span className={`text-sm font-bold tabular-nums text-center ${isWinner ? "text-[#0F1F2E]" : "text-gray-400"}`}>
-        {match[1]}
-        <sup className="text-[9px] text-gray-400 ml-px">{match[2]}</sup>
+      <span
+        className="score-mono"
+        style={{ fontSize: 15, color, textAlign: "center" }}
+      >
+        {tb[1]}
+        <sup style={{ fontSize: 9, marginLeft: 1, color: "var(--mute)" }}>{tb[2]}</sup>
       </span>
     );
   }
   return (
-    <span className={`text-sm font-bold tabular-nums text-center ${isWinner ? "text-[#0F1F2E]" : "text-gray-400"}`}>
+    <span
+      className="score-mono"
+      style={{ fontSize: 15, color, textAlign: "center" }}
+    >
       {value}
     </span>
   );
@@ -51,11 +69,11 @@ export default function MatchCard({
 
   return (
     <div
-      className={`bg-white rounded-xl border overflow-hidden transition-shadow hover:shadow-md cursor-pointer ${
-        displayStatus === "live"
-          ? "border-red-200 shadow-sm"
-          : "border-gray-100"
-      }`}
+      className="transition-colors cursor-pointer group"
+      style={{
+        background: "var(--paper)",
+        border: `1px solid ${displayStatus === "live" ? "var(--red)" : "var(--ink)"}`,
+      }}
       onClick={() => openMatch(match, tournamentName)}
       role="button"
       tabIndex={0}
@@ -63,93 +81,142 @@ export default function MatchCard({
         if (e.key === "Enter" || e.key === " ") openMatch(match, tournamentName);
       }}
     >
-      {/* Header */}
-      <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-50 flex items-center justify-between border-b border-gray-100 gap-2">
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+      {/* Header strip */}
+      <div
+        className="flex items-center justify-between gap-2"
+        style={{
+          padding: "10px 16px",
+          background: "var(--paper-2)",
+          borderBottom: "1px solid var(--ink)",
+        }}
+      >
+        <div
+          className="flex items-center gap-2 min-w-0"
+          style={{
+            fontFamily: "var(--mono)",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+          }}
+        >
           {tournamentName && (
-            <span className="text-xs font-semibold text-[#0F1F2E] truncate">
+            <span style={{ color: "var(--ink)" }} className="truncate">
               {tournamentName}
             </span>
           )}
-          <span className="text-xs text-gray-400 shrink-0">
+          <span style={{ color: "var(--mute)" }} className="shrink-0">
             / {match.round_name}
           </span>
         </div>
         <div className="shrink-0">
-          <StatusBadge status={displayStatus} currentPoint={isLive ? currentPoint : null} variant="compact" />
+          <StatusBadge
+            status={displayStatus}
+            currentPoint={isLive ? currentPoint : null}
+            variant="compact"
+          />
         </div>
       </div>
 
-      {/* Teams */}
-      <div className="p-3 sm:p-4 space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-sm font-semibold truncate ${
-                match.winner === "team_1"
-                  ? "text-[#0F1F2E]"
-                  : match.winner === "team_2"
-                  ? "text-gray-400"
-                  : "text-[#0F1F2E]"
-              }`}
-            >
-              {team1Label}
-            </p>
-          </div>
+      {/* Teams + scores */}
+      <div className="p-5 space-y-3">
+        {/* Team 1 */}
+        <div className="flex items-center justify-between gap-3">
+          <p
+            className="truncate flex-1 min-w-0"
+            style={{
+              fontFamily: "var(--sans)",
+              fontSize: 14,
+              fontWeight: match.winner === "team_1" ? 800 : 600,
+              color: match.winner === "team_2" ? "var(--mute)" : "var(--ink)",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {team1Label}
+          </p>
           {displayScore && displayScore.length > 0 && (
-            <div className="flex gap-3 shrink-0 ml-2">
+            <div className="flex gap-3 shrink-0">
               {displayScore.map((s, i) => (
-                <SetScoreCell key={i} value={s.team_1} isWinner={parseInt(s.team_1) > parseInt(s.team_2)} />
+                <SetScoreCell
+                  key={i}
+                  value={s.team_1}
+                  isWinner={parseInt(s.team_1) > parseInt(s.team_2)}
+                />
               ))}
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-sm font-semibold truncate ${
-                match.winner === "team_2"
-                  ? "text-[#0F1F2E]"
-                  : match.winner === "team_1"
-                  ? "text-gray-400"
-                  : "text-[#0F1F2E]"
-              }`}
-            >
-              {team2Label}
-            </p>
-          </div>
+        {/* Team 2 */}
+        <div className="flex items-center justify-between gap-3">
+          <p
+            className="truncate flex-1 min-w-0"
+            style={{
+              fontFamily: "var(--sans)",
+              fontSize: 14,
+              fontWeight: match.winner === "team_2" ? 800 : 600,
+              color: match.winner === "team_1" ? "var(--mute)" : "var(--ink)",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {team2Label}
+          </p>
           {displayScore && displayScore.length > 0 && (
-            <div className="flex gap-3 shrink-0 ml-2">
+            <div className="flex gap-3 shrink-0">
               {displayScore.map((s, i) => (
-                <SetScoreCell key={i} value={s.team_2} isWinner={parseInt(s.team_2) > parseInt(s.team_1)} />
+                <SetScoreCell
+                  key={i}
+                  value={s.team_2}
+                  isWinner={parseInt(s.team_2) > parseInt(s.team_1)}
+                />
               ))}
             </div>
           )}
         </div>
 
-        {/* Full score line */}
+        {/* Full score string (duration) */}
         {scoreStr && (
-          <p className="text-xs text-gray-400 pt-1 border-t border-gray-50 truncate">
+          <p
+            className="truncate pt-2"
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              letterSpacing: "0.05em",
+              color: "var(--mute)",
+              borderTop: "1px solid rgba(0,0,0,0.08)",
+            }}
+          >
             {scoreStr}
             {match.duration && (
-              <span className="ml-2 text-gray-300">| {match.duration}</span>
+              <span style={{ color: "var(--mute)", marginLeft: 10 }}>
+                · {match.duration}
+              </span>
             )}
           </p>
         )}
 
         {/* Schedule / court for scheduled */}
         {displayStatus === "scheduled" && (
-          <div className="flex items-center gap-2 pt-1 border-t border-gray-50">
+          <div
+            className="flex items-center gap-2 pt-2"
+            style={{
+              borderTop: "1px solid rgba(0,0,0,0.08)",
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              letterSpacing: "0.05em",
+            }}
+          >
             {match.schedule_label ? (
-              <span className="text-xs font-medium text-[#4ABED9]">{match.schedule_label}</span>
+              <span style={{ color: "var(--red)", fontWeight: 700 }}>
+                {match.schedule_label}
+              </span>
             ) : (
-              <span className="text-xs text-gray-500">{match.played_at}</span>
+              <span style={{ color: "var(--mute)" }}>{match.played_at}</span>
             )}
             {match.court && (
               <>
-                <span className="text-xs text-gray-300">|</span>
-                <span className="text-xs text-gray-500">{match.court}</span>
+                <span style={{ color: "var(--mute)" }}>·</span>
+                <span style={{ color: "var(--mute)" }}>{match.court}</span>
               </>
             )}
           </div>
@@ -157,19 +224,34 @@ export default function MatchCard({
 
         {/* Court for live */}
         {displayStatus === "live" && match.court && (
-          <p className="text-xs text-gray-400 pt-1 border-t border-gray-50">
+          <p
+            className="pt-2"
+            style={{
+              borderTop: "1px solid rgba(0,0,0,0.08)",
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              letterSpacing: "0.05em",
+              color: "var(--mute)",
+            }}
+          >
             {match.court}
           </p>
         )}
 
-        {/* Category badge */}
+        {/* Category chip */}
         <div className="pt-1">
           <span
-            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-              match.category === "women"
-                ? "bg-pink-50 text-pink-600"
-                : "bg-blue-50 text-blue-600"
-            }`}
+            style={{
+              display: "inline-block",
+              fontFamily: "var(--mono)",
+              fontSize: 9,
+              fontWeight: 800,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              padding: "3px 7px",
+              color: match.category === "women" ? "#A83362" : "var(--ink)",
+              border: `1px solid ${match.category === "women" ? "#A83362" : "var(--ink)"}`,
+            }}
           >
             {match.category}
           </span>

@@ -171,7 +171,10 @@ export default async function Home() {
     <main>
       {/* Section 1: Live Scores Ticker */}
       {tickerMatches.length > 0 && (
-        <section className="bg-[#0F1F2E] overflow-hidden">
+        <section
+          className="overflow-hidden"
+          style={{ background: "var(--ink)", borderBottom: "1px solid var(--ink)" }}
+        >
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center">
               <div className="flex-1 overflow-x-auto scrollbar-hide">
