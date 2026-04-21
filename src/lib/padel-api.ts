@@ -167,16 +167,37 @@ async function get<T>(
     });
   }
 
-  const res = await fetch(url.toString(), {
-    headers: headers(),
-    next: { revalidate },
-  });
+  // Retry on 429 (rate limit) and 5xx with exponential backoff.
+  // PadelAPI Pro tier = 60 req/min; burst during SSR can trip this.
+  const maxAttempts = 4;
+  let lastErr: Error | null = null;
 
-  if (!res.ok) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const res = await fetch(url.toString(), {
+      headers: headers(),
+      next: { revalidate },
+    });
+
+    if (res.ok) return res.json();
+
+    const isRateLimit = res.status === 429;
+    const isServerError = res.status >= 500 && res.status < 600;
+
+    if ((isRateLimit || isServerError) && attempt < maxAttempts - 1) {
+      // Honor Retry-After if present, else exponential: 1s, 2s, 4s
+      const retryAfter = res.headers.get("retry-after");
+      const delayMs = retryAfter
+        ? Math.min(parseInt(retryAfter) * 1000, 10000)
+        : Math.min(1000 * Math.pow(2, attempt), 8000);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      lastErr = new Error(`PadelAPI ${res.status}: ${res.statusText} — ${url.pathname}`);
+      continue;
+    }
+
     throw new Error(`PadelAPI ${res.status}: ${res.statusText} — ${url.pathname}`);
   }
 
-  return res.json();
+  throw lastErr ?? new Error(`PadelAPI failed after ${maxAttempts} attempts — ${url.pathname}`);
 }
 
 async function post<T>(
