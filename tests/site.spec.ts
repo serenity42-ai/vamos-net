@@ -29,8 +29,12 @@ test.describe("Homepage", () => {
 
   test("has VAMOS wordmark in header", async ({ page }) => {
     await page.goto("/");
-    // Editorial wordmark: <div aria-label="VAMOS.NET"> containing "Vamos"
-    await expect(page.getByLabel("VAMOS.NET")).toBeVisible({ timeout: 10000 });
+    // Editorial wordmark: <div aria-label="VAMOS.NET"> containing stylized
+    // 'Vamos' + red '!'. Use exact match on the div's aria-label (the outer
+    // <a> uses 'Vamos.net home' which also fuzzy-matches 'VAMOS.NET').
+    await expect(
+      page.locator('div[aria-label="VAMOS.NET"]')
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test("shows navigation links", async ({ page }) => {
