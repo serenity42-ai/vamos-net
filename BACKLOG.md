@@ -69,6 +69,11 @@
 8. [ ] [FEATURE] No global search for players, tournaments, or articles
 9. [ ] [FEATURE] No dark mode
 
+### Tech Debt (Brand v2 cleanup)
+10. [ ] [DEBT] Remove the `globals.css` legacy-color remap block once every remaining file references CSS variables instead of hex arbitrary values. Grep for `bg-[#0F1F2E]`, `text-[#4ABED9]`, `bg-[#3CB371]`, etc. Migrate each occurrence page-by-page, then delete the matching `!important` rules in globals.css. Final state: no hex colors outside of `:root` in `globals.css`.
+11. [ ] [DEBT] `/calendar` page still uses pre-redesign color classes (bg-blue-100, bg-emerald-100, etc). Not in nav so low-risk, but should be editorial-ized before we surface it again.
+12. [ ] [DEBT] Dead API exports in `src/lib/padel-api.ts`: `getMatch`, `getTournaments`, `getSeasons`. Prune.
+
 ---
 
 ## Summary

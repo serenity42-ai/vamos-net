@@ -247,10 +247,21 @@ body {
 }
 
 /* -- Global legacy-color remapping -----------------------------------
-   Many pages still use the old navy/turquoise palette as Tailwind arbitrary
-   values (bg-[#0F1F2E], text-[#4ABED9], etc). Until every page is migrated
-   by hand, remap them at the utility level so the whole site reads as
-   editorial paper/ink/red. Component-level edits always take precedence. */
+   TECH DEBT — remove as pages migrate to CSS variables.
+
+   Some files still reference the old navy/turquoise/emerald palette as
+   Tailwind arbitrary values (bg-[#0F1F2E], text-[#4ABED9], bg-[#3CB371]).
+   This block remaps them at the utility level so the whole site reads
+   as editorial paper/ink/red while migration is in progress.
+
+   When a page is migrated to use `var(--ink)` / `var(--paper)` / etc
+   directly, update BACKLOG.md and delete any matching rules below that
+   are no longer referenced anywhere. Final goal: this entire block
+   disappears.
+
+   Rule for new code: NEVER write a hex color here or in components. Always
+   use a CSS variable from the :root block above. Component-level styles
+   always take precedence over these !important overrides anyway. */
 
 /* Old navy (#0F1F2E) -> ink */
 .bg-\[\#0F1F2E\] { background-color: var(--ink) !important; }

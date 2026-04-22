@@ -53,11 +53,60 @@ src/
 - The `Match` type has `players.team_1[]` and `players.team_2[]` with `{id, name, side}`
 - Live scores come from `/matches/{id}/live` endpoint (separate from match data)
 
-### Design System
-- Colors: `#0F1F2E` (dark navy), `#4ABED9` (accent blue), `#3CB371` (green), white backgrounds
-- NO emojis in UI
-- Light theme, clean minimal design
-- Player photos as circles with fallback initials
+### Design System — Brand v2 Editorial (current)
+
+**Reference docs (read first, always):**
+- `VAMOS.NET Brand Guidelines.html` (standalone HTML) — canonical source. Read it before designing anything.
+- `src/app/globals.css` — CSS variables are the runtime source of truth.
+
+**Tokens — pull from CSS variables, never hardcode hex:**
+```css
+--ink       /* near-black (body copy, borders) */
+--paper     /* warm cream page background */
+--paper-2   /* slightly darker paper, cards/hover */
+--red       /* primary accent (live, eyebrows, emphasis) */
+--lime      /* LIVE badges on ink backgrounds */
+--clay      /* secondary warm accent (section 04-ish) */
+--mute      /* muted text, de-emphasized */
+--ink-soft  /* body copy secondary */
+--sans      /* Archivo — body + display */
+--mono      /* JetBrains Mono / mono stack — eyebrows, scores, metadata */
+```
+Use `var(--ink)` etc. in inline `style` or Tailwind arbitrary values (`bg-[var(--paper)]`). NEVER write `#151210`, `#F3EEE4`, `#C1443A`, or any hex from memory.
+
+**Typography:**
+- `.display` class — oversized editorial headline, Archivo Black italic
+- `.italic-serif` — swash italic span inside display heads
+- `.eyebrow` — mono 10–11px, 0.14–0.18em tracking, uppercase, often prefixed with `■`
+- `.score-mono` — tabular mono for numerics and scores
+- `.badge-live` — the lime LIVE pill
+- `.btn` — bordered editorial button
+
+**Hard brand rules:**
+- NO rounded corners on layout blocks (cards, buttons, inputs). Rings/avatars only.
+- NO shadows. Use hairline borders (`1px solid var(--ink)` or `rgba(0,0,0,0.08–0.15)`).
+- NO emojis in UI. Use `■` / `●` / typographic marks instead.
+- Winner emphasis is **font-weight**, not color.
+- `#` in scores stays mono.
+
+**Existing components — check these before building new ones:**
+- `MatchCard` — match result/preview card with winner emphasis
+- `MatchModal` — detailed match view, ink header band, paper body
+- `NewsCard` — article teaser with red eyebrow + date
+- `RankingRow` — table row for rankings (top-3 red, mono points)
+- `ClickableMatchRow` — dense match row for /scores groupings
+- `StatusBadge` — single source for LIVE / FT / Sched. / Cancelled / W/O
+- `ScoresTicker` — ink band ticker with pulsing red Live feed dot
+- `NewsletterSignup` — ink full-bleed signup band
+- `Header` / `Footer` — editorial wordmark + nav
+
+If a new pattern is needed, extend one of these or propose a new component in /components — don't duplicate layout logic inline.
+
+**Tech debt (to be paid down as pages migrate):**
+- `globals.css` has a legacy-color remapping layer that rewrites any stray `#0F1F2E` / `#4ABED9` / `#3CB371` Tailwind arbitrary values to the token system. This is a safety net, not a feature. As each remaining page is migrated to use CSS variables directly, trim the remap rules. Target: delete the whole legacy-remap block once everything reads clean. Track progress in `REDESIGN-LOG.md`.
+
+**Other rules:**
+- Player photos as circles with fallback initials (mono font, `--mute` color)
 - Country flags via `countryFlag()` helper
 
 ### Important Rules
