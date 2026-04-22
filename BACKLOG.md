@@ -68,6 +68,9 @@
 ### Features
 8. [ ] [FEATURE] No global search for players, tournaments, or articles
 9. [ ] [FEATURE] No dark mode
+9a. [ ] [FEATURE] **Premium tier** — paid subscription for advanced content (personal inventory saved per user, premium training plans, pro-level drills, early access to reviews). Alex said "backlog this — we gonna do it soon." Designed to bolt onto Hub when ready.
+9b. [ ] [FEATURE] **Hub v2 — logged-in personal inventory** — user saves their racket, shoes, diet plan, training program. Evolves the informational Hub (v1) into a persistent player profile. Prereq: auth layer.
+9c. [ ] [FEATURE] **Site restructure** — Alex plans to eventually collapse Scores + Tournaments + Players into one unified "live action" section; Hub sits alongside as second major section. Full IA rework — track as epic when ready.
 
 ### Tech Debt (Brand v2 cleanup)
 10. [ ] [DEBT] Remove the `globals.css` legacy-color remap block once every remaining file references CSS variables instead of hex arbitrary values. Grep for `bg-[#0F1F2E]`, `text-[#4ABED9]`, `bg-[#3CB371]`, etc. Migrate each occurrence page-by-page, then delete the matching `!important` rules in globals.css. Final state: no hex colors outside of `:root` in `globals.css`.
