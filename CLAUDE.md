@@ -56,8 +56,8 @@ src/
 ### Design System — Brand v2 Editorial (current)
 
 **Reference docs (read first, always):**
-- `VAMOS.NET Brand Guidelines.html` (standalone HTML) — canonical source. Read it before designing anything.
-- `src/app/globals.css` — CSS variables are the runtime source of truth.
+- `docs/VAMOS.NET Brand Guidelines.html` (self-contained standalone HTML from the designer) — open in a browser to view. Canonical source for tokens, type, components, and voice. Read before designing anything.
+- `src/app/globals.css` — CSS variables are the runtime source of truth. Anything visible in the browser ultimately reads from here.
 
 **Tokens — pull from CSS variables, never hardcode hex:**
 ```css
