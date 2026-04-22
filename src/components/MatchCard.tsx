@@ -53,7 +53,8 @@ export default function MatchCard({
 }) {
   const { openMatch } = useMatchModal();
   const initialStatus = (match as NormalizedMatch).displayStatus || match.status;
-  const isLive = initialStatus === "live";
+  // Guard: even if the status says live, a declared winner means finished.
+  const isLive = initialStatus === "live" && !match.winner;
   const { score, currentPoint, status } = useLiveScore(
     match.id,
     isLive,
@@ -61,7 +62,14 @@ export default function MatchCard({
     initialStatus
   );
 
-  const displayScore = score;
+  // Drop empty / 0-0 in-progress sets so we never render a fake '0 0' set.
+  const displayScore = score?.filter((s) => {
+    const a = (s.team_1 ?? "").toString().trim();
+    const b = (s.team_2 ?? "").toString().trim();
+    if (!a && !b) return false;
+    if (a === "0" && b === "0") return false;
+    return true;
+  }) ?? null;
   const displayStatus = status as DisplayStatus;
   const scoreStr = formatScore(displayScore);
   const team1Label = teamName(match.players.team_1);

@@ -11,10 +11,21 @@ import { teamName } from "@/lib/player-utils";
  */
 function TickerMatch({ match }: { match: Match }) {
   const { openMatch } = useMatchModal();
-  const isLive = match.status === "live";
+  // A match is live ONLY if API says so AND no winner has been declared.
+  // Guards against stale cached data that still says 'live' after completion.
+  const isLive = match.status === "live" && !match.winner;
   const { score, currentPoint } = useLiveScore(match.id, isLive, match.score);
 
-  const displayScore = score;
+  // Filter out sets that have no meaningful score (both sides 0 or empty).
+  // Prevents 'LIVE 0-0' from rendering when a set is in progress but no
+  // completed games exist yet — PadelAPI sends set_score=null in that state.
+  const displayScore = score?.filter((s) => {
+    const t1 = (s.team_1 ?? "").toString().trim();
+    const t2 = (s.team_2 ?? "").toString().trim();
+    if (!t1 && !t2) return false;
+    if (t1 === "0" && t2 === "0") return false;
+    return true;
+  }) ?? null;
 
   return (
     <button
@@ -77,11 +88,11 @@ function TickerMatch({ match }: { match: Match }) {
             fontSize: 10,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "rgba(243,238,228,0.4)",
+            color: isLive ? "var(--lime)" : "rgba(243,238,228,0.4)",
             whiteSpace: "nowrap",
           }}
         >
-          vs
+          {isLive ? "Starting" : "vs"}
         </span>
       )}
       <span

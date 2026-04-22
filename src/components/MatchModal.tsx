@@ -162,7 +162,16 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
 
   const t1 = match.players.team_1;
   const t2 = match.players.team_2;
-  const score = liveScore;
+  // Filter out empty/0-0 in-progress sets — PadelAPI reports null set_score
+  // and empty games for a set that just started; we should not render '0 0'
+  // because it looks like a finished 0-0 set.
+  const score = liveScore?.filter((s) => {
+    const a = (s.team_1 ?? "").toString().trim();
+    const b = (s.team_2 ?? "").toString().trim();
+    if (!a && !b) return false;
+    if (a === "0" && b === "0") return false;
+    return true;
+  }) ?? null;
 
   const teams = [
     { players: t1, isWinner: match.winner === "team_1", key: "team_1" as const },

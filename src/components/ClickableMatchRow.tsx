@@ -40,10 +40,17 @@ export default function ClickableMatchRow({
 }) {
   const { openMatch } = useMatchModal();
   const initialStatus = (match as NormalizedMatch).displayStatus || match.status;
-  const isLive = initialStatus === "live";
+  const isLive = initialStatus === "live" && !match.winner;
   const { score, currentPoint, status } = useLiveScore(match.id, isLive, match.score, initialStatus);
 
-  const displayScore = score;
+  // Filter empty/0-0 in-progress sets so we never render a phantom 0-0.
+  const displayScore = score?.filter((s) => {
+    const a = (s.team_1 ?? "").toString().trim();
+    const b = (s.team_2 ?? "").toString().trim();
+    if (!a && !b) return false;
+    if (a === "0" && b === "0") return false;
+    return true;
+  }) ?? null;
   const displayStatus = status as DisplayStatus;
   const t1 = teamName(match.players.team_1);
   const t2 = teamName(match.players.team_2);
