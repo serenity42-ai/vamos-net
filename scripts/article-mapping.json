@@ -1,0 +1,102 @@
+{
+  "what-is-padel": {
+    "primary": "rules",
+    "secondary": ["academy"],
+    "hubSection": "rules-game"
+  },
+  "padel-rules-explained": {
+    "primary": "rules",
+    "secondary": ["academy"],
+    "hubSection": "rules-game"
+  },
+  "padel-scoring-system": {
+    "primary": "rules",
+    "secondary": ["academy"],
+    "hubSection": "rules-game"
+  },
+  "padel-court-dimensions": {
+    "primary": "rules",
+    "secondary": ["academy"],
+    "hubSection": "rules-game"
+  },
+  "padel-glossary": {
+    "primary": "rules",
+    "secondary": ["academy"],
+    "hubSection": "rules-game"
+  },
+  "padel-vs-tennis": {
+    "primary": "rules",
+    "secondary": ["academy"],
+    "hubSection": "rules-game"
+  },
+  "history-of-padel": {
+    "primary": "rules",
+    "secondary": [],
+    "hubSection": "rules-game"
+  },
+  "padel-olympics": {
+    "primary": "rules",
+    "secondary": ["business"],
+    "hubSection": "rules-game"
+  },
+  "how-to-play-padel-beginners": {
+    "primary": "rules",
+    "secondary": ["academy", "training"],
+    "hubSection": "rules-game"
+  },
+  "padel-courts-near-me": {
+    "primary": "lifestyle",
+    "secondary": ["rules"],
+    "hubSection": "lifestyle"
+  },
+
+  "best-padel-rackets-2026": {
+    "primary": "review",
+    "secondary": ["academy"],
+    "hubSection": "reviews"
+  },
+  "best-padel-shoes-2026": {
+    "primary": "review",
+    "secondary": ["academy"],
+    "hubSection": "reviews"
+  },
+  "how-to-choose-padel-racket": {
+    "primary": "review",
+    "secondary": ["academy", "training"],
+    "hubSection": "reviews"
+  },
+
+  "business-of-padel": {
+    "primary": "business",
+    "secondary": [],
+    "hubSection": "business"
+  },
+  "padel-club-business-model": {
+    "primary": "business",
+    "secondary": [],
+    "hubSection": "business"
+  },
+  "padel-market-size-growth-2026": {
+    "primary": "business",
+    "secondary": [],
+    "hubSection": "business"
+  },
+  "padel-player-earnings-prize-money-2026": {
+    "primary": "business",
+    "secondary": ["rankings"],
+    "hubSection": "business"
+  },
+
+  "top-padel-players-2026": {
+    "primary": "rankings",
+    "secondary": ["academy"],
+    "hubSection": null
+  },
+
+  "miami-p1-finals-2026": {
+    "primary": "tour-news",
+    "secondary": [],
+    "hubSection": null,
+    "alreadyInGhost": true
+  }
+}
