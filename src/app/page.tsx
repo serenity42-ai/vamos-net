@@ -439,7 +439,7 @@ export default async function Home() {
                 </h2>
               </div>
               <Link
-                href="/business"
+                href="/hub/business"
                 style={{ fontFamily: "var(--mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink)" }}
                 className="hover:text-[var(--red)] transition-colors hidden sm:inline"
               >

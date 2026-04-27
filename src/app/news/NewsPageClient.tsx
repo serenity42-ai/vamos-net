@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import NewsCard from "@/components/NewsCard";
 import type { Article } from "@/data/mock";
 
@@ -10,7 +11,23 @@ interface Props {
 }
 
 export default function NewsPageClient({ articles, categories }: Props) {
-  const [category, setCategory] = useState<string>("All");
+  const searchParams = useSearchParams();
+  const queryCategory = searchParams.get("category");
+
+  // Initialize from ?category= URL param if present and valid; else "All".
+  const initial =
+    queryCategory && categories.includes(queryCategory) ? queryCategory : "All";
+  const [category, setCategory] = useState<string>(initial);
+
+  // Keep state in sync if URL category changes (e.g. user clicks a different
+  // News dropdown item without leaving the page).
+  useEffect(() => {
+    if (queryCategory && categories.includes(queryCategory)) {
+      setCategory(queryCategory);
+    } else if (!queryCategory) {
+      setCategory("All");
+    }
+  }, [queryCategory, categories]);
 
   const filtered =
     category === "All"
