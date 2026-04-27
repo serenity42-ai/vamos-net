@@ -190,7 +190,7 @@ function DesktopDropdown({
           className="absolute left-0 top-full"
           style={{
             background: "var(--paper)",
-            border: "1px solid var(--ink)",
+            border: "1px solid var(--red)",
             borderTop: "none",
             minWidth: 220,
             zIndex: 60,
