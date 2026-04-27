@@ -98,5 +98,11 @@
     "secondary": [],
     "hubSection": null,
     "alreadyInGhost": true
+  },
+
+  "brussels-p2-2026-recap": {
+    "primary": "tour-news",
+    "secondary": [],
+    "hubSection": null
   }
 }
