@@ -9,208 +9,209 @@ keywords: ["padel court dimensions", "padel court size", "padel court measuremen
 
 # Padel Court Dimensions, Layout, and Rules You Need to Know
 
-The padel court is one of the most distinctive features of the sport. Enclosed by walls and fencing, smaller than a tennis court, and designed for doubles play, the court itself shapes how padel is played. Understanding its dimensions, layout, and materials is essential whether you are planning to build a court, choosing a venue, or simply trying to understand why the ball keeps coming back off the glass.
+A standard padel court is **20 metres long by 10 metres wide**, roughly a quarter the size of a tennis court, enclosed on all four sides by glass and metal mesh. Those three sentences cover what makes padel its own sport. The rest is detail.
 
-This guide covers every measurement, material, and rule related to the padel court.
+Here are the exact measurements, materials, and rules.
 
-## Overall Dimensions
+## Overall dimensions
 
-A standard padel court measures **20 meters long by 10 meters wide** (approximately 65.6 feet by 32.8 feet). This makes it roughly 25% smaller than a standard tennis doubles court, which measures 23.77 meters by 10.97 meters.
+A standard padel court measures **20 m × 10 m** (about 65.6 × 32.8 ft). A tennis doubles court is 23.77 × 10.97 m, so a padel court has roughly 25% less ground.
 
-The court is divided in half by a net, creating two equal halves of 10 meters by 10 meters. The entire playing area is enclosed, which is the defining characteristic that separates padel from virtually every other racket sport.
+The net divides the court in half. Each half is 10 × 10 m. The whole playing area is enclosed on all four sides; that's the defining feature that separates padel from every other major racket sport.
 
-### Why the Size Matters
+### Why the size matters
 
-The compact dimensions are central to what makes padel accessible and exciting:
+- **Shorter distances:** less ground to cover, less athletic demand than tennis.
+- **Enclosed walls:** the ball stays in play, rallies last longer.
+- **Doubles only:** four players sharing a small space. Position and teamwork beat raw power.
 
-- **Shorter distances** mean less ground to cover, reducing the athletic demands compared to tennis
-- **Enclosed walls** keep the ball in play, leading to longer rallies
-- **Doubles-only format** means four players share the relatively small space, encouraging teamwork and positioning over raw power
+## The net
 
-## The Net
+The net runs the full 10 m width across the centre line.
 
-The net runs across the full width of the court (10 meters) and sits at the center point, dividing the court into two equal halves.
+- **Centre height:** 88 cm
+- **Side height (at the posts):** 92 cm
 
-**Net height specifications:**
-- **Center height:** 88 centimeters (34.6 inches)
-- **Side height:** 92 centimeters (36.2 inches) at the posts
+The net sags slightly in the middle, like a tennis net. Posts sit either outside the playing area or flush with the side walls. Maximum allowed droop from the sides to the centre is 4 cm.
 
-The net sags slightly in the center, similar to a tennis net. It is held in place by two net posts that sit outside the playing area or flush with the side walls. The maximum allowed droop from the sides to the center is 4 centimeters.
+A metal cable along the top of the net is covered by a white band 5–6.3 cm wide.
 
-A metal cable or cord runs along the top of the net, covered by a white band that is between 5 and 6.3 centimeters wide.
+## Service boxes
 
-## Service Boxes
+Each half of the court is divided into two service boxes by a centre line. The service area:
 
-Each half of the court is divided into two service boxes by a central service line. The service area layout is as follows:
+- The **service line** runs parallel to the net at **6.95 m** from the net (3.05 m from the back wall)
+- A **centre line** runs perpendicular to the service line, splitting the area between the net and the service line into two equal boxes of **5 m wide by 6.95 m deep**
+- The area behind the service line (between service line and back wall) has no internal divisions
 
-- The **service line** runs parallel to the net at a distance of **6.95 meters** from the net (3.05 meters from the back wall)
-- A **center line** runs perpendicular to the service line, dividing the area between the net and the service line into two equal service boxes, each measuring **5 meters wide by 6.95 meters deep**
-- The area behind the service line (between the service line and the back wall) has no internal divisions
+You serve from behind the service line and must land the ball in the diagonal service box. The ball has to bounce in the box before the receiver can play it.
 
-Players serve from behind the service line and must land the ball in the diagonally opposite service box. The ball must bounce within the service box before the returner plays it.
+## Wall structure and heights
 
-## Wall Structure and Heights
+The walls aren't just boundaries; they're playing surfaces. The ball can bounce off them during rallies and stay in play.
 
-The walls are what make a padel court a padel court. They are not just boundaries; they are active playing surfaces that the ball can bounce off during rallies.
+### Back walls
 
-### Back Walls
+The back walls (one at each end) are the tallest and the most consequential.
 
-The back walls (at each end of the court) are the tallest and most substantial:
+- **Height:** 4 m total
+- **Lower 3 m:** glass or solid wall material
+- **Upper 1 m:** metal mesh fencing
+- The back wall extends the full 10 m width of the court
 
-- **Height:** 4 meters (13.1 feet) for the first 3 meters from each corner
-- The back wall structure extends the full 10-meter width of the court
-- The lower portion (up to 3 meters high) is typically **glass or solid wall material**
-- Above the solid section, **metallic mesh fencing** extends to the full 4-meter height
+### Side walls
 
-### Side Walls
+The side walls are stepped along their length:
 
-The side walls have a stepped design that varies along their length:
+- **First 4 m from the back wall:** solid wall (glass or concrete) at 3 m height
+- **Remaining 6 m toward the net:** metal mesh, stepping from 3 m height to 4 m total at the front, depending on configuration
 
-- **First 4 meters from the back wall:** Solid wall (glass or concrete) rising to **3 meters** in height
-- **Remaining 6 meters toward the net:** Metallic mesh fencing rising to **3 meters** in height in the section closest to the solid wall, then stepping down to **4 meters total height** including the mesh
+Configuration varies slightly between manufacturers. The FIP specifications set the standard for professional courts.
 
-The exact configuration can vary slightly depending on the court manufacturer and local regulations, but the International Padel Federation (FIP) specifications provide the standard that professional courts must follow.
+### Why the walls step down
 
-### Why the Walls Step Down
+The solid walls at the back of the court give predictable bounces, which players use deliberately for lobs and deep shots that rebound off the glass. The mesh sections toward the front let air pass through and keep visibility for spectators while keeping the ball inside the enclosure.
 
-The stepped wall design serves a functional purpose. The solid walls near the back of the court allow for predictable bounces that players use strategically, hitting lobs and deep shots that rebound off the glass. The mesh sections toward the middle and front allow air flow and visibility while preventing the ball from leaving the court.
+## Glass vs mesh
 
-## Glass vs. Mesh: Materials Explained
+### Glass walls
 
-### Glass Walls
+Glass is the standard for solid wall sections on professional and high-quality recreational courts.
 
-Glass is the standard material for the solid wall sections on professional and high-quality recreational courts:
+- **Tempered glass**, for safety (it shatters into small, low-injury pieces if it breaks)
+- Standard thickness: **10–12 mm**
+- Provides a consistent, predictable bounce that high-level play needs
+- Lets spectators watch from outside the court
+- Panels are joined with minimal gaps to keep the playing surface continuous
 
-- **Tempered glass** is used for safety (it shatters into small, relatively harmless pieces if broken)
-- Standard thickness is **10 to 12 millimeters**
-- Glass provides a **consistent, predictable bounce** that is essential for high-level play
-- It allows spectators to watch from outside the court
-- Glass panels are typically joined with minimal gaps to create a smooth playing surface
+### Concrete or brick walls
 
-### Concrete or Brick Walls
+Some older or budget-friendly courts use concrete, brick, or other solid materials instead of glass.
 
-Some older or more budget-friendly courts use concrete, brick, or other solid materials instead of glass:
+- Harder, faster bounce than glass
+- Cheaper to install and maintain
+- No spectator visibility
+- Common in club-level and recreational facilities, especially in Spain and Latin America
 
-- Provides a **harder, faster bounce** than glass
-- Less expensive to install and maintain
-- Offers no spectator visibility
-- Common in club-level and recreational facilities, particularly in Spain and Latin America
+### Metal mesh
 
-### Metallic Mesh
+The upper portions and forward sections of the side walls use metal mesh.
 
-The upper portions and forward sections of the side walls use metallic mesh (wire fencing):
+- Galvanized steel wire, typically
+- Mesh openings small enough to keep the ball inside
+- The ball doesn't rebound off mesh in any usable way during play; the mesh works as a boundary, not a playing surface
+- Mesh sections let wind through on outdoor courts, reducing structural wind load
 
-- Typically constructed from **galvanized steel wire**
-- Mesh openings are small enough to prevent the ball from passing through
-- The ball does not rebound off mesh in a usable way during play, effectively functioning as a boundary
-- Mesh sections allow wind to pass through on outdoor courts, reducing structural wind load
+## Court surface types
 
-## Court Surface Types
+The playing surface affects bounce, speed, and how players move.
 
-The playing surface of a padel court significantly affects gameplay, ball bounce, and player movement. Three main surface types are used:
+### Artificial grass (turf)
 
-### Artificial Grass (Turf)
+The most common padel surface in the world.
 
-The most common surface worldwide for padel courts:
-
-- **Short-pile artificial grass** (typically 10-15mm fiber height) filled with **silica sand**
-- The sand infill provides grip and controls the speed of the surface
-- Offers a **medium-paced** playing experience
-- Requires periodic brushing and sand top-ups to maintain consistency
-- Used on the majority of professional Premier Padel tour events
-- Color is typically blue or green, though blue has become the standard for televised events
+- **Short-pile artificial grass**, fibre 10–15 mm, with **silica sand** infill
+- The sand provides grip and controls the surface speed
+- Medium-paced playing experience
+- Requires periodic brushing and sand top-ups
+- Used on the majority of Premier Padel tour events
+- Usually blue or green; blue has become the standard for televised events
 
 ### Concrete
 
-Some outdoor recreational courts use bare concrete:
+Some outdoor recreational courts use bare concrete.
 
-- **Fastest surface** with the highest bounce
-- Low maintenance requirements
-- Can become slippery when wet
-- Harder on joints over extended play
-- Less common at competitive levels
+- Fastest surface, highest bounce
+- Low maintenance
+- Slippery when wet
+- Harder on joints over long sessions
+- Rare at competitive levels
 
-### Carpet or Synthetic Surface
+### Carpet or synthetic indoor surfaces
 
-Indoor facilities sometimes use specialized carpet or synthetic surfaces:
+Indoor facilities sometimes use specialized carpet or synthetic surfaces.
 
-- Provides consistent bounce and speed
-- Suitable for climate-controlled environments
-- Requires less maintenance than artificial grass
-- Less common than turf at the professional level
+- Consistent bounce and speed
+- Suited to climate-controlled venues
+- Less maintenance than turf
+- Uncommon at the professional level
 
 ## Lighting
 
-Proper lighting is essential for indoor courts and evening play on outdoor courts:
+For indoor courts and evening play outdoors:
 
-- The FIP recommends a minimum illumination of **400 lux** at court level for recreational play
-- Professional and broadcast events require **1,000 lux or higher**
-- Lights are positioned to minimize shadows and glare, typically mounted above the court at a height of **6 meters or more**
-- LED lighting has become the standard due to its energy efficiency and consistent output
+- FIP recommends a minimum of **400 lux** at court level for recreational play
+- Professional and broadcast events: **1,000 lux or higher**
+- Lights mounted at 6 m or more, positioned to minimize shadows and glare
+- LED is the standard now for energy efficiency and consistent output
 
-## Overhead Clearance
+## Overhead clearance
 
-For indoor courts or courts with a roof structure:
+For indoor courts or courts with a roof:
 
-- The minimum recommended overhead clearance is **6 meters** (19.7 feet) above the court surface
-- Professional venues often provide **8 meters or more** to accommodate high lobs
-- A ball that hits the ceiling or any overhead structure before crossing the net results in a point for the opposing pair
+- Minimum recommended clearance: **6 m (19.7 ft)** above the court surface
+- Professional venues often provide **8 m or more** to accommodate high lobs
+- A ball that hits the ceiling or any overhead structure before crossing the net loses the point for the team that hit it
 
-## Access Points
+## Access points
 
-Players enter and exit the court through **two openings** in the side walls or back walls, one on each side:
+Players enter and exit through openings in the side walls or back walls.
 
-- Each opening is approximately **1.05 meters wide by 2 meters high** (without a door) or up to **2 meters wide by 2 meters high** (with a door)
-- Some courts have openings on both sides, while others have a single opening on each side
-- The openings are part of the playing area -- a ball that exits through an opening can be played if the player can reach it in time (this is one of padel's most spectacular plays)
+- Each opening is roughly **1.05 m wide × 2 m high** (without a door) or up to **2 m × 2 m** (with a door)
+- Some courts have openings on both sides; others, one opening per side
+- The openings are part of the playing area: a ball that exits through one can be played if you can get to it in time
 
-## Playing Outside the Court
+## Playing outside the court
 
-One of padel's most unique rules involves playing the ball after it has left the court through one of the access openings or over the walls:
+The padel rule that surprises every newcomer.
 
-- If the ball bounces on your side of the court and then exits through an opening or over a side/back wall, you are allowed to **run outside the court** and play the ball back
-- The ball must be returned over the net and into the opponents' side of the court
-- This rule creates some of the most dramatic and entertaining points in padel
-- The ball cannot be played after it bounces a second time, even outside the court
+- If the ball bounces on your side and then exits through an opening or over a side or back wall, you can leave the court and play it
+- You must return it over the net and into the opponents' court
+- It can't be played after a second bounce, even outside the court
 
-## Court Markings
+This is the rule that produces the spectacular sprints-out-of-the-court returns that make padel highlight reels.
 
-All lines on a padel court are **5 centimeters wide** and should be a contrasting color to the court surface (typically white or yellow on blue turf):
+## Court markings
 
-- **Service line:** Parallel to the net, 6.95 meters from the net on each side
-- **Center service line:** Perpendicular to the net, dividing the service area into two equal boxes
-- **Side lines and back lines** are defined by the walls themselves (the walls are the boundaries)
+All lines on a padel court are **5 cm wide** and contrast with the surface (white or yellow on blue turf is typical).
 
-There is no baseline marking on a padel court because the back wall serves as the boundary. Similarly, there are no tramlines because padel is exclusively a doubles sport and the full width is always in play.
+- **Service line:** parallel to the net, 6.95 m from the net on each side
+- **Centre service line:** perpendicular to the net, dividing the service area into two equal boxes
+- **Side lines and back lines** are defined by the walls themselves; the walls are the boundaries
 
-## Building a Padel Court: Key Considerations
+No baseline. The back wall is the boundary. No tramlines either. Padel is doubles only and the full width is always in play.
 
-If you are considering building or investing in a padel court, here are the essential factors:
+## Building a padel court
 
-### Space Requirements
-- The court itself requires a footprint of 20m x 10m (200 square meters)
-- You need additional space around the court for the structure, drainage, and spectator access
-- A typical total footprint including surroundings is approximately **22m x 12m** (264 square meters)
+If you're investing in or planning to build a court, the essentials:
 
-### Cost Estimates
-- A basic outdoor court with concrete walls: approximately 15,000 to 25,000 EUR
-- A standard court with glass walls and artificial turf: approximately 30,000 to 50,000 EUR
-- A premium panoramic glass court (professional standard): approximately 50,000 to 80,000 EUR
-- Indoor installation adds significant costs for the building structure, climate control, and lighting
+### Space
+
+- The court itself: 20 × 10 m (200 m²)
+- Plus surrounding space for structure, drainage, spectator access
+- Typical total footprint with surroundings: about **22 × 12 m (264 m²)**
+
+### Cost (approximate, EUR, 2026)
+
+- Basic outdoor court, concrete walls: **€15,000–€25,000**
+- Standard court, glass walls, artificial turf: **€30,000–€50,000**
+- Premium panoramic glass court, pro standard: **€50,000–€80,000**
+- Indoor installation adds significant cost for the building structure, climate control, and lighting
 
 ### Maintenance
-- Artificial turf requires regular brushing (weekly) and sand redistribution
-- Glass panels need periodic cleaning and inspection for cracks
-- Mesh fencing should be checked for damage and rust
-- Surface sand should be topped up every 6 to 12 months
 
-## Court Dimensions Quick Reference
+- Artificial turf: weekly brushing and sand redistribution
+- Glass panels: periodic cleaning, regular inspection for cracks
+- Mesh fencing: damage and rust checks
+- Surface sand: top up every 6–12 months
+
+## Quick reference
 
 | Measurement | Metric | Imperial |
-|------------|--------|----------|
+|---|---|---|
 | Court length | 20 m | 65.6 ft |
 | Court width | 10 m | 32.8 ft |
-| Net height (center) | 88 cm | 34.6 in |
+| Net height (centre) | 88 cm | 34.6 in |
 | Net height (posts) | 92 cm | 36.2 in |
 | Back wall height | 4 m | 13.1 ft |
 | Side wall (solid) height | 3 m | 9.8 ft |
@@ -219,6 +220,4 @@ If you are considering building or investing in a padel court, here are the esse
 | Minimum overhead clearance | 6 m | 19.7 ft |
 | Line width | 5 cm | 2 in |
 
-## Wrapping Up
-
-The padel court is more than just a playing surface. Its enclosed design with glass walls, stepped mesh fencing, and compact dimensions creates the unique gameplay that has made padel the fastest-growing sport in the world. Whether you are comparing courts at your local club, planning a build, or simply wondering why the ball keeps coming back into play, understanding these dimensions and specifications puts you ahead of the game.
+That's the court. Smaller than tennis, taller than squash, glass everywhere, no baseline. Once you've played on one, you understand why every backyard in Spain is being converted into another.
