@@ -39,11 +39,19 @@ test.describe("Homepage", () => {
 
   test("shows navigation links", async ({ page }) => {
     await page.goto("/");
+    // Top-level: Live Scores is a direct link; Pro Padel / Player's Hub / News
+    // are dropdown triggers (buttons).
     await expect(
       page.getByRole("navigation").getByRole("link", { name: "Live Scores" })
     ).toBeVisible();
     await expect(
-      page.getByRole("navigation").getByRole("link", { name: "Rankings" })
+      page.getByRole("navigation").getByRole("button", { name: /pro padel/i })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("navigation").getByRole("button", { name: /player's hub/i })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("navigation").getByRole("button", { name: /^news$/i })
     ).toBeVisible();
   });
 
@@ -148,9 +156,22 @@ test.describe("Other Pages Load", () => {
     expect(response?.status()).toBe(200);
   });
 
-  test("business page loads", async ({ page }) => {
+  test("business URL redirects to /hub/business", async ({ page }) => {
     const response = await page.goto("/business");
     expect(response?.status()).toBe(200);
+    expect(page.url()).toContain("/hub/business");
+  });
+
+  test("hub landing page loads", async ({ page }) => {
+    const response = await page.goto("/hub");
+    expect(response?.status()).toBe(200);
+  });
+
+  test("hub subsections load", async ({ page }) => {
+    for (const sub of ["rules", "reviews", "business", "lifestyle", "training"]) {
+      const response = await page.goto(`/hub/${sub}`);
+      expect(response?.status(), `/hub/${sub}`).toBe(200);
+    }
   });
 });
 

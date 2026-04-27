@@ -29,5 +29,13 @@ const nextConfig = {
       { source: "/tournaments/:id", headers: shortCache },
     ];
   },
+
+  // Permanent redirects: /business has SEO history; preserve it via 301 to
+  // the new /hub/business location (Player's Hub section, Apr 27 nav restructure).
+  async redirects() {
+    return [
+      { source: "/business", destination: "/hub/business", permanent: true },
+    ];
+  },
 };
 export default nextConfig;
