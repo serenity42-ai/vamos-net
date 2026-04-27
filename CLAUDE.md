@@ -116,12 +116,6 @@ If a new pattern is needed, extend one of these or propose a new component in /c
 - The coming-soon gate is in middleware.ts — `?preview=vamos2026` bypasses it
 - Full production site: vamos-net.vercel.app (no gate)
 
-## Writing & Editorial
-
-**Read `content/WRITING-INSTRUCTIONS.md` before drafting any article, news post, headline, or section copy.** Canonical guide for vamos.net writing voice. Covers structural rules (sentence-length variance, opening scan, no AI essay template), banned words, opening/closing patterns to avoid, source-faithful rewriting, and the 6-point self-edit pass before delivering.
-
-The two earlier files (`content/ARTICLE-STYLE-GUIDE.md`, `content/AI-SLOP-CHECKLIST.md`) are superseded by `WRITING-INSTRUCTIONS.md`. Don't load them. They will be archived or deleted.
-
 ## Testing
 Run `npx playwright test` before committing. Tests must pass.
 Run `npx next build` to verify no build errors.
