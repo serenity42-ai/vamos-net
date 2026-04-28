@@ -1,5 +1,7 @@
 # Vamos.net Article Style Guide
 
+> **For tournament recaps, follow `TOURNAMENT-RECAP-PATTERN.md`.** It's stricter and more specific than this general guide.
+
 ## Writing Guidelines
 
 ### Tone & Voice
