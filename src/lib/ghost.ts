@@ -166,9 +166,57 @@ export async function fetchRecentArticles(limit = 4): Promise<Article[]> {
 }
 
 /**
- * Fetch all published slugs — used for generateStaticParams / sitemap.
+ * Fetch all published articles for a given primary tag (Hub section).
+ * Used by /hub/* pages.
+ */
+export async function fetchArticlesByPrimaryTag(
+  tagSlug: string
+): Promise<Article[]> {
+  if (!isGhostConfigured()) {
+    return [];
+  }
+
+  try {
+    const client = getClient();
+    const posts: PostsOrPages = await client.posts.browse({
+      limit: 'all',
+      include: ['tags', 'authors'],
+      filter: `status:published+primary_tag:${tagSlug}`,
+      order: 'published_at DESC',
+    } as Params);
+
+    if (!Array.isArray(posts)) return [];
+    return posts.map(ghostPostToArticle);
+  } catch (err) {
+    console.error(
+      `[ghost] fetchArticlesByPrimaryTag(${tagSlug}) failed:`,
+      err
+    );
+    return [];
+  }
+}
+
+/**
+ * Fetch all published slugs (News + Hub) — used for generateStaticParams /
+ * sitemap. Hub posts are excluded from /news listings but their detail pages
+ * must still be statically generated and indexed.
  */
 export async function fetchAllSlugs(): Promise<string[]> {
-  const all = await fetchArticles();
-  return all.map((a) => a.slug);
+  if (!isGhostConfigured()) {
+    return mockArticles.map((a) => a.slug);
+  }
+  try {
+    const client = getClient();
+    const posts: PostsOrPages = await client.posts.browse({
+      limit: 'all',
+      include: ['tags'],
+      filter: 'status:published',
+      order: 'published_at DESC',
+    } as Params);
+    if (!Array.isArray(posts)) return mockArticles.map((a) => a.slug);
+    return posts.map((p) => p.slug).filter((s): s is string => Boolean(s));
+  } catch (err) {
+    console.error('[ghost] fetchAllSlugs failed, falling back to mock:', err);
+    return mockArticles.map((a) => a.slug);
+  }
 }
