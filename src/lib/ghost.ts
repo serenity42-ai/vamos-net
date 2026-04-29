@@ -36,9 +36,27 @@ export function isGhostConfigured(): boolean {
 }
 
 /**
- * Map a Ghost primary tag slug to our category taxonomy.
+ * Player's Hub primary tags. Posts with one of these primary tags belong on
+ * the corresponding /hub/* page, NOT on /news. They must be filtered out of
+ * the news feed.
+ */
+const HUB_PRIMARY_TAGS = new Set([
+  'lifestyle',
+  'rules',
+  'review',
+  'training',
+]);
+
+export function isHubPost(primarySlug?: string): boolean {
+  return primarySlug ? HUB_PRIMARY_TAGS.has(primarySlug) : false;
+}
+
+/**
+ * Map a Ghost primary tag slug to our News-section category taxonomy.
  *
- * Ghost tags suggested: "tour-news", "rankings", "business", "academy".
+ * News tags: "tour-news", "rankings", "business", "academy".
+ * Hub tags (lifestyle / rules / review / training) are filtered out before
+ * this is called, so they never reach this mapper.
  * Defaults to "Tour News" for anything unrecognised so the site never
  * renders an empty category.
  */
@@ -100,7 +118,13 @@ export async function fetchArticles(): Promise<Article[]> {
       return mockArticles;
     }
 
-    return posts.map(ghostPostToArticle);
+    // Exclude posts whose primary tag belongs to Player's Hub. They are
+    // surfaced on /hub/* pages, not in the News feed.
+    const newsPosts = posts.filter(
+      (p) => !isHubPost(p.primary_tag?.slug)
+    );
+
+    return newsPosts.map(ghostPostToArticle);
   } catch (err) {
     console.error('[ghost] fetchArticles failed, falling back to mock:', err);
     return mockArticles;

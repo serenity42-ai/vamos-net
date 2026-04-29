@@ -137,14 +137,22 @@ for (const f of files) {
 
   try {
     if (isAlreadyInGhost) {
-      // Retag only — don't overwrite the published post body.
-      const updatedPost = await api.posts.edit({
+      const forceBody = process.argv.includes("--force-body");
+      const editPayload = {
         id: existing.id,
-        // Required: Ghost requires updated_at to prevent concurrent edits.
         updated_at: existing.updated_at || new Date().toISOString(),
         tags,
-      });
-      console.log(`[RETAG]  ${slug.padEnd(42)} status=${updatedPost.status}, tags=${tagSlugs.join(",")}`);
+      };
+      if (forceBody) {
+        editPayload.title = title;
+        editPayload.html = html;
+        editPayload.custom_excerpt = (excerpt || "").slice(0, 300) || undefined;
+        editPayload.meta_title = title.slice(0, 70);
+        editPayload.meta_description = (excerpt || "").slice(0, 160) || undefined;
+      }
+      const updatedPost = await api.posts.edit(editPayload, forceBody ? { source: "html" } : undefined);
+      const action = forceBody ? "UPDATE" : "RETAG";
+      console.log(`[${action}] ${slug.padEnd(42)} status=${updatedPost.status}, tags=${tagSlugs.join(",")}`);
       updated += 1;
     } else {
       const newPost = await api.posts.add(
