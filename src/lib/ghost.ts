@@ -52,11 +52,12 @@ export function isHubPost(primarySlug?: string): boolean {
 }
 
 /**
- * Map a Ghost primary tag slug to our News-section category taxonomy.
+ * Map a Ghost primary tag slug to our category taxonomy. Both News-section
+ * tags and Player's Hub tags are recognised so each article surfaces with
+ * its correct badge regardless of which page renders it.
  *
- * News tags: "tour-news", "rankings", "business", "academy".
- * Hub tags (lifestyle / rules / review / training) are filtered out before
- * this is called, so they never reach this mapper.
+ * News-section: "tour-news", "rankings", "business", "academy".
+ * Player's Hub: "lifestyle", "training", "rules", "review".
  * Defaults to "Tour News" for anything unrecognised so the site never
  * renders an empty category.
  */
@@ -68,6 +69,14 @@ function mapCategory(primarySlug?: string): Article['category'] {
       return 'Business';
     case 'academy':
       return 'Academy';
+    case 'lifestyle':
+      return 'Lifestyle';
+    case 'training':
+      return 'Training';
+    case 'rules':
+      return 'Rules';
+    case 'review':
+      return 'Reviews';
     case 'tour-news':
     case 'news':
     case 'recap':
@@ -118,13 +127,11 @@ export async function fetchArticles(): Promise<Article[]> {
       return mockArticles;
     }
 
-    // Exclude posts whose primary tag belongs to Player's Hub. They are
-    // surfaced on /hub/* pages, not in the News feed.
-    const newsPosts = posts.filter(
-      (p) => !isHubPost(p.primary_tag?.slug)
-    );
-
-    return newsPosts.map(ghostPostToArticle);
+    // All published posts are returned, including Hub-tagged ones, so they
+    // appear in the global news feed with their correct category badge
+    // (Lifestyle / Training / Rules / Reviews). The /news category filter
+    // still narrows to News-only categories.
+    return posts.map(ghostPostToArticle);
   } catch (err) {
     console.error('[ghost] fetchArticles failed, falling back to mock:', err);
     return mockArticles;

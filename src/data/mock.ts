@@ -5,7 +5,15 @@ export interface Article {
   slug: string;
   title: string;
   excerpt: string;
-  category: "Tour News" | "Rankings" | "Business" | "Academy";
+  category:
+    | "Tour News"
+    | "Rankings"
+    | "Business"
+    | "Academy"
+    | "Lifestyle"
+    | "Training"
+    | "Rules"
+    | "Reviews";
   author: string;
   date: string;
   imageUrl: string;
