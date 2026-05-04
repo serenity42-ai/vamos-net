@@ -45,6 +45,7 @@ const HUB_PRIMARY_TAGS = new Set([
   'rules',
   'review',
   'training',
+  'clubs',
 ]);
 
 export function isHubPost(primarySlug?: string): boolean {
@@ -57,7 +58,7 @@ export function isHubPost(primarySlug?: string): boolean {
  * its correct badge regardless of which page renders it.
  *
  * News-section: "tour-news", "rankings", "business", "academy".
- * Player's Hub: "lifestyle", "training", "rules", "review".
+ * Player's Hub: "lifestyle", "training", "rules", "review", "clubs".
  * Defaults to "Tour News" for anything unrecognised so the site never
  * renders an empty category.
  */
@@ -77,6 +78,8 @@ function mapCategory(primarySlug?: string): Article['category'] {
       return 'Rules';
     case 'review':
       return 'Reviews';
+    case 'clubs':
+      return 'Clubs';
     case 'tour-news':
     case 'news':
     case 'recap':

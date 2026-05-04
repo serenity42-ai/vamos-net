@@ -42,6 +42,13 @@ const SECTIONS = [
     description:
       "Technique, drills, mindset, fuel. Everything that makes you better between matches.",
   },
+  {
+    eyebrow: "06",
+    href: "/hub/clubs",
+    title: "Clubs",
+    description:
+      "Where the game lives. Club reviews, openings, and the venues shaping padel city by city.",
+  },
 ] as const;
 
 export default function HubPage() {
