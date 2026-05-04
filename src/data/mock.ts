@@ -13,7 +13,8 @@ export interface Article {
     | "Lifestyle"
     | "Training"
     | "Rules"
-    | "Reviews";
+    | "Reviews"
+    | "Clubs";
   author: string;
   date: string;
   imageUrl: string;

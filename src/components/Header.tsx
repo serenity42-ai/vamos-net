@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
  *
  * - Live Scores      → /scores (no children)
  * - Pro Padel        → tournaments / schedule / players / rankings
- * - Player's Hub     → rules & game / reviews / padel business / lifestyle / training
+ * - Player's Hub     → rules & game / reviews / padel business / lifestyle / training / clubs
  * - News             → category filters on /news
  *
  * Active-state rule: a top-level entry shows the red underline when the current
@@ -45,6 +45,7 @@ const NAV: NavEntry[] = [
       { href: "/hub/business", label: "Padel Business" },
       { href: "/hub/lifestyle", label: "Lifestyle" },
       { href: "/hub/training", label: "Training" },
+      { href: "/hub/clubs", label: "Clubs" },
     ],
   },
   {
