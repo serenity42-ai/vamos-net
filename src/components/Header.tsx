@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import VamosNetLogo from "@/components/VamosNetLogo";
 
 /**
  * Site navigation. Four top-level entries; three are dropdowns.
@@ -59,45 +60,6 @@ const NAV: NavEntry[] = [
     ],
   },
 ];
-
-/* ---------- Wordmark ---------- */
-
-function Wordmark({ size = 36 }: { size?: number }) {
-  return (
-    <div
-      aria-label="VAMOS.NET"
-      style={{ display: "inline-flex", alignItems: "baseline", transform: "skewX(-6deg)" }}
-    >
-      <span
-        style={{
-          fontFamily: "var(--sans)",
-          fontWeight: 900,
-          fontStyle: "italic",
-          fontSize: size,
-          lineHeight: 1,
-          letterSpacing: "-0.045em",
-          color: "var(--ink)",
-        }}
-      >
-        Vamos
-      </span>
-      <span
-        style={{
-          fontFamily: "var(--sans)",
-          fontWeight: 900,
-          fontStyle: "italic",
-          fontSize: size,
-          lineHeight: 1,
-          letterSpacing: "-0.045em",
-          color: "var(--red)",
-          marginLeft: -2,
-        }}
-      >
-        !
-      </span>
-    </div>
-  );
-}
 
 /* ---------- Active-state helpers ---------- */
 
@@ -352,7 +314,9 @@ export default function Header() {
             className="flex items-center gap-4 flex-shrink-0"
             aria-label="Vamos.net home"
           >
-            <Wordmark size={34} />
+            {/* Logo height matches the previous wordmark cap height. The SVG
+                viewBox preserves aspect ratio (880×220), so we set height only. */}
+            <VamosNetLogo variant="ink" height={30} />
             <span
               className="hidden sm:block"
               style={{

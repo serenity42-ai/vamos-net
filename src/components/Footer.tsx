@@ -1,4 +1,5 @@
 import Link from "next/link";
+import VamosNetLogo from "@/components/VamosNetLogo";
 
 /**
  * Editorial footer — dark ink surface, mono eyebrows, italic wordmark.
@@ -11,34 +12,8 @@ export default function Footer() {
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Wordmark + tagline */}
           <div className="col-span-2 lg:col-span-5">
-            <div style={{ transform: "skewX(-6deg)", display: "inline-block" }}>
-              <span
-                style={{
-                  fontFamily: "var(--sans)",
-                  fontWeight: 900,
-                  fontStyle: "italic",
-                  fontSize: 56,
-                  lineHeight: 1,
-                  letterSpacing: "-0.045em",
-                  color: "var(--paper)",
-                }}
-              >
-                Vamos
-              </span>
-              <span
-                style={{
-                  fontFamily: "var(--sans)",
-                  fontWeight: 900,
-                  fontStyle: "italic",
-                  fontSize: 56,
-                  lineHeight: 1,
-                  letterSpacing: "-0.045em",
-                  color: "var(--red)",
-                }}
-              >
-                !
-              </span>
-            </div>
+            {/* Footer sits on ink, so use the light/reversed variant. */}
+            <VamosNetLogo variant="light" height={56} />
             <p
               style={{
                 marginTop: 24,

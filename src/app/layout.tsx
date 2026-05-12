@@ -16,6 +16,18 @@ export const metadata: Metadata = {
     siteName: "VAMOS",
     type: "website",
   },
+  // Brand favicon — the new "Woven .net" lockup ships as an SVG icon.
+  // See docs/brand/VAMOS_NET_LOGO_HANDOFF.md for sizing rules. The 32×32
+  // fallback drops the mesh and shows just the V + red dot, which is the
+  // approved small-size variant.
+  icons: {
+    icon: [
+      { url: "/brand/vamos-net-favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/brand/vamos-net-mark.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

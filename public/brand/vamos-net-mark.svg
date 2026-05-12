@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="vamos.net">
+  <defs>
+    
+    <pattern id="vn-mesh-mark" patternUnits="userSpaceOnUse" x="0" y="0" width="10" height="10">
+      <rect x="0" y="0" width="10" height="6" fill="#151210"></rect>
+    </pattern>
+  </defs>
+
+  
+  <rect x="0" y="0" width="256" height="256" fill="#F3EEE4"></rect>
+
+  <g transform="skewX(-6) translate(0 0)">
+    <text class="vn-mark-word" x="20" y="170" fill="#C1443A">.</text>
+    <text class="vn-mark-word" x="55" y="170" fill="#151210" opacity="0.18">net</text>
+    <text class="vn-mark-word" x="55" y="170" fill="url(#vn-mesh-mark)">net</text>
+  </g>
+</svg>

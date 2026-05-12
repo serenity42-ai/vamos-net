@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 220" role="img" aria-label="vamos.net">
+  <defs>
+    
+    <pattern id="vn-mesh-ink" patternUnits="userSpaceOnUse" x="0" y="0" width="14" height="14">
+      <rect x="0" y="0" width="14" height="8" fill="#151210"></rect>
+    </pattern>
+  </defs>
+  <g transform="skewX(-6)">
+    <text class="vn-word" x="30" y="170" fill="#151210">vamos</text>
+    <text class="vn-word" x="540" y="170" fill="#C1443A">.</text>
+    <text class="vn-word" x="580" y="170" fill="#151210" opacity="0.18">net</text>
+    <text class="vn-word" x="580" y="170" fill="url(#vn-mesh-ink)">net</text>
+  </g>
+</svg>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#F3EEE4"></rect>
+  <g transform="skewX(-6) translate(2 0)">
+    <text x="4" y="25" font-family="Archivo, Helvetica, sans-serif" font-weight="900" font-style="italic" font-size="26" fill="#151210" letter-spacing="-1">v</text>
+    <circle cx="24" cy="22" r="3" fill="#C1443A"></circle>
+  </g>
+</svg>
