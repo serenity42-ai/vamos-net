@@ -24,7 +24,7 @@ export default function Footer() {
                 color: "rgba(243,238,228,0.7)",
               }}
             >
-              The padel feed. Live scores, rankings, editorial, and the business of the world&rsquo;s fastest-growing racket sport.
+              The world of padel. Live scores, rankings, editorial, and the business of the world&rsquo;s fastest-growing racket sport.
             </p>
           </div>
 

@@ -330,7 +330,7 @@ export default function Header() {
                 borderLeft: "1px solid var(--ink)",
               }}
             >
-              The padel feed
+              The world of padel
             </span>
           </Link>
 
