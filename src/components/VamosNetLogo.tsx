@@ -78,13 +78,12 @@ export default function VamosNetLogo({
   // Pattern ids must be unique per instance so multiple logos on the same
   // page (e.g. header + footer) don't collide on the same <defs> id.
   const patternId = `vn-mesh-${variant}`;
-  const maskId = `vn-mask-${variant}`;
 
   const aspect = VIEW_W / VIEW_H;
 
   // Shared text styling — Archivo Black italic, lowercase, tight tracking.
-  // letterSpacing as a unitless value at this fontSize ≈ -9px (matches the
-  // -0.045em spec from the brand handoff at 200px).
+  // letterSpacing -9px at fontSize=200 matches the -0.045em spec from the
+  // brand handoff.
   const textStyle: React.CSSProperties = {
     fontFamily: "var(--sans)",
     fontWeight: 900,
@@ -92,7 +91,6 @@ export default function VamosNetLogo({
     fontSize: FONT_PX,
     letterSpacing: "-9px",
     textTransform: "lowercase",
-    // dominantBaseline is set via attribute on the element for SVG support.
   };
 
   return (
@@ -119,50 +117,25 @@ export default function VamosNetLogo({
         >
           <rect x="0" y="0" width="14" height="8" fill={fg} />
         </pattern>
-
-        {/* Mask: paints only the `net` glyphs in white so we can punch the
-            mesh through that portion of the wordmark. The dot stays black
-            in the mask so the red `.` from Layer 1 remains untouched by
-            the mesh pattern. The wordmark order is recreated exactly so
-            the `net` glyphs sit at the same x positions as Layer 1. */}
-        <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width={VIEW_W} height={VIEW_H}>
-          <text
-            x={START_X}
-            y={BASELINE_Y}
-            style={textStyle}
-          >
-            <tspan fill="black">vamos.</tspan>
-            <tspan fill="white">net</tspan>
-          </text>
-        </mask>
       </defs>
 
       <g transform="skewX(-6)">
-        {/* Layer 1 — full wordmark, drawn left-to-right by the browser so we
-            don't have to know glyph widths. `vamos` in fg, the dot in red,
-            `net` in 18% ghost underlay (so the silhouette stays legible
-            when mesh stripes drop below sub-pixel at very small sizes). */}
-        <text
-          x={START_X}
-          y={BASELINE_Y}
-          style={textStyle}
-        >
-          <tspan fill={fg}>vamos</tspan>
-          <tspan fill={dot}>.</tspan>
-          <tspan fill={fg} opacity={0.18}>net</tspan>
+        {/* Ghost underlay — 18% opacity full wordmark, kept behind the live
+            wordmark so `net`'s silhouette stays legible when individual
+            mesh stripes drop below sub-pixel at small sizes. */}
+        <text x={START_X} y={BASELINE_Y} style={textStyle} fill={fg} opacity={0.18}>
+          vamos.net
         </text>
 
-        {/* Layer 2 — the mesh pattern, masked to just the `.net` glyphs so
-            it reads as netting woven through those letterforms only. A
-            single rectangle is enough; the mask isolates the portion. */}
-        <rect
-          x="0"
-          y="0"
-          width={VIEW_W}
-          height={VIEW_H}
-          fill={`url(#${patternId})`}
-          mask={`url(#${maskId})`}
-        />
+        {/* Live wordmark — one continuous <text> so the browser flows the
+            tspans by actual glyph widths. The mesh-fill is applied directly
+            to the `net` tspan via fill="url(#pattern)", so there is no mask
+            and therefore no alignment drift between layers. */}
+        <text x={START_X} y={BASELINE_Y} style={textStyle}>
+          <tspan fill={fg}>vamos</tspan>
+          <tspan fill={dot}>.</tspan>
+          <tspan fill={`url(#${patternId})`}>net</tspan>
+        </text>
       </g>
     </svg>
   );
