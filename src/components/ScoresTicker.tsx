@@ -42,23 +42,10 @@ function TickerMatch({ match }: { match: Match }) {
         (e.currentTarget as HTMLButtonElement).style.background = "transparent";
       }}
     >
-      {isLive && (
-        <span
-          style={{
-            background: "var(--lime)",
-            color: "var(--ink)",
-            padding: "2px 6px",
-            fontFamily: "var(--mono)",
-            fontSize: 9,
-            fontWeight: 800,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            whiteSpace: "nowrap",
-          }}
-        >
-          LIVE
-        </span>
-      )}
+      {/* No per-match LIVE chip — the strip-level "LIVE NOW" badge already
+          signals the mode. Per-match chips became visual noise when every
+          row repeated the same label. The lime-coloured score keeps the
+          liveness cue on each row. */}
       <span
         style={{
           fontFamily: "var(--sans)",
