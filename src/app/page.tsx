@@ -67,14 +67,17 @@ async function fetchHomeData() {
     r.status === "fulfilled" ? r.value.data : []
   );
 
-  // Fetch recent matches from global endpoint (tournament endpoint can miss some)
+  // Fetch recent + upcoming matches from global endpoint (tournament endpoint
+  // can miss some, and scheduled matches in non-live tournaments aren't covered
+  // by the relevant-tournament loop above).
   const today = new Date();
   const threeDaysAgo = new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000);
-  const todayStr = today.toISOString().split("T")[0];
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
   const recentStr = threeDaysAgo.toISOString().split("T")[0];
+  const tomorrowStr = tomorrow.toISOString().split("T")[0];
   const todayRes = await getMatches({
     after_date: recentStr,
-    before_date: todayStr,
+    before_date: tomorrowStr,
     sort_by: "played_at",
     order_by: "desc",
     per_page: "50",
@@ -155,17 +158,47 @@ export default async function Home() {
 
   const liveMatches = matches.filter((m) => m.displayStatus === "live");
 
-  // Strip rule: show live matches if any; otherwise show finished matches only
-  // while they're still fresh (≤24h since end of last match). After 24h the
-  // strip disappears entirely — no stale "live feed" on quiet days.
-  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  // Strip rules — priority order:
+  //   1. Live now → show live matches
+  //   2. Recently finished (≤24h) → show last few results
+  //   3. Scheduled within next 12h → show upcoming
+  //   4. Otherwise → hide strip entirely
+  const now = Date.now();
+  const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
+  const twelveHoursAhead = new Date(now + 12 * 60 * 60 * 1000);
+
   const freshFinished = recentMatches.filter(
     (m) => new Date(m.played_at) >= dayAgo
   );
 
-  const tickerMatches = liveMatches.length > 0
-    ? liveMatches
-    : freshFinished.slice(0, 4);
+  const upcomingMatches = matches
+    .filter(
+      (m) =>
+        m.displayStatus === "scheduled" &&
+        m.players.team_1.length > 0 &&
+        m.players.team_2.length > 0 &&
+        new Date(m.played_at) > new Date(now) &&
+        new Date(m.played_at) <= twelveHoursAhead
+    )
+    .sort(
+      (a, b) => new Date(a.played_at).getTime() - new Date(b.played_at).getTime()
+    );
+
+  let tickerMatches: Match[];
+  let tickerMode: "live" | "recent" | "upcoming";
+  if (liveMatches.length > 0) {
+    tickerMatches = liveMatches;
+    tickerMode = "live";
+  } else if (freshFinished.length > 0) {
+    tickerMatches = freshFinished.slice(0, 4);
+    tickerMode = "recent";
+  } else if (upcomingMatches.length > 0) {
+    tickerMatches = upcomingMatches.slice(0, 4);
+    tickerMode = "upcoming";
+  } else {
+    tickerMatches = [];
+    tickerMode = "live";
+  }
 
   // Pick the top-tier tournament currently represented in the strip so the
   // viewer knows *what event* they're watching (e.g. Premier P1 over FIP Gold).
@@ -215,7 +248,7 @@ export default async function Home() {
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center">
               <div className="flex-1 overflow-x-auto scrollbar-hide">
-                <ScoresTicker matches={tickerMatches} tournamentLabel={tickerTournamentLabel} />
+                <ScoresTicker matches={tickerMatches} tournamentLabel={tickerTournamentLabel} mode={tickerMode} />
               </div>
             </div>
           </div>

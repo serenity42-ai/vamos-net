@@ -122,16 +122,23 @@ function TickerMatch({ match }: { match: Match }) {
   );
 }
 
+export type ScoresTickerMode = "live" | "recent" | "upcoming";
+
 export default function ScoresTicker({
   matches,
   tournamentLabel,
+  mode = "live",
 }: {
   matches: Match[];
   tournamentLabel?: string;
+  mode?: ScoresTickerMode;
 }) {
+  const isLiveOrRecent = mode === "live" || mode === "recent";
+  const badgeText =
+    mode === "upcoming" ? "Up next" : mode === "recent" ? "Latest" : "Live now";
   return (
     <div className="flex items-center gap-0 min-w-max">
-      {/* LIVE NOW badge + tournament label at start of ticker */}
+      {/* Status badge + tournament label at start of ticker */}
       <span
         className="flex items-center gap-2"
         style={{
@@ -140,20 +147,22 @@ export default function ScoresTicker({
           whiteSpace: "nowrap",
         }}
       >
+        {isLiveOrRecent && mode === "live" && (
+          <span
+            aria-hidden
+            className="live-dot"
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "var(--red)",
+              display: "inline-block",
+            }}
+          />
+        )}
         <span
-          aria-hidden
-          className="live-dot"
           style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: "var(--red)",
-            display: "inline-block",
-          }}
-        />
-        <span
-          style={{
-            background: "var(--lime)",
+            background: mode === "upcoming" ? "var(--paper)" : "var(--lime)",
             color: "var(--ink)",
             padding: "3px 8px",
             fontFamily: "var(--mono)",
@@ -164,7 +173,7 @@ export default function ScoresTicker({
             whiteSpace: "nowrap",
           }}
         >
-          Live now
+          {badgeText}
         </span>
         {tournamentLabel && (
           <span
