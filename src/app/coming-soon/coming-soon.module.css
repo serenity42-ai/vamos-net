@@ -1,0 +1,285 @@
+/* coming-soon.module.css — scoped styles for the soft-launch splash.
+ *
+ * Ported from the brand handoff's standalone Coming Soon HTML. Kept as a
+ * CSS module so the night-mode token overrides and starfield decorations
+ * don't leak into the rest of the site (which uses the editorial theme).
+ *
+ * The CSS variables defined under .scope below intentionally shadow the
+ * brand tokens from globals.css — we want the night palette only on this
+ * page, not site-wide.
+ */
+
+/* Scope = the <main> wrapper. Applying tokens here means everything inside
+ * picks up the night palette via inheritance, while the rest of the app
+ * stays on the editorial theme. */
+.scope {
+  --paper: #0F0E0D;
+  --paper-2: #1A1814;
+  --ink: #F3EEE4;
+  --ink-soft: #C7BEB2;
+  --mute: #8A7D71;
+  --rule: #2A221D;
+  --red: #E0574C;
+  --lime: #D4FF3A;
+
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  overflow: hidden;
+}
+
+/* Subtle red/lime atmospheric wash + corner vignette. */
+.scope::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(193, 68, 58, 0.10), transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(212, 255, 58, 0.04), transparent 55%),
+    radial-gradient(circle at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Slowly drifting starfield — pure CSS, no canvas needed. */
+.scope::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(243, 238, 228, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 78% 32%, rgba(243, 238, 228, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 22% 71%, rgba(243, 238, 228, 0.6), transparent 60%),
+    radial-gradient(1.2px 1.2px at 88% 64%, rgba(243, 238, 228, 0.8), transparent 60%),
+    radial-gradient(1px 1px at 47% 88%, rgba(243, 238, 228, 0.4), transparent 60%),
+    radial-gradient(1px 1px at 8% 47%, rgba(243, 238, 228, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 62% 11%, rgba(243, 238, 228, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 38% 52%, rgba(243, 238, 228, 0.3), transparent 60%),
+    radial-gradient(1px 1px at 92% 88%, rgba(243, 238, 228, 0.6), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: csDrift 60s linear infinite;
+}
+
+@keyframes csDrift {
+  to {
+    transform: translate3d(-30px, 20px, 0);
+  }
+}
+
+.stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 100vh;
+  padding: 22px 24px;
+  gap: 12px;
+}
+
+/* Corner register marks — four mono blocks anchored to the viewport
+ * corners. They give the page its newsroom/instrument feel.  */
+.corner {
+  position: fixed;
+  z-index: 2;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.corner.tl { top: 22px; left: 28px; }
+.corner.tr { top: 22px; right: 28px; text-align: right; }
+.corner.bl { bottom: 22px; left: 28px; }
+.corner.br { bottom: 22px; right: 28px; text-align: right; }
+.corner .line { display: block; }
+.corner .accent { color: var(--red); }
+
+.blink {
+  animation: csBlink 1.4s steps(2, end) infinite;
+}
+@keyframes csBlink {
+  50% { opacity: 0; }
+}
+
+/* Header — eyebrow + wordmark + tagline, vertically stacked. */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--mute);
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+.eyebrow > span { white-space: nowrap; }
+.eyebrow .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+/* Wordmark — italic Archivo Black skewed -6° per the brand spec. The
+ * `net` half is filled with horizontal stripes (linear gradient clipped
+ * to text) plus a soft 18% underlay so the silhouette stays legible
+ * when stripes drop below sub-pixel at small sizes. */
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  transform: skewX(-6deg);
+  font-family: var(--sans);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(42px, 6vw, 76px);
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: lowercase;
+}
+.wordmarkDot { color: var(--red); }
+.wordmarkNet {
+  background-image: linear-gradient(to bottom, var(--ink) 0 8px, transparent 8px 14px);
+  background-size: 100% 14px;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+}
+.wordmarkNet::before {
+  content: "net";
+  position: absolute;
+  inset: 0;
+  color: var(--ink);
+  opacity: 0.18;
+  z-index: -1;
+}
+
+.tagline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(18px, 2.2vw, 26px);
+  color: var(--ink-soft);
+  letter-spacing: -0.005em;
+}
+.tagline .em {
+  color: var(--ink);
+  font-style: normal;
+  font-family: var(--sans);
+  font-weight: 800;
+  text-transform: lowercase;
+  letter-spacing: -0.02em;
+}
+
+/* Padel ball + animation */
+.ballWrap {
+  position: relative;
+  width: min(72vmin, 700px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  flex-shrink: 1;
+}
+.ballSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 30px 80px rgba(212, 255, 58, 0.12));
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.coming {
+  font-family: var(--sans);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(30px, 4.2vw, 52px);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-transform: lowercase;
+  transform: skewX(-6deg);
+  color: var(--ink);
+  position: relative;
+  display: inline-block;
+}
+.coming::after {
+  content: ".";
+  color: var(--red);
+}
+
+.meter {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--mute);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.meter .bar {
+  width: 220px;
+  height: 2px;
+  background: rgba(243, 238, 228, 0.10);
+  position: relative;
+  overflow: hidden;
+}
+.meter .bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 58%;
+  background: var(--red);
+}
+
+/* Label fades in/out smoothly as the anchor passes the front face. The
+ * actual typography for the label children (number, name, coord) is
+ * set inline on the SVG <text> elements because CSS Modules don't
+ * scope through to dynamically-created SVG descendant selectors. */
+.label {
+  transition: opacity 0.18s linear;
+}
+
+@media (max-width: 720px) {
+  .stage { padding: 18px 16px; }
+  .corner { display: none; }
+  .ballWrap { width: 92vmin; }
+}
+@media (max-height: 640px) {
+  .ballWrap { width: min(62vmin, 540px); }
+  .header { gap: 6px; margin-top: 0; }
+}
+
+/* Honour user motion preferences — kill all animations on the page. */
+@media (prefers-reduced-motion: reduce) {
+  .scope::after,
+  .blink,
+  .meter .bar::after {
+    animation: none !important;
+  }
+}
