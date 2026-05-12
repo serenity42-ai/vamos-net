@@ -27,33 +27,72 @@ import {
 import { normalizeMatches, buildContext } from "@/lib/normalize-match";
 
 async function fetchHomeData() {
-  const [menRes, womenRes, s5Res, s6Res] = await Promise.allSettled([
-    getPlayers({
-      category: "men",
-      sort_by: "ranking",
-      order_by: "asc",
-      per_page: "10",
-    }),
-    getPlayers({
-      category: "women",
-      sort_by: "ranking",
-      order_by: "asc",
-      per_page: "10",
-    }),
-    getSeasonTournaments(5, { per_page: "50" }),
-    getSeasonTournaments(6, { per_page: "50" }),
-  ]);
+  // Stage 1 — everything that doesn't depend on tournament IDs runs in one
+  // parallel batch. The /live endpoint and the recent global /matches range
+  // are pulled in this stage so we never wait for tournament metadata before
+  // hitting them.
+  const today = new Date();
+  const threeDaysAgo = new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000);
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  const recentStr = threeDaysAgo.toISOString().split("T")[0];
+  const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+  const [menRes, womenRes, s5Res, s6Res, recentMatchesRes, liveRes] =
+    await Promise.allSettled([
+      getPlayers({
+        category: "men",
+        sort_by: "ranking",
+        order_by: "asc",
+        per_page: "10",
+      }),
+      getPlayers({
+        category: "women",
+        sort_by: "ranking",
+        order_by: "asc",
+        per_page: "10",
+      }),
+      getSeasonTournaments(5, { per_page: "50" }),
+      getSeasonTournaments(6, { per_page: "50" }),
+      getMatches({
+        after_date: recentStr,
+        before_date: tomorrowStr,
+        sort_by: "played_at",
+        order_by: "desc",
+        per_page: "50",
+      }),
+      getLiveMatches(),
+    ]);
 
   const men: Player[] = menRes.status === "fulfilled" ? menRes.value.data : [];
-  const women: Player[] = womenRes.status === "fulfilled" ? womenRes.value.data : [];
+  const women: Player[] =
+    womenRes.status === "fulfilled" ? womenRes.value.data : [];
   const tournaments: Tournament[] = [
     ...(s5Res.status === "fulfilled" ? s5Res.value.data : []),
     ...(s6Res.status === "fulfilled" ? s6Res.value.data : []),
   ];
+  const todayMatches: Match[] =
+    recentMatchesRes.status === "fulfilled" ? recentMatchesRes.value.data : [];
+  const liveData: LiveMatchData[] =
+    liveRes.status === "fulfilled" ? liveRes.value.data : [];
 
-  const relevantTournaments = tournaments.filter(
-    (t) => t.status === "live" || t.status === "finished"
-  );
+  // Stage 2 — fan-out tournament-match fetches, but only for tournaments
+  // that are actually relevant to the home page. The previous version hit
+  // /tournaments/{id}/matches for every "live OR finished" tournament in
+  // the season, which could be 50+ requests serialized against the
+  // 60-req/min Pro tier (and was the dominant cost of the page).
+  //
+  // Relevant set now = live tournaments + finished tournaments whose
+  // end_date is within the last 7 days. That keeps the recent-results
+  // section accurate without paying for the long tail of completed events.
+  const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const relevantTournaments = tournaments.filter((t) => {
+    if (t.status === "live") return true;
+    if (t.status === "finished" && t.end_date) {
+      return new Date(t.end_date) >= sevenDaysAgo;
+    }
+    return false;
+  });
+
   const matchResults = await Promise.allSettled(
     relevantTournaments.map((t) =>
       getTournamentMatches(t.id, {
@@ -67,34 +106,19 @@ async function fetchHomeData() {
     r.status === "fulfilled" ? r.value.data : []
   );
 
-  // Fetch recent + upcoming matches from global endpoint (tournament endpoint
-  // can miss some, and scheduled matches in non-live tournaments aren't covered
-  // by the relevant-tournament loop above).
-  const today = new Date();
-  const threeDaysAgo = new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000);
-  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-  const recentStr = threeDaysAgo.toISOString().split("T")[0];
-  const tomorrowStr = tomorrow.toISOString().split("T")[0];
-  const todayRes = await getMatches({
-    after_date: recentStr,
-    before_date: tomorrowStr,
-    sort_by: "played_at",
-    order_by: "desc",
-    per_page: "50",
-  }).catch(() => ({ data: [] as Match[] }));
-
+  // Merge tournament-scoped + global recent matches, dedupe, sort.
   const seenIds = new Set(tournamentMatches.map((m) => m.id));
-  const extraMatches = todayRes.data.filter((m) => !seenIds.has(m.id));
-  let matches = [...extraMatches, ...tournamentMatches].sort(
+  const extraMatches = todayMatches.filter((m) => !seenIds.has(m.id));
+  const matches = [...extraMatches, ...tournamentMatches].sort(
     (a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime()
   );
 
-  // Normalize all matches through single pipeline (merges live scores, derives status)
-  const liveRes = await getLiveMatches().catch(() => ({ data: [] as LiveMatchData[] }));
-  const ctx = buildContext(liveRes.data);
+  // Normalize all matches through single pipeline (merges live scores,
+  // derives status). /live data is already loaded from Stage 1.
+  const ctx = buildContext(liveData);
   const normalized = normalizeMatches(matches, ctx);
 
-  // Build tournament name map from connections
+  // Tournament name map for cross-referencing in match cards.
   const tournamentNameMap = new Map<number, string>();
   for (const t of tournaments) {
     tournamentNameMap.set(t.id, t.name);
@@ -114,7 +138,15 @@ function formatDateRange(start: string, end: string): string {
 }
 
 export default async function Home() {
-  const { men, women, matches, tournaments, tournamentNameMap } = await fetchHomeData();
+  // Kick off Ghost articles in parallel with the PadelAPI waterfall so the
+  // CMS fetch doesn't add its latency on top of the data layer's. The two
+  // sources are independent; awaiting them as a batch shaves a full
+  // round-trip on every render.
+  const [homeData, articles] = await Promise.all([
+    fetchHomeData(),
+    fetchArticles(),
+  ]);
+  const { men, women, matches, tournaments, tournamentNameMap } = homeData;
 
   // Helper to get tournament name from a match's connections
   function getTournamentName(match: Match): string | undefined {
@@ -232,7 +264,6 @@ export default async function Home() {
 
   const activeTournament = tournaments.find((t) => t.status === "live") || tournaments.find((t) => t.status === "pending");
 
-  const articles = await fetchArticles();
   const featuredArticle = articles[0];
   const latestNews = articles.slice(1, 5);
   const businessArticles = articles.filter((a) => a.category === "Business").slice(0, 3);

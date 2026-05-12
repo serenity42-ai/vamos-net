@@ -10,7 +10,16 @@
  */
 
 import GhostContentAPI, { type PostOrPage, type PostsOrPages, type Params } from '@tryghost/content-api';
+import { unstable_cache } from 'next/cache';
 import { articles as mockArticles, type Article } from '@/data/mock';
+
+// Re-validation windows for Ghost content. The CMS isn't latency-critical
+// the way live scores are, so we cache aggressively at the data-fetch layer
+// in addition to whatever ISR window the page-level revalidate enforces.
+// Articles change on editorial cadence (minutes-to-hours), not seconds.
+const GHOST_REVALIDATE_LIST = 120; // article index / lists
+const GHOST_REVALIDATE_DETAIL = 300; // single article
+const GHOST_REVALIDATE_SLUGS = 600; // slug enumeration for sitemap/static gen
 
 const GHOST_URL = process.env.GHOST_URL;
 const GHOST_CONTENT_API_KEY = process.env.GHOST_CONTENT_API_KEY;
@@ -111,34 +120,45 @@ function ghostPostToArticle(post: PostOrPage): Article {
  * Fetch all published articles from Ghost. On any error (network, config,
  * auth), fall back to the hardcoded mock.ts list so the site never breaks.
  */
-export async function fetchArticles(): Promise<Article[]> {
-  if (!isGhostConfigured()) {
-    return mockArticles;
-  }
-
-  try {
-    const client = getClient();
-    const posts: PostsOrPages = await client.posts.browse({
-      limit: 'all',
-      include: ['tags', 'authors'],
-      filter: 'status:published',
-      order: 'published_at DESC',
-    } as Params);
-
-    if (!Array.isArray(posts) || posts.length === 0) {
-      // Ghost is empty — return mock data until migration completes.
+// Wrapped in unstable_cache because the Ghost SDK uses its own HTTP client
+// and bypasses Next's fetch cache. Without this, every SSR call would hit
+// Ghost over the wire — ~150ms per render on the home page alone.
+const fetchArticlesRaw = unstable_cache(
+  async (): Promise<Article[]> => {
+    if (!isGhostConfigured()) {
       return mockArticles;
     }
 
-    // All published posts are returned, including Hub-tagged ones, so they
-    // appear in the global news feed with their correct category badge
-    // (Lifestyle / Training / Rules / Reviews). The /news category filter
-    // still narrows to News-only categories.
-    return posts.map(ghostPostToArticle);
-  } catch (err) {
-    console.error('[ghost] fetchArticles failed, falling back to mock:', err);
-    return mockArticles;
-  }
+    try {
+      const client = getClient();
+      const posts: PostsOrPages = await client.posts.browse({
+        limit: 'all',
+        include: ['tags', 'authors'],
+        filter: 'status:published',
+        order: 'published_at DESC',
+      } as Params);
+
+      if (!Array.isArray(posts) || posts.length === 0) {
+        // Ghost is empty — return mock data until migration completes.
+        return mockArticles;
+      }
+
+      // All published posts are returned, including Hub-tagged ones, so
+      // they appear in the global news feed with their correct category
+      // badge (Lifestyle / Training / Rules / Reviews). The /news category
+      // filter still narrows to News-only categories.
+      return posts.map(ghostPostToArticle);
+    } catch (err) {
+      console.error('[ghost] fetchArticles failed, falling back to mock:', err);
+      return mockArticles;
+    }
+  },
+  ['ghost-articles-list'],
+  { revalidate: GHOST_REVALIDATE_LIST, tags: ['ghost', 'ghost:articles'] }
+);
+
+export async function fetchArticles(): Promise<Article[]> {
+  return fetchArticlesRaw();
 }
 
 /**

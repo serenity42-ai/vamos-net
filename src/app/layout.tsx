@@ -1,8 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import MatchModalProvider from "@/components/MatchModalProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -30,38 +26,40 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const headersList = headers();
-  const isComingSoon = headersList.get("x-coming-soon") === "1";
+// Static JSON-LD block — declared at module scope so the layout stays a
+// pure server component with no per-request work. Reading headers() or
+// cookies() in here would force every page into the dynamic-render path
+// and disable ISR across the entire app.
+const WEBSITE_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "VAMOS",
+  alternateName: "Vamos.net",
+  url: "https://vamos.net",
+  description:
+    "Live padel scores, rankings, player profiles, tournament draws, and news. The definitive platform for professional padel.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://vamos.net/players?search={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+};
 
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "VAMOS",
-    alternateName: "Vamos.net",
-    url: "https://vamos.net",
-    description: "Live padel scores, rankings, player profiles, tournament draws, and news. The definitive platform for professional padel.",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: "https://vamos.net/players?search={search_term_string}",
-      "query-input": "required name=search_term_string",
-    },
-  };
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_SCHEMA) }}
         />
       </head>
-      <body className="bg-white text-[#0F1F2E] min-h-screen flex flex-col overflow-x-hidden">
-        <MatchModalProvider>
-          {!isComingSoon && <Header />}
-          <div className="flex-1">{children}</div>
-          {!isComingSoon && <Footer />}
-        </MatchModalProvider>
+      <body className="min-h-screen flex flex-col overflow-x-hidden">
+        {children}
       </body>
     </html>
   );
