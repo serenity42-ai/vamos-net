@@ -155,15 +155,47 @@ export default async function Home() {
 
   const liveMatches = matches.filter((m) => m.displayStatus === "live");
 
-  // Only show recent finished matches if they're from the last 3 days
-  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+  // Strip rule: show live matches if any; otherwise show finished matches only
+  // while they're still fresh (≤24h since end of last match). After 24h the
+  // strip disappears entirely — no stale "live feed" on quiet days.
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const freshFinished = recentMatches.filter(
-    (m) => new Date(m.played_at) >= threeDaysAgo
+    (m) => new Date(m.played_at) >= dayAgo
   );
 
   const tickerMatches = liveMatches.length > 0
     ? liveMatches
     : freshFinished.slice(0, 4);
+
+  // Pick the top-tier tournament currently represented in the strip so the
+  // viewer knows *what event* they're watching (e.g. Premier P1 over FIP Gold).
+  // Lower number = higher prestige.
+  const LEVEL_RANK: Record<string, number> = {
+    finals: 0,
+    major: 1,
+    p1: 2,
+    p2: 3,
+    fip_platinum: 4,
+    fip_gold: 5,
+    fip_silver: 6,
+    fip_bronze: 7,
+    fip_rise: 8,
+    fip_star: 9,
+  };
+  const tickerTournamentIds = new Set<number>();
+  for (const m of tickerMatches) {
+    const path = m.connections?.tournament;
+    if (!path) continue;
+    const id = parseInt(path.split("/").pop() || "0", 10);
+    if (id) tickerTournamentIds.add(id);
+  }
+  const tickerTournament = tournaments
+    .filter((t) => tickerTournamentIds.has(t.id))
+    .sort(
+      (a, b) =>
+        (LEVEL_RANK[a.level] ?? 99) - (LEVEL_RANK[b.level] ?? 99)
+    )[0];
+  const tickerTournamentLabel = tickerTournament?.name;
 
   const activeTournament = tournaments.find((t) => t.status === "live") || tournaments.find((t) => t.status === "pending");
 
@@ -183,7 +215,7 @@ export default async function Home() {
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center">
               <div className="flex-1 overflow-x-auto scrollbar-hide">
-                <ScoresTicker matches={tickerMatches} />
+                <ScoresTicker matches={tickerMatches} tournamentLabel={tickerTournamentLabel} />
               </div>
             </div>
           </div>

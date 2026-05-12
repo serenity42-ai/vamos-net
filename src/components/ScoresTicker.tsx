@@ -122,20 +122,20 @@ function TickerMatch({ match }: { match: Match }) {
   );
 }
 
-export default function ScoresTicker({ matches }: { matches: Match[] }) {
+export default function ScoresTicker({
+  matches,
+  tournamentLabel,
+}: {
+  matches: Match[];
+  tournamentLabel?: string;
+}) {
   return (
     <div className="flex items-center gap-0 min-w-max">
-      {/* LIVE eyebrow at start of ticker */}
+      {/* LIVE NOW badge + tournament label at start of ticker */}
       <span
         className="flex items-center gap-2"
         style={{
-          fontFamily: "var(--mono)",
-          fontSize: 10,
-          fontWeight: 700,
-          letterSpacing: "0.22em",
-          textTransform: "uppercase",
-          color: "var(--red)",
-          padding: "0 20px 0 12px",
+          padding: "0 16px 0 12px",
           borderRight: "1px solid rgba(243,238,228,0.15)",
           whiteSpace: "nowrap",
         }}
@@ -151,7 +151,37 @@ export default function ScoresTicker({ matches }: { matches: Match[] }) {
             display: "inline-block",
           }}
         />
-        Live feed
+        <span
+          style={{
+            background: "var(--lime)",
+            color: "var(--ink)",
+            padding: "3px 8px",
+            fontFamily: "var(--mono)",
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Live now
+        </span>
+        {tournamentLabel && (
+          <span
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "rgba(243,238,228,0.85)",
+              whiteSpace: "nowrap",
+              marginLeft: 4,
+            }}
+          >
+            {tournamentLabel}
+          </span>
+        )}
       </span>
       {matches.map((match) => (
         <TickerMatch key={match.id} match={match} />
