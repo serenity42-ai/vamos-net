@@ -53,8 +53,15 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // Tightened matcher so middleware only runs on actual page routes that
+  // need the soft-launch gate. Static assets, the Next.js image optimizer,
+  // the favicon family, brand assets, and the API routes used to live
+  // outside the matcher — those will now be cacheable at the edge.
+  //
+  // The negative lookahead also excludes /coming-soon itself (the gate
+  // target) and anything under /brand/ so the new logo SVGs are served
+  // directly from the static CDN with no middleware overhead.
   matcher: [
-    // Match all paths except static files
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|favicon.svg|robots.txt|sitemap.xml|brand/|images/|logo|api/|coming-soon).*)",
   ],
 };
