@@ -1,21 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import AnimatedNetLogo from "@/components/AnimatedNetLogo";
 import VamosNetLogo from "@/components/VamosNetLogo";
 
 /**
- * Soft-launch splash for vamos.net.
+ * Soft-launch splash for vamos.net — animated edition.
  *
- * Editorial brand system — paper background, ink type, single red accent.
- * The Woven .net logo is the hero; everything else is mono labels +
- * italic display headline with an Instrument Serif accent word.
+ * Hero is the AnimatedNetLogo: a paper-coloured padel court net rippling
+ * in the wind on an ink-coloured ground, with a lime "V." stenciled into
+ * the mesh. Animation defaults match the brand motion study (Wind on the
+ * Net v0.2): word=V., speed=1.85×, amp=15px, tension=tight, density=low,
+ * coverage=42%, accent=lime.
+ *
+ * Below the animation: the static VamosNetLogo (so the full wordmark is
+ * legible regardless of how the V reads in the mesh), italic display
+ * headline with a red Instrument Serif accent, body paragraph, email
+ * capture, pillar list, and a mono colophon footer.
  *
  * Lives outside the (site) route group so it renders without Header /
- * Footer / MatchModalProvider. Self-contained: pulls in the brand fonts
- * via the root layout's globals.css and nothing else.
- *
- * Background pattern uses the brand's net-stripes token, kept very faint
- * (≤6% opacity) so it reads as texture, not decoration.
+ * Footer / MatchModalProvider.
  */
 export default function ComingSoon() {
   const [email, setEmail] = useState("");
@@ -29,23 +33,9 @@ export default function ComingSoon() {
   return (
     <main
       className="min-h-screen flex flex-col relative overflow-hidden"
-      style={{ background: "var(--paper)", color: "var(--ink)" }}
+      style={{ background: "var(--ink)", color: "var(--paper)" }}
     >
-      {/* Background — faint horizontal net stripes, tiled across the whole
-          page. Sits behind the content; opacity kept low so it doesn't
-          fight the typography. */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(0deg, var(--ink) 0 8px, transparent 8px 18px)",
-          opacity: 0.04,
-        }}
-      />
-
-      {/* Top eyebrow — mono ID stamp. Anchors the page as belonging to a
-          specific publication, not a marketing landing page. */}
+      {/* Top eyebrow row — mono ID stamp on the ink ground. */}
       <header className="relative z-10 px-6 sm:px-10 lg:px-16 pt-8 sm:pt-10">
         <div className="max-w-[1320px] mx-auto flex items-center justify-between">
           <span
@@ -55,7 +45,7 @@ export default function ComingSoon() {
               fontWeight: 700,
               letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "var(--ink-soft)",
+              color: "rgba(243,238,228,0.55)",
             }}
           >
             ■ Issue 00 · Pre-launch
@@ -68,47 +58,111 @@ export default function ComingSoon() {
               fontWeight: 700,
               letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "var(--ink-soft)",
+              color: "rgba(243,238,228,0.55)",
             }}
           >
-            Spring 2026
+            Wind on the Net · Motion Study v0.2
           </span>
         </div>
       </header>
 
-      {/* Hero — logo + tagline + headline + email capture. Centered, single
-          column, generous vertical rhythm. Reads top to bottom like a
-          magazine cover. */}
-      <section className="flex-1 relative z-10 px-6 sm:px-10 lg:px-16 pt-12 sm:pt-20 pb-16">
-        <div className="max-w-[920px] mx-auto">
-          {/* Logo block */}
-          <div className="mb-10 sm:mb-14">
-            <VamosNetLogo variant="ink" height={88} className="block" />
+      {/* Hero — animated net occupies the full top band. Renders client-side
+          only; on first paint a faint outline of the net is fine, the wave
+          kicks in within ~16ms of mount. */}
+      <section className="relative z-10 px-6 sm:px-10 lg:px-16 pt-6 sm:pt-8">
+        <div className="max-w-[1320px] mx-auto">
+          <div
+            className="relative w-full"
+            style={{
+              border: "1px solid rgba(243,238,228,0.12)",
+              aspectRatio: "900 / 380",
+              maxHeight: "min(60vh, 480px)",
+              overflow: "hidden",
+            }}
+          >
+            <AnimatedNetLogo
+              width={900}
+              height={380}
+              responsive
+              word="V."
+              speed={1.85}
+              amplitude={15}
+              tension={0.84}
+              density="low"
+              coverage={0.42}
+              netColor="#F3EEE4"
+              accent="#D4FF3A"
+              background="transparent"
+              className="absolute inset-0"
+            />
+            {/* Overlay row across the bottom of the hero — caption + tiny
+                mono note in the spirit of the source motion study. */}
             <div
-              className="mt-4 pl-1"
+              className="absolute left-0 right-0 bottom-0 flex items-center justify-between px-4 sm:px-6 py-3"
+              style={{ pointerEvents: "none" }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "rgba(243,238,228,0.55)",
+                }}
+              >
+                ■ Net → wind waves → wordmark woven into mesh
+              </span>
+              <span
+                className="hidden sm:inline"
+                style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "rgba(243,238,228,0.35)",
+                }}
+              >
+                Rendered live · canvas 2D
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Body — wordmark, headline, body copy, email capture, pillars. */}
+      <section className="flex-1 relative z-10 px-6 sm:px-10 lg:px-16 pt-12 sm:pt-16 pb-16">
+        <div className="max-w-[920px] mx-auto">
+          {/* Static logo lockup — re-states the brand name explicitly so the
+              animated V doesn't have to carry the whole wordmark on its own. */}
+          <div className="mb-10 sm:mb-12">
+            <VamosNetLogo variant="light" height={56} />
+            <div
+              className="mt-3 pl-1"
               style={{
                 fontFamily: "var(--mono)",
                 fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: "0.22em",
                 textTransform: "uppercase",
-                color: "var(--ink-soft)",
+                color: "rgba(243,238,228,0.55)",
               }}
             >
               The world of padel
             </div>
           </div>
 
-          {/* Display headline — italic Archivo Black with a serif accent.
-              One accent word per headline per the brand voice rule. */}
+          {/* Display headline — italic Archivo Black, one Instrument Serif
+              red accent (the brand voice signature). */}
           <h1
             className="display"
             style={{
               fontStyle: "italic",
-              fontSize: "clamp(48px, 8vw, 92px)",
-              lineHeight: 0.95,
+              fontSize: "clamp(44px, 7.5vw, 84px)",
+              lineHeight: 0.97,
               letterSpacing: "-0.035em",
-              color: "var(--ink)",
+              color: "var(--paper)",
               maxWidth: 880,
               textTransform: "none",
               textWrap: "balance",
@@ -118,23 +172,19 @@ export default function ComingSoon() {
             Everything happens{" "}
             <span
               className="italic-serif"
-              style={{
-                color: "var(--red)",
-                fontSize: "1em",
-              }}
+              style={{ color: "var(--red)", fontSize: "1em" }}
             >
               at the net.
             </span>
           </h1>
 
-          {/* Sub-paragraph — sans body, ink-soft. Brief, editorial. */}
           <p
             className="mt-8"
             style={{
               fontFamily: "var(--sans)",
               fontSize: 17,
               lineHeight: 1.55,
-              color: "var(--ink-soft)",
+              color: "rgba(243,238,228,0.7)",
               maxWidth: 560,
               textWrap: "pretty",
             }}
@@ -145,8 +195,8 @@ export default function ComingSoon() {
             when it&rsquo;s open.
           </p>
 
-          {/* Email capture — ink-on-paper form, red primary button.
-              No rounded corners above 2px per the brand layout rules. */}
+          {/* Email capture — square 2px-radius, no shadows. Paper input on
+              ink ground so the field reads as a knockout panel. */}
           <div className="mt-10 sm:mt-12 max-w-[560px]">
             {!submitted ? (
               <form
@@ -166,9 +216,9 @@ export default function ComingSoon() {
                     fontSize: 15,
                     fontWeight: 500,
                     padding: "14px 16px",
-                    background: "transparent",
+                    background: "var(--paper)",
                     color: "var(--ink)",
-                    border: "1px solid var(--ink)",
+                    border: "1px solid var(--paper)",
                     borderRadius: 2,
                   }}
                 />
@@ -205,9 +255,9 @@ export default function ComingSoon() {
               <div
                 style={{
                   padding: "16px 20px",
-                  border: "1px solid var(--ink)",
+                  border: "1px solid rgba(243,238,228,0.25)",
                   borderRadius: 2,
-                  background: "var(--paper-2)",
+                  background: "rgba(243,238,228,0.04)",
                 }}
               >
                 <div
@@ -217,7 +267,7 @@ export default function ComingSoon() {
                     fontWeight: 700,
                     letterSpacing: "0.14em",
                     textTransform: "uppercase",
-                    color: "var(--red)",
+                    color: "var(--lime)",
                     marginBottom: 6,
                   }}
                 >
@@ -228,7 +278,7 @@ export default function ComingSoon() {
                     fontFamily: "var(--sans)",
                     fontSize: 15,
                     lineHeight: 1.5,
-                    color: "var(--ink)",
+                    color: "var(--paper)",
                     margin: 0,
                   }}
                 >
@@ -237,7 +287,6 @@ export default function ComingSoon() {
               </div>
             )}
 
-            {/* Tiny mono note under the form */}
             <div
               className="mt-3"
               style={{
@@ -246,15 +295,15 @@ export default function ComingSoon() {
                 fontWeight: 500,
                 letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: "var(--mute)",
+                color: "rgba(243,238,228,0.4)",
               }}
             >
               One email at launch. Unsubscribe any time.
             </div>
           </div>
 
-          {/* Pillar list — what's coming. Mono eyebrows tied with hairline
-              rules; reads like a magazine table of contents. */}
+          {/* Pillar list — what's coming. Hairline rules above each entry
+              like a magazine table of contents. */}
           <div className="mt-16 sm:mt-20">
             <div
               style={{
@@ -263,7 +312,7 @@ export default function ComingSoon() {
                 fontWeight: 700,
                 letterSpacing: "0.22em",
                 textTransform: "uppercase",
-                color: "var(--ink-soft)",
+                color: "rgba(243,238,228,0.55)",
                 marginBottom: 16,
               }}
             >
@@ -285,9 +334,9 @@ export default function ComingSoon() {
                     fontFamily: "var(--sans)",
                     fontWeight: 800,
                     fontSize: 15,
-                    color: "var(--ink)",
+                    color: "var(--paper)",
                     paddingTop: 12,
-                    borderTop: "1px solid var(--ink)",
+                    borderTop: "1px solid rgba(243,238,228,0.18)",
                   }}
                 >
                   <span
@@ -295,7 +344,7 @@ export default function ComingSoon() {
                       fontFamily: "var(--mono)",
                       fontSize: 10,
                       fontWeight: 700,
-                      color: "var(--mute)",
+                      color: "rgba(243,238,228,0.4)",
                       letterSpacing: "0.14em",
                       display: "block",
                       marginBottom: 4,
@@ -311,10 +360,10 @@ export default function ComingSoon() {
         </div>
       </section>
 
-      {/* Footer — mono colophon. Single hairline rule above. */}
+      {/* Footer — mono colophon. Hairline rule above. */}
       <footer
         className="relative z-10 px-6 sm:px-10 lg:px-16 py-6 sm:py-8"
-        style={{ borderTop: "1px solid var(--ink)" }}
+        style={{ borderTop: "1px solid rgba(243,238,228,0.15)" }}
       >
         <div className="max-w-[1320px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span
@@ -324,7 +373,7 @@ export default function ComingSoon() {
               fontWeight: 700,
               letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "var(--mute)",
+              color: "rgba(243,238,228,0.45)",
             }}
           >
             © {new Date().getFullYear()} Arbi Smart Solutions LLC · Vamos.net
@@ -336,7 +385,7 @@ export default function ComingSoon() {
               fontWeight: 500,
               letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "var(--mute)",
+              color: "rgba(243,238,228,0.45)",
             }}
           >
             Paris · Dubai
