@@ -3,44 +3,85 @@
 @tailwind utilities;
 
 /*
- * VAMOS.NET — Brand v2 "Editorial"
- * --------------------------------
- * Typography: Archivo Black (display/italic), Instrument Serif (italic accents),
- * JetBrains Mono (scores/data/eyebrows). Three families, no others.
+ * VAMOS.NET — Brand v3 "Modern Editorial"
+ * ---------------------------------------
+ * Design system from Figma (Design_Vamos.net, Jun 2026).
  *
- * Palette: warm paper + deep ink + red accent. Red = meaning, never decoration.
+ * Typography: Archivo (display/headings, ExtraBold/Black, UPPERCASE)
+ *             Inter (body)
  *
- * Rules (from brand guidelines):
- *   - 1px hairline borders, no shadows
- *   - Radii: 2px (buttons) — no large rounded corners
- *   - Monospace numbers everywhere data lives
- *   - One italic-serif accent word per display headline
+ * Palette: warm-neutral page bg, white surfaces, orange accent.
+ *
+ * Accent rule (#FE4C00 orange):
+ *   - Active states (tabs, nav items)
+ *   - Primary CTAs / submit buttons
+ *   - Category eyebrows
+ *   - Selected indicators
+ *   - Live-update flash (5s) on data updates
+ *   NEVER decoration.
+ *
+ * Radii: 4 → 40px scale (no flat 2px rule anymore — clean rounded shapes).
+ * No shadows by default (editorial flat surfaces).
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,700;0,800;0,900;1,800;1,900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,800;1,900&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Palette — Editorial (default theme) */
-  --paper: #F3EEE4;
-  --paper-2: #EAE3D5;
-  --ink: #151210;
-  --ink-soft: #3A312B;
-  --mute: #8A7D71;
-  --red: #C1443A;
-  --red-deep: #8B2E26;
-  --clay: #D8825C;
-  --lime: #D4FF3A;
-  --court: #1F4D3F;
+  /* ===== Brand ===== */
+  --color-brand-primary: #FE4C00;
+  --color-brand-primary-dark: #CC3D00;
+  --color-brand-primary-light: #FFE6DB;
 
-  /* Typography */
-  --sans: 'Archivo', 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --serif: 'Instrument Serif', 'EB Garamond', Georgia, serif;
-  --mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+  /* ===== Background ===== */
+  --color-bg-page: #F5F4F4;
+  --color-bg-white: #FFFFFF;
+  --color-bg-overlay: rgba(255, 255, 255, 0.20);
+  --color-bg-gray: #EBE9E9;
+  --color-bg-constant: #181D27;       /* dark bands (newsletter, hero variants) */
 
-  /* Radii — keep flat */
-  --r-sm: 2px;
-  --r-md: 6px;
-  --r-lg: 14px;
+  /* ===== Text ===== */
+  --color-text-primary: #181D27;
+  --color-text-secondary: #717680;
+  --color-text-tertiary: #A4A7AE;
+  --color-text-contrast: #FFFFFF;     /* on dark backgrounds */
+  --color-text-error: #F04438;
+
+  /* ===== Border ===== */
+  --color-border-primary: #E5E2E2;
+  --color-border-secondary: rgba(255, 255, 255, 0.10);
+  --color-border-color: #FFFFFF;
+  --color-border-error: #FDA29B;
+
+  /* ===== Icon ===== */
+  --color-icon-primary: #181D27;
+  --color-icon-secondary: #717680;
+  --color-icon-tertiary: #A4A7AE;
+  --color-icon-contrast: #FFFFFF;
+  --color-icon-error: #F04438;
+
+  /* ===== Spacing ===== */
+  --spacing-4: 4px;  --spacing-8: 8px;   --spacing-12: 12px;
+  --spacing-16: 16px; --spacing-20: 20px; --spacing-24: 24px;
+  --spacing-28: 28px; --spacing-32: 32px; --spacing-40: 40px;
+  --spacing-48: 48px; --spacing-64: 64px; --spacing-80: 80px;
+
+  /* ===== Border Radius ===== */
+  --radius-4: 4px;   --radius-8: 8px;   --radius-12: 12px;
+  --radius-16: 16px; --radius-20: 20px; --radius-24: 24px;
+  --radius-32: 32px; --radius-40: 40px; --radius-full: 9999px;
+
+  /* ===== Typography sizes ===== */
+  --font-size-12: 12px; --font-size-14: 14px; --font-size-16: 16px;
+  --font-size-20: 20px; --font-size-24: 24px; --font-size-28: 28px;
+  --font-size-32: 32px; --font-size-40: 40px;
+
+  --line-height-16: 16px; --line-height-18: 18px; --line-height-20: 20px;
+  --line-height-22: 22px; --line-height-24: 24px; --line-height-28: 28px;
+  --line-height-30: 30px; --line-height-32: 32px; --line-height-40: 40px;
+
+  /* ===== Font families ===== */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Archivo', 'Inter', system-ui, sans-serif;
 }
 
 html {
@@ -50,144 +91,127 @@ html {
 }
 
 body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--sans);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
   font-weight: 400;
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: var(--font-size-16);
+  line-height: var(--line-height-24);
 }
 
-/* -- Typographic primitives ------------------------------------------- */
+/* ───────────────────────────────────────────
+   TYPOGRAPHY UTILITY CLASSES — from Figma style guide
+   ─────────────────────────────────────────── */
 
-.display {
-  font-family: var(--sans);
+/* Desktop display + headings */
+.text-desktop-display-l {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--font-size-40);
+  line-height: var(--line-height-40);
+  text-transform: uppercase;
+}
+.text-desktop-heading-l {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--font-size-32);
+  line-height: var(--line-height-32);
+  text-transform: uppercase;
+}
+.text-desktop-heading-m {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--font-size-28);
+  line-height: var(--line-height-30);
+  text-transform: uppercase;
+}
+
+/* Mobile display + headings */
+.text-mobile-display-l {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--font-size-40);
+  line-height: var(--line-height-40);
+  text-transform: uppercase;
+}
+.text-mobile-heading-l {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--font-size-28);
+  line-height: var(--line-height-28);
+  text-transform: uppercase;
+}
+.text-mobile-heading-m {
+  font-family: var(--font-display);
   font-weight: 900;
-  font-style: italic;
-  font-size: clamp(36px, 6vw, 72px);
-  line-height: 0.94;
-  letter-spacing: -0.035em;
+  font-size: var(--font-size-24);
+  line-height: var(--line-height-30);
+  text-transform: uppercase;
 }
 
-.headline {
-  font-family: var(--sans);
-  font-weight: 800;
-  font-size: clamp(18px, 2vw, 24px);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+/* Universal titles */
+.text-title-l {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--font-size-20);
+  line-height: var(--line-height-28);
+}
+.text-title-m {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--font-size-16);
+  line-height: var(--line-height-22);
 }
 
-.italic-serif {
-  font-family: var(--serif);
-  font-style: italic;
+/* Universal bodies */
+.text-body-l {
+  font-family: var(--font-sans);
   font-weight: 400;
-  color: var(--red);
+  font-size: var(--font-size-16);
+  line-height: var(--line-height-24);
 }
-
-.eyebrow,
-.section-num {
-  font-family: var(--mono);
+.text-body-m {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-20);
+}
+.text-body-m-semibold {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-20);
+}
+.text-body-s {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--font-size-12);
+  line-height: var(--line-height-16);
+}
+.text-body-s-medium {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--font-size-12);
+  line-height: var(--line-height-16);
+}
+.text-body-s-semibold {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-12);
+  line-height: var(--line-height-18);
+}
+.text-uppercase-eyebrow {
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  font-size: var(--font-size-12);
+  line-height: var(--line-height-18);
   text-transform: uppercase;
-  color: var(--mute);
+  letter-spacing: 0.04em;
 }
 
-.section-num {
-  color: var(--ink);
-}
-
-.score-mono {
-  font-family: var(--mono);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-}
-
-/* -- Buttons ---------------------------------------------------------- */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  font-family: var(--sans);
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  border: 1px solid var(--ink);
-  border-radius: var(--r-sm);
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
-  transition: background 120ms ease, color 120ms ease;
-}
-
-.btn:hover {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.btn-primary {
-  background: var(--red);
-  color: #fff;
-  border-color: var(--red);
-}
-
-.btn-primary:hover {
-  background: var(--red-deep);
-  border-color: var(--red-deep);
-  color: #fff;
-}
-
-/* -- Badges & chips --------------------------------------------------- */
-
-.badge-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  background: var(--lime);
-  color: var(--ink);
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.badge-live::before {
-  content: '●';
-  font-size: 8px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--mono);
-  font-weight: 700;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--red);
-}
-
-.chip::before {
-  content: '■ ';
-  color: inherit;
-  margin-right: 4px;
-}
-
-/* -- Tile / card ------------------------------------------------------ */
-
-.tile {
-  border: 1px solid var(--ink);
-  background: var(--paper);
-  padding: 28px;
-}
-
-/* -- Utility line clamping (preserved) -------------------------------- */
+/* ───────────────────────────────────────────
+   UTILITIES preserved from previous build
+   ─────────────────────────────────────────── */
 
 .line-clamp-2 {
   display: -webkit-box;
@@ -195,7 +219,6 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -203,160 +226,70 @@ body {
   overflow: hidden;
 }
 
-/* -- Ticker marquee --------------------------------------------------- */
-
-@keyframes ticker-marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+/* Live pulse — orange flash on score updates (5s fade per Figma dev note) */
+@keyframes live-flash {
+  0%   { background-color: var(--color-brand-primary); color: var(--color-text-contrast); }
+  100% { background-color: transparent; color: inherit; }
+}
+.live-flash {
+  animation: live-flash 5s ease-out forwards;
 }
 
-.ticker-track {
-  display: inline-flex;
-  animation: ticker-marquee 60s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ticker-track {
-    animation: none;
-  }
-}
-
-/* -- Live pulse dot --------------------------------------------------- */
-
+/* Live pulsing dot indicator */
 @keyframes live-pulse {
   0%, 100% {
     opacity: 1;
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(193, 68, 58, 0.6);
+    box-shadow: 0 0 0 0 rgba(254, 76, 0, 0.6);
   }
   50% {
     opacity: 0.55;
     transform: scale(1.15);
-    box-shadow: 0 0 0 6px rgba(193, 68, 58, 0);
+    box-shadow: 0 0 0 6px rgba(254, 76, 0, 0);
   }
 }
-
 .live-dot {
   animation: live-pulse 1.4s ease-in-out infinite;
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .live-dot {
-    animation: none;
-  }
+  .live-dot, .live-flash { animation: none; }
 }
 
-/* -- Global legacy-color remapping -----------------------------------
-   TECH DEBT — remove as pages migrate to CSS variables.
-
-   Some files still reference the old navy/turquoise/emerald palette as
-   Tailwind arbitrary values (bg-[#0F1F2E], text-[#4ABED9], bg-[#3CB371]).
-   This block remaps them at the utility level so the whole site reads
-   as editorial paper/ink/red while migration is in progress.
-
-   When a page is migrated to use `var(--ink)` / `var(--paper)` / etc
-   directly, update BACKLOG.md and delete any matching rules below that
-   are no longer referenced anywhere. Final goal: this entire block
-   disappears.
-
-   Rule for new code: NEVER write a hex color here or in components. Always
-   use a CSS variable from the :root block above. Component-level styles
-   always take precedence over these !important overrides anyway. */
-
-/* Old navy (#0F1F2E) -> ink */
-.bg-\[\#0F1F2E\] { background-color: var(--ink) !important; }
-.text-\[\#0F1F2E\] { color: var(--ink) !important; }
-.border-\[\#0F1F2E\] { border-color: var(--ink) !important; }
-.hover\:text-\[\#0F1F2E\]:hover { color: var(--ink) !important; }
-.hover\:bg-\[\#0F1F2E\]:hover { background-color: var(--ink) !important; }
-.hover\:bg-\[\#1a2f42\]:hover { background-color: var(--red-deep) !important; }
-
-/* Old turquoise (#4ABED9) -> red accent */
-.text-\[\#4ABED9\] { color: var(--red) !important; }
-.bg-\[\#4ABED9\] { background-color: var(--red) !important; }
-.border-\[\#4ABED9\] { border-color: var(--red) !important; }
-.hover\:text-\[\#4ABED9\]:hover { color: var(--red) !important; }
-.hover\:bg-\[\#4ABED9\]:hover { background-color: var(--red) !important; }
-.hover\:bg-\[\#3ba8c2\]:hover { background-color: var(--red-deep) !important; }
-
-/* Old green (#3CB371) -> clay (business accent) */
-.text-\[\#3CB371\] { color: var(--clay) !important; }
-.bg-\[\#3CB371\] { background-color: var(--clay) !important; }
-.border-\[\#3CB371\] { border-color: var(--clay) !important; }
-
-/* Neutral backgrounds: flat paper, not white */
-.bg-white { background-color: var(--paper) !important; }
-.bg-gray-50 { background-color: var(--paper-2) !important; }
-
-/* Neutral text colors map to editorial ink hierarchy */
-.text-gray-400 { color: var(--mute) !important; }
-.text-gray-500 { color: var(--ink-soft) !important; }
-.text-gray-700 { color: var(--ink-soft) !important; }
-
-/* Neutral borders -> hairline */
-.border-gray-50,
-.border-gray-100,
-.border-gray-200 { border-color: rgba(21,18,16,0.12) !important; }
-
-/* No shadows anywhere — editorial rule */
-.shadow-sm,
-.shadow,
-.shadow-md,
-.shadow-lg,
-.shadow-xl,
-.hover\:shadow-sm:hover,
-.hover\:shadow:hover,
-.hover\:shadow-md:hover,
-.hover\:shadow-lg:hover,
-.hover\:shadow-xl:hover { box-shadow: none !important; }
-
-/* No large rounded corners — editorial rule (radii 2px max) */
-.rounded,
-.rounded-md,
-.rounded-lg,
-.rounded-xl,
-.rounded-2xl,
-.rounded-3xl { border-radius: var(--r-sm) !important; }
-
-/* Keep circular avatars/dots */
-.rounded-full { border-radius: 9999px !important; }
-
-/* Default Tailwind typography tends to render thin body type.
-   The editorial system uses Archivo across the board. */
-body, h1, h2, h3, h4, h5, h6, p, span, a, li, td, th, input, button, textarea {
-  font-family: var(--sans);
+/* Ticker marquee (kept for legacy ScoresTicker, may be retired in new design) */
+@keyframes ticker-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-track {
+  display: inline-flex;
+  animation: ticker-marquee 60s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
 }
 
-/* -- Prose overrides for article body --------------------------------- */
+/* ───────────────────────────────────────────
+   PROSE OVERRIDES for article body
+   ─────────────────────────────────────────── */
 
 .prose {
-  color: var(--ink-soft);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
 }
-.prose h1,
-.prose h2,
-.prose h3,
-.prose h4 {
-  color: var(--ink);
-  font-family: var(--sans);
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 .prose a {
-  color: var(--red);
+  color: var(--color-brand-primary);
   text-decoration: none;
-  border-bottom: 1px solid var(--red);
+  border-bottom: 1px solid var(--color-brand-primary);
 }
 .prose a:hover {
-  background: var(--red);
-  color: #fff;
+  background: var(--color-brand-primary);
+  color: var(--color-text-contrast);
 }
-.prose strong {
-  color: var(--ink);
-}
-.prose em {
-  font-family: var(--serif);
-  font-style: italic;
-  color: var(--red);
-  font-weight: 400;
-  font-size: 1.05em;
-}
+.prose strong { color: var(--color-text-primary); }
