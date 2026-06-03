@@ -1,20 +1,27 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import MatchCard from "@/components/MatchCard";
-
-// Player profile: form table can update mid-day; 10 min
-export const revalidate = 600;
+import MatchCard from "@/components/v3/MatchCard";
+import MatchCardDesktop from "@/components/v3/MatchCardDesktop";
+import Cell from "@/components/v3/Cell";
 import {
   getPlayer,
   getPlayerMatches,
   getSeasonTournaments,
   countryFlag,
   type Match,
+  type MatchPlayer,
   type Tournament,
 } from "@/lib/padel-api";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+// Player profile: form table can update mid-day; 10 min
+export const revalidate = 600;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}) {
   try {
     const player = await getPlayer(parseInt(params.id));
     return {
@@ -26,17 +33,25 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
+
 async function fetchPlayerData(id: number) {
   try {
     const [player, matchesRes, s5Res, s6Res] = await Promise.all([
       getPlayer(id),
       getPlayerMatches(id, {
-        per_page: "10",
+        per_page: "20",
         sort_by: "played_at",
         order_by: "desc",
       }),
-      getSeasonTournaments(5, { per_page: "50" }).catch(() => ({ data: [] as Tournament[] })),
-      getSeasonTournaments(6, { per_page: "50" }).catch(() => ({ data: [] as Tournament[] })),
+      getSeasonTournaments(5, { per_page: "50" }).catch(() => ({
+        data: [] as Tournament[],
+      })),
+      getSeasonTournaments(6, { per_page: "50" }).catch(() => ({
+        data: [] as Tournament[],
+      })),
     ]);
 
     const tournamentNameMap = new Map<number, string>();
@@ -50,32 +65,39 @@ async function fetchPlayerData(id: number) {
   }
 }
 
-function StatItem({ label, value }: { label: string; value: string | null }) {
-  if (!value) return null;
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getTournamentName(
+  match: Match,
+  tournamentNameMap: Map<number, string>,
+): string | undefined {
+  const path = match.connections?.tournament;
+  if (!path) return undefined;
+  const id = parseInt(path.split("/").pop() || "0");
+  return tournamentNameMap.get(id);
+}
+
+function StatBlock({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
-    <div
-      style={{
-        padding: "16px 20px",
-        border: "1px solid var(--ink)",
-        background: "var(--paper)",
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "var(--mono)",
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: "0.18em",
-          textTransform: "uppercase",
-          color: "var(--mute)",
-          marginBottom: 6,
-        }}
-      >
+    <div className="rounded-16 border border-border-primary bg-bg-white p-16">
+      <div className="font-sans text-10 font-semibold uppercase tracking-[0.08em] text-text-tertiary">
         {label}
       </div>
       <div
-        className="score-mono"
-        style={{ fontSize: 22, color: "var(--ink)" }}
+        className={[
+          "mt-4 font-display text-24 font-bold tabular-nums",
+          accent ? "text-brand" : "text-text-primary",
+        ].join(" ")}
       >
         {value}
       </div>
@@ -83,9 +105,55 @@ function StatItem({ label, value }: { label: string; value: string | null }) {
   );
 }
 
-export default async function PlayerPage({ params }: { params: { id: string } }) {
+/**
+ * Look at recent finished matches and tally W/L plus aggregate "partners"
+ * (anyone who lined up on the same team as this player).
+ */
+function summariseForm(matches: Match[], playerId: number) {
+  let wins = 0;
+  let losses = 0;
+  const partnerCounts = new Map<number, { player: MatchPlayer; count: number }>();
+
+  for (const m of matches) {
+    if (m.status !== "finished" || !m.winner) continue;
+    const inTeam1 = m.players.team_1.some((p) => p.id === playerId);
+    const inTeam2 = m.players.team_2.some((p) => p.id === playerId);
+    if (!inTeam1 && !inTeam2) continue;
+
+    const won =
+      (inTeam1 && m.winner === "team_1") ||
+      (inTeam2 && m.winner === "team_2");
+    if (won) wins += 1;
+    else losses += 1;
+
+    const myTeam = inTeam1 ? m.players.team_1 : m.players.team_2;
+    for (const teammate of myTeam) {
+      if (teammate.id === playerId) continue;
+      const existing = partnerCounts.get(teammate.id);
+      if (existing) existing.count += 1;
+      else partnerCounts.set(teammate.id, { player: teammate, count: 1 });
+    }
+  }
+
+  const partners = Array.from(partnerCounts.values()).sort(
+    (a, b) => b.count - a.count,
+  );
+  const total = wins + losses;
+  const winRate = total > 0 ? Math.round((wins / total) * 100) : null;
+  return { wins, losses, winRate, partners };
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
+export default async function PlayerPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const id = parseInt(params.id);
-  if (isNaN(id)) notFound();
+  if (Number.isNaN(id)) notFound();
 
   const data = await fetchPlayerData(id);
   if (!data) notFound();
@@ -93,19 +161,20 @@ export default async function PlayerPage({ params }: { params: { id: string } })
   const { player, matches, tournamentNameMap } = data;
   const flag = countryFlag(player.nationality);
 
-  function getTournamentName(match: Match): string | undefined {
-    const path = match.connections?.tournament;
-    if (!path) return undefined;
-    const id = parseInt(path.split("/").pop() || "0");
-    return tournamentNameMap.get(id);
-  }
-
   const finishedMatches = matches.filter(
     (m: Match) =>
       m.status === "finished" &&
       m.players.team_1.length > 0 &&
-      m.players.team_2.length > 0
+      m.players.team_2.length > 0,
   );
+  const recentMatches = matches
+    .filter(
+      (m: Match) =>
+        m.players.team_1.length > 0 && m.players.team_2.length > 0,
+    )
+    .slice(0, 8);
+
+  const form = summariseForm(matches, player.id);
 
   const personSchema = {
     "@context": "https://schema.org",
@@ -120,206 +189,170 @@ export default async function PlayerPage({ params }: { params: { id: string } })
     height: player.height ? `${player.height} cm` : undefined,
   };
 
+  const hand =
+    player.hand && player.hand.length > 0
+      ? player.hand.charAt(0).toUpperCase() + player.hand.slice(1)
+      : null;
+  const side =
+    player.side && player.side.length > 0
+      ? player.side.charAt(0).toUpperCase() + player.side.slice(1)
+      : null;
+
   return (
-    <main style={{ background: "var(--paper)" }}>
+    <div className="bg-bg-page min-h-screen">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
       />
 
-      {/* Header band */}
-      <section style={{ borderBottom: "1px solid var(--ink)" }}>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-          <Link
-            href="/players"
-            className="inline-flex items-center gap-2 mb-8 transition-colors"
-            style={{
-              fontFamily: "var(--mono)",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: "var(--mute)",
-            }}
-          >
-            ← Players
-          </Link>
+      <div className="mx-auto max-w-[1320px] px-16 py-24 sm:px-24 sm:py-32 lg:px-32">
+        {/* Back link */}
+        <Link
+          href="/players"
+          className="mb-16 inline-flex items-center gap-4 font-sans text-12 font-semibold tracking-[0.04em] text-text-secondary transition-colors hover:text-text-primary"
+        >
+          ← All players
+        </Link>
 
-          <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-start">
+        {/* Hero */}
+        <section className="rounded-24 border border-border-primary bg-bg-white p-20 sm:p-24 lg:p-32">
+          <div className="flex flex-col items-start gap-20 sm:flex-row sm:items-center sm:gap-32">
             {player.photo_url ? (
               <Image
                 src={player.photo_url}
                 alt={player.name}
                 width={180}
                 height={180}
-                className="w-32 h-32 sm:w-44 sm:h-44 object-cover shrink-0"
-                style={{
-                  border: "1px solid var(--ink)",
-                  background: "var(--paper-2)",
-                }}
+                className="h-[140px] w-[140px] shrink-0 rounded-24 border border-border-primary bg-bg-gray object-cover sm:h-[180px] sm:w-[180px]"
               />
             ) : (
-              <div
-                className="w-32 h-32 sm:w-44 sm:h-44 flex items-center justify-center shrink-0"
-                style={{
-                  border: "1px solid var(--ink)",
-                  background: "var(--paper-2)",
-                  fontFamily: "var(--mono)",
-                  fontSize: 32,
-                  fontWeight: 700,
-                  color: "var(--mute)",
-                }}
-              >
-                {player.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+              <div className="flex h-[140px] w-[140px] shrink-0 items-center justify-center rounded-24 border border-border-primary bg-bg-gray font-display text-40 font-bold text-text-secondary sm:h-[180px] sm:w-[180px]">
+                {player.name
+                  .split(" ")
+                  .map((n: string) => n[0])
+                  .join("")
+                  .slice(0, 2)}
               </div>
             )}
 
-            <div className="flex-1 min-w-0">
-              <div
-                className="eyebrow"
-                style={{
-                  color: "var(--red)",
-                  marginBottom: 12,
-                }}
-              >
-                ■ {player.category === "women" ? "Women" : "Men"} · Professional
+            <div className="min-w-0 flex-1">
+              <div className="mb-8 font-sans text-12 font-semibold uppercase tracking-[0.06em] text-text-secondary">
+                {player.category === "women" ? "Women" : "Men"} · Professional
               </div>
-              <h1
-                className="display"
-                style={{ fontSize: "clamp(36px, 5.5vw, 72px)", marginBottom: 12 }}
-              >
+              <h1 className="text-text-primary text-mobile-display-l md:text-desktop-display-l">
                 {player.name}
               </h1>
-              <p
-                style={{
-                  fontFamily: "var(--mono)",
-                  fontSize: 13,
-                  letterSpacing: "0.08em",
-                  color: "var(--mute)",
-                  marginBottom: 24,
-                }}
-              >
-                {flag} {player.nationality}
+              <p className="mt-8 font-sans text-14 text-text-secondary">
+                <span aria-hidden="true" className="mr-4 text-16">
+                  {flag}
+                </span>
+                {player.nationality}
                 {player.birthplace && ` · ${player.birthplace}`}
               </p>
-              <div className="flex flex-wrap gap-8">
+
+              <div className="mt-16 flex flex-wrap gap-24">
                 <div>
-                  <div
-                    style={{
-                      fontFamily: "var(--mono)",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.18em",
-                      textTransform: "uppercase",
-                      color: "var(--mute)",
-                      marginBottom: 4,
-                    }}
-                  >
+                  <div className="font-sans text-10 font-semibold uppercase tracking-[0.08em] text-text-tertiary">
                     Ranking
                   </div>
-                  <div
-                    className="score-mono"
-                    style={{
-                      fontSize: 42,
-                      color: "var(--red)",
-                      lineHeight: 1,
-                    }}
-                  >
+                  <div className="font-display text-40 font-bold leading-none text-brand">
                     #{player.ranking}
                   </div>
                 </div>
                 <div>
-                  <div
-                    style={{
-                      fontFamily: "var(--mono)",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.18em",
-                      textTransform: "uppercase",
-                      color: "var(--mute)",
-                      marginBottom: 4,
-                    }}
-                  >
+                  <div className="font-sans text-10 font-semibold uppercase tracking-[0.08em] text-text-tertiary">
                     Points
                   </div>
-                  <div
-                    className="score-mono"
-                    style={{
-                      fontSize: 42,
-                      color: "var(--ink)",
-                      lineHeight: 1,
-                    }}
-                  >
+                  <div className="font-display text-40 font-bold leading-none text-text-primary">
                     {player.points?.toLocaleString() ?? "—"}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
-          <StatItem label="Age" value={player.age ? String(player.age) : null} />
-          <StatItem label="Height" value={player.height ? `${player.height} cm` : null} />
-          <StatItem
-            label="Playing Side"
-            value={
-              player.side
-                ? player.side.charAt(0).toUpperCase() + player.side.slice(1)
-                : null
-            }
-          />
-          <StatItem
-            label="Hand"
-            value={
-              player.hand
-                ? player.hand.charAt(0).toUpperCase() + player.hand.slice(1)
-                : null
-            }
-          />
-        </div>
+        {/* Career stats */}
+        <section className="mt-24">
+          <h2 className="mb-12 font-display text-20 font-bold uppercase tracking-[0.02em] text-text-primary">
+            Stats
+          </h2>
+          <div className="grid grid-cols-2 gap-12 sm:grid-cols-3 lg:grid-cols-6">
+            {player.age != null && (
+              <StatBlock label="Age" value={String(player.age)} />
+            )}
+            {player.height != null && (
+              <StatBlock label="Height" value={`${player.height} cm`} />
+            )}
+            {side && <StatBlock label="Side" value={side} />}
+            {hand && <StatBlock label="Hand" value={hand} />}
+            <StatBlock label="Wins" value={String(form.wins)} />
+            <StatBlock label="Losses" value={String(form.losses)} />
+            {form.winRate != null && (
+              <StatBlock
+                label="Win rate"
+                value={`${form.winRate}%`}
+                accent={form.winRate >= 50}
+              />
+            )}
+          </div>
+        </section>
 
         {/* Recent matches */}
-        <section>
-          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>
-            ■ Form
-          </div>
-          <h2
-            className="display"
-            style={{ fontSize: "clamp(28px, 3.5vw, 44px)", marginBottom: 28 }}
-          >
-            Recent <span className="italic-serif">matches</span>.
+        <section className="mt-32">
+          <h2 className="mb-12 font-display text-20 font-bold uppercase tracking-[0.02em] text-text-primary">
+            Recent matches
           </h2>
-          {finishedMatches.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {finishedMatches.slice(0, 8).map((match: Match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  tournamentName={getTournamentName(match)}
-                />
-              ))}
-            </div>
+          {recentMatches.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 gap-8 md:hidden">
+                {recentMatches.map((m: Match) => (
+                  <MatchCard
+                    key={m.id}
+                    match={m}
+                    tournamentName={getTournamentName(m, tournamentNameMap)}
+                  />
+                ))}
+              </div>
+              <div className="hidden flex-col gap-8 md:flex">
+                {recentMatches.map((m: Match) => (
+                  <MatchCardDesktop
+                    key={m.id}
+                    match={m}
+                    tournamentName={getTournamentName(m, tournamentNameMap)}
+                  />
+                ))}
+              </div>
+            </>
           ) : (
-            <div
-              style={{
-                padding: "40px 24px",
-                border: "1px solid var(--ink)",
-                textAlign: "center",
-                fontFamily: "var(--mono)",
-                fontSize: 12,
-                letterSpacing: "0.08em",
-                color: "var(--mute)",
-              }}
-            >
-              No recent match results available.
+            <div className="rounded-16 border border-border-primary bg-bg-white p-32 text-center">
+              <p className="font-sans text-14 text-text-secondary">
+                No recent match results available.
+              </p>
             </div>
           )}
         </section>
+
+        {/* Partnerships */}
+        {form.partners.length > 0 && (
+          <section className="mt-32">
+            <h2 className="mb-12 font-display text-20 font-bold uppercase tracking-[0.02em] text-text-primary">
+              Usual partners
+            </h2>
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {form.partners.slice(0, 9).map(({ player: partner, count }) => (
+                <Cell
+                  key={partner.id}
+                  title={partner.name}
+                  subtitle={`${count} match${count === 1 ? "" : "es"} together`}
+                  href={`/players/${partner.id}`}
+                  chevron
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
-    </main>
+    </div>
   );
 }

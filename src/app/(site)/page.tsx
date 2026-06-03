@@ -1,598 +1,386 @@
 import Link from "next/link";
-import Image from "next/image";
-import MatchCard from "@/components/MatchCard";
-import ScoresTicker from "@/components/ScoresTicker";
-import RankingRow from "@/components/RankingRow";
-
-// Revalidate the homepage every 30s so live scores show up without waiting
-// the default ISR window. Individual API fetches still use their own shorter
-// revalidate (15s for /live) inside padel-api.ts.
-export const revalidate = 30;
-import NewsCard from "@/components/NewsCard";
-import NewsletterSignup from "@/components/NewsletterSignup";
+import Button from "@/components/Button";
+import BannerDesktop, { type BannerSlide } from "@/components/v3/BannerDesktop";
+import BannerMobile from "@/components/v3/BannerMobile";
+import ArticleCard from "@/components/v3/ArticleCard";
+import ArticleCardHero from "@/components/v3/ArticleCardHero";
+import ArticleCardHorizontal from "@/components/v3/ArticleCardHorizontal";
+import TournamentCard from "@/components/v3/TournamentCard";
 import { fetchArticles } from "@/lib/ghost";
 import {
-  getPlayers,
   getSeasonTournaments,
-  getTournamentMatches,
   getMatches,
   getLiveMatches,
-  countryFlag,
-  levelLabel,
-  type Player,
   type Match,
   type Tournament,
   type LiveMatchData,
 } from "@/lib/padel-api";
 import { normalizeMatches, buildContext } from "@/lib/normalize-match";
+import type { Article } from "@/data/mock";
+
+// Revalidate the homepage every 30s so live scores/tournaments don't go stale
+// beyond a half-minute. Individual API fetches keep their own shorter windows
+// (15s for /live) inside padel-api.ts.
+export const revalidate = 30;
 
 async function fetchHomeData() {
-  // Stage 1 — everything that doesn't depend on tournament IDs runs in one
-  // parallel batch. The /live endpoint and the recent global /matches range
-  // are pulled in this stage so we never wait for tournament metadata before
-  // hitting them.
-  const today = new Date();
-  const threeDaysAgo = new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000);
-  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-  const recentStr = threeDaysAgo.toISOString().split("T")[0];
-  const tomorrowStr = tomorrow.toISOString().split("T")[0];
+  // Parallel fetch — none of these depend on each other.
+  const [s5Res, s6Res, recentMatchesRes, liveRes] = await Promise.allSettled([
+    getSeasonTournaments(5, { per_page: "50" }),
+    getSeasonTournaments(6, { per_page: "50" }),
+    getMatches({
+      sort_by: "played_at",
+      order_by: "desc",
+      per_page: "20",
+    }),
+    getLiveMatches(),
+  ]);
 
-  const [menRes, womenRes, s5Res, s6Res, recentMatchesRes, liveRes] =
-    await Promise.allSettled([
-      getPlayers({
-        category: "men",
-        sort_by: "ranking",
-        order_by: "asc",
-        per_page: "10",
-      }),
-      getPlayers({
-        category: "women",
-        sort_by: "ranking",
-        order_by: "asc",
-        per_page: "10",
-      }),
-      getSeasonTournaments(5, { per_page: "50" }),
-      getSeasonTournaments(6, { per_page: "50" }),
-      getMatches({
-        after_date: recentStr,
-        before_date: tomorrowStr,
-        sort_by: "played_at",
-        order_by: "desc",
-        per_page: "50",
-      }),
-      getLiveMatches(),
-    ]);
-
-  const men: Player[] = menRes.status === "fulfilled" ? menRes.value.data : [];
-  const women: Player[] =
-    womenRes.status === "fulfilled" ? womenRes.value.data : [];
   const tournaments: Tournament[] = [
     ...(s5Res.status === "fulfilled" ? s5Res.value.data : []),
     ...(s6Res.status === "fulfilled" ? s6Res.value.data : []),
   ];
-  const todayMatches: Match[] =
+  const recentMatches: Match[] =
     recentMatchesRes.status === "fulfilled" ? recentMatchesRes.value.data : [];
   const liveData: LiveMatchData[] =
     liveRes.status === "fulfilled" ? liveRes.value.data : [];
 
-  // Stage 2 — fan-out tournament-match fetches, but only for tournaments
-  // that are actually relevant to the home page. The previous version hit
-  // /tournaments/{id}/matches for every "live OR finished" tournament in
-  // the season, which could be 50+ requests serialized against the
-  // 60-req/min Pro tier (and was the dominant cost of the page).
-  //
-  // Relevant set now = live tournaments + finished tournaments whose
-  // end_date is within the last 7 days. That keeps the recent-results
-  // section accurate without paying for the long tail of completed events.
-  const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const relevantTournaments = tournaments.filter((t) => {
-    if (t.status === "live") return true;
-    if (t.status === "finished" && t.end_date) {
-      return new Date(t.end_date) >= sevenDaysAgo;
-    }
-    return false;
-  });
-
-  const matchResults = await Promise.allSettled(
-    relevantTournaments.map((t) =>
-      getTournamentMatches(t.id, {
-        per_page: "50",
-        sort_by: "played_at",
-        order_by: "desc",
-      })
-    )
-  );
-  const tournamentMatches: Match[] = matchResults.flatMap((r) =>
-    r.status === "fulfilled" ? r.value.data : []
-  );
-
-  // Merge tournament-scoped + global recent matches, dedupe, sort.
-  const seenIds = new Set(tournamentMatches.map((m) => m.id));
-  const extraMatches = todayMatches.filter((m) => !seenIds.has(m.id));
-  const matches = [...extraMatches, ...tournamentMatches].sort(
-    (a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime()
-  );
-
-  // Normalize all matches through single pipeline (merges live scores,
-  // derives status). /live data is already loaded from Stage 1.
   const ctx = buildContext(liveData);
-  const normalized = normalizeMatches(matches, ctx);
+  const matches = normalizeMatches(recentMatches, ctx);
 
-  // Tournament name map for cross-referencing in match cards.
-  const tournamentNameMap = new Map<number, string>();
-  for (const t of tournaments) {
-    tournamentNameMap.set(t.id, t.name);
-  }
-
-  return { men, women, matches: normalized, tournaments, tournamentNameMap };
+  return { tournaments, matches };
 }
 
-function formatDateRange(start: string, end: string): string {
-  const s = new Date(start);
-  const e = new Date(end);
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  if (s.getMonth() === e.getMonth()) {
-    return `${months[s.getMonth()]} ${s.getDate()}-${e.getDate()}, ${s.getFullYear()}`;
+function pickTournaments(tournaments: Tournament[], limit = 4): Tournament[] {
+  // Priority: live → pending (closest start date) → finished (most recent end_date)
+  const live = tournaments.filter((t) => t.status === "live");
+  const pending = tournaments
+    .filter((t) => t.status === "pending")
+    .sort(
+      (a, b) =>
+        new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+    );
+  const finished = tournaments
+    .filter((t) => t.status === "finished")
+    .sort(
+      (a, b) =>
+        new Date(b.end_date).getTime() - new Date(a.end_date).getTime()
+    );
+  return [...live, ...pending, ...finished].slice(0, limit);
+}
+
+function pickTopAuthor(articles: Article[]): {
+  name: string;
+  articles: Article[];
+} | null {
+  const counts = new Map<string, number>();
+  for (const a of articles) {
+    if (!a.author) continue;
+    counts.set(a.author, (counts.get(a.author) ?? 0) + 1);
   }
-  return `${months[s.getMonth()]} ${s.getDate()} - ${months[e.getMonth()]} ${e.getDate()}, ${s.getFullYear()}`;
+  if (counts.size === 0) return null;
+  const [topName] = Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0];
+  const byAuthor = articles.filter((a) => a.author === topName);
+  return { name: topName, articles: byAuthor };
 }
 
 export default async function Home() {
-  // Kick off Ghost articles in parallel with the PadelAPI waterfall so the
-  // CMS fetch doesn't add its latency on top of the data layer's. The two
-  // sources are independent; awaiting them as a batch shaves a full
-  // round-trip on every render.
-  const [homeData, articles] = await Promise.all([
+  // Kick off Ghost articles in parallel with the PadelAPI fetches so CMS
+  // latency doesn't stack on top of the data layer.
+  const [{ tournaments }, articles] = await Promise.all([
     fetchHomeData(),
     fetchArticles(),
   ]);
-  const { men, women, matches, tournaments, tournamentNameMap } = homeData;
 
-  // Helper to get tournament name from a match's connections
-  function getTournamentName(match: Match): string | undefined {
-    const path = match.connections?.tournament;
-    if (!path) return undefined;
-    const id = parseInt(path.split("/").pop() || "0");
-    return tournamentNameMap.get(id);
-  }
+  // === Hero carousel: 3 most recent articles ===
+  const heroArticles = articles.slice(0, 3);
+  const bannerSlides: BannerSlide[] = heroArticles.map((a) => ({
+    image: a.imageUrl || "/og-default.png",
+    eyebrow: "FEATURED",
+    title: a.title,
+    body: a.excerpt,
+    ctaText: "Read article",
+    ctaHref: `/news/${a.slug}`,
+  }));
 
-  const filterAndSort = (players: Player[]) => {
-    const topPoints = players.slice(0, 10).map((p) => p.points || 0).filter((p) => p > 0).sort((a, b) => b - a);
-    const threshold = topPoints.length > 2 ? topPoints[2] * 0.1 : 0;
-    // Filter out juniors leaked into senior rankings (PadelAPI data bug)
-    const cutoffDate = new Date();
-    cutoffDate.setFullYear(cutoffDate.getFullYear() - 19);
-    const filtered = players.filter((p) => {
-      if (!p.points || p.points < threshold) return false;
-      // Exclude players under 19 — likely junior/Promises ranking leak
-      if (p.birthdate) {
-        const bd = new Date(p.birthdate);
-        if (bd > cutoffDate) return false;
-      }
-      return true;
-    });
-    // Re-sort by points descending and re-assign rankings (API ranking field is unreliable)
-    filtered.sort((a, b) => (b.points || 0) - (a.points || 0));
-    let currentRank = 1;
-    for (let i = 0; i < filtered.length; i++) {
-      if (i > 0 && (filtered[i].points || 0) < (filtered[i - 1].points || 0)) {
-        currentRank = i + 1;
-      }
-      filtered[i].ranking = currentRank;
-    }
-    return filtered;
-  };
-  const topMen = filterAndSort(men).slice(0, 5);
+  // === Last news: 1 hero + 3 horizontal sidebar ===
+  const lastNewsHero = articles[3] ?? articles[0];
+  const lastNewsSidebar = articles.slice(4, 7);
 
-  const recentMatches = matches
-    .filter((m) => m.displayStatus === "finished" && m.players.team_1.length > 0 && m.players.team_2.length > 0)
-    .slice(0, 6);
+  // === Tournaments band ===
+  const featuredTournaments = pickTournaments(tournaments, 4);
 
-  const liveMatches = matches.filter((m) => m.displayStatus === "live");
+  // === Best Reviews — articles in "Reviews" category, else hide ===
+  const reviewArticles = articles
+    .filter((a) => a.category === "Reviews")
+    .slice(0, 4);
 
-  // Strip rules — priority order:
-  //   1. Live now → show live matches
-  //   2. Recently finished (≤24h) → show last few results
-  //   3. Scheduled within next 12h → show upcoming
-  //   4. Otherwise → hide strip entirely
-  const now = Date.now();
-  const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
-  const twelveHoursAhead = new Date(now + 12 * 60 * 60 * 1000);
+  // === Premier Padel content row — "Tour News" else fallback to recent ===
+  const tourNews = articles.filter((a) => a.category === "Tour News");
+  const premierPadelArticles = (tourNews.length >= 4
+    ? tourNews
+    : articles
+  ).slice(0, 4);
 
-  const freshFinished = recentMatches.filter(
-    (m) => new Date(m.played_at) >= dayAgo
-  );
-
-  const upcomingMatches = matches
-    .filter(
-      (m) =>
-        m.displayStatus === "scheduled" &&
-        m.players.team_1.length > 0 &&
-        m.players.team_2.length > 0 &&
-        new Date(m.played_at) > new Date(now) &&
-        new Date(m.played_at) <= twelveHoursAhead
-    )
-    .sort(
-      (a, b) => new Date(a.played_at).getTime() - new Date(b.played_at).getTime()
-    );
-
-  let tickerMatches: Match[];
-  let tickerMode: "live" | "recent" | "upcoming";
-  if (liveMatches.length > 0) {
-    tickerMatches = liveMatches;
-    tickerMode = "live";
-  } else if (freshFinished.length > 0) {
-    tickerMatches = freshFinished.slice(0, 4);
-    tickerMode = "recent";
-  } else if (upcomingMatches.length > 0) {
-    tickerMatches = upcomingMatches.slice(0, 4);
-    tickerMode = "upcoming";
-  } else {
-    tickerMatches = [];
-    tickerMode = "live";
-  }
-
-  // Pick the top-tier tournament currently represented in the strip so the
-  // viewer knows *what event* they're watching (e.g. Premier P1 over FIP Gold).
-  // Lower number = higher prestige.
-  const LEVEL_RANK: Record<string, number> = {
-    finals: 0,
-    major: 1,
-    p1: 2,
-    p2: 3,
-    fip_platinum: 4,
-    fip_gold: 5,
-    fip_silver: 6,
-    fip_bronze: 7,
-    fip_rise: 8,
-    fip_star: 9,
-  };
-  const tickerTournamentIds = new Set<number>();
-  for (const m of tickerMatches) {
-    const path = m.connections?.tournament;
-    if (!path) continue;
-    const id = parseInt(path.split("/").pop() || "0", 10);
-    if (id) tickerTournamentIds.add(id);
-  }
-  const tickerTournament = tournaments
-    .filter((t) => tickerTournamentIds.has(t.id))
-    .sort(
-      (a, b) =>
-        (LEVEL_RANK[a.level] ?? 99) - (LEVEL_RANK[b.level] ?? 99)
-    )[0];
-  const tickerTournamentLabel = tickerTournament?.name;
-
-  const activeTournament = tournaments.find((t) => t.status === "live") || tournaments.find((t) => t.status === "pending");
-
-  const featuredArticle = articles[0];
-  const latestNews = articles.slice(1, 5);
-  const businessArticles = articles.filter((a) => a.category === "Business").slice(0, 3);
+  // === Author block ===
+  const topAuthor = pickTopAuthor(articles);
+  const authorArticles = topAuthor?.articles.slice(0, 6) ?? [];
 
   return (
-    <main>
-      {/* Section 1: Live Scores Ticker */}
-      {tickerMatches.length > 0 && (
-        <section
-          className="overflow-hidden"
-          style={{ background: "var(--ink)", borderBottom: "1px solid var(--ink)" }}
-        >
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center">
-              <div className="flex-1 overflow-x-auto scrollbar-hide">
-                <ScoresTicker matches={tickerMatches} tournamentLabel={tickerTournamentLabel} mode={tickerMode} />
-              </div>
+    <main className="bg-bg-page">
+      {/* === Section 1: Hero carousel === */}
+      {bannerSlides.length > 0 && (
+        <section className="px-16 pt-24 md:px-32 md:pt-32 lg:px-48">
+          <div className="mx-auto max-w-[1440px]">
+            <div className="hidden md:block">
+              <BannerDesktop slides={bannerSlides} />
+            </div>
+            <div className="md:hidden">
+              <BannerMobile slides={bannerSlides} />
             </div>
           </div>
         </section>
       )}
 
-      {/* Section 2: Hero — Editorial featured story + sidebar */}
-      <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--ink)" }}>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-            {/* Featured article — spans 8 of 12 */}
-            <div className="lg:col-span-8">
-              {featuredArticle && (
-                <Link href={`/news/${featuredArticle.slug}`} className="group block">
-                  <div
-                    className="aspect-[16/9] overflow-hidden relative mb-6"
-                    style={{ border: "1px solid var(--ink)", background: "var(--paper-2)" }}
-                  >
-                    {featuredArticle.imageUrl && (
-                      <img
-                        src={featuredArticle.imageUrl}
-                        alt={featuredArticle.title}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 mb-4" style={{ fontFamily: "var(--mono)", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" }}>
-                    <span style={{ color: "var(--red)" }}>■ Cover story</span>
-                    <span style={{ color: "var(--mute)" }}>{featuredArticle.category}</span>
-                    <span style={{ color: "var(--mute)" }}>· {featuredArticle.date}</span>
-                  </div>
-                  <h1
-                    className="display transition-opacity group-hover:opacity-80"
-                    style={{ marginBottom: 20 }}
-                  >
-                    {featuredArticle.title}
-                  </h1>
-                  <p
-                    className="line-clamp-2"
-                    style={{ fontFamily: "var(--sans)", fontSize: 17, lineHeight: 1.55, color: "var(--ink-soft)", maxWidth: 640 }}
-                  >
-                    {featuredArticle.excerpt}
-                  </p>
-                  <div className="mt-4" style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--mute)" }}>
-                    By {featuredArticle.author}
-                  </div>
-                </Link>
-              )}
-            </div>
-
-            {/* Sidebar — spans 4 of 12 */}
-            <div className="lg:col-span-4 space-y-8">
-              {/* Newsletter signup */}
-              <div style={{ background: "var(--ink)", color: "var(--paper)", padding: 24 }}>
-                <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 8 }}>■ Newsletter</div>
-                <h3 style={{ fontFamily: "var(--sans)", fontWeight: 900, fontStyle: "italic", fontSize: 28, lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 10 }}>
-                  The Padel <span className="italic-serif">Brief</span>
-                </h3>
-                <p style={{ fontSize: 13, lineHeight: 1.5, color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
-                  Weekly. Rankings, recaps, one gear recommendation. No fluff.
-                </p>
-                <form className="space-y-2">
-                  <input
-                    type="email"
-                    placeholder="your@email.com"
-                    style={{
-                      width: "100%",
-                      padding: "10px 12px",
-                      background: "transparent",
-                      border: "1px solid rgba(255,255,255,0.3)",
-                      color: "var(--paper)",
-                      fontFamily: "var(--mono)",
-                      fontSize: 13,
-                      outline: "none",
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    style={{ width: "100%", justifyContent: "center" }}
-                  >
-                    Subscribe →
-                  </button>
-                </form>
-              </div>
-
-              {/* Top 5 Men scoreboard widget */}
-              <div style={{ border: "1px solid var(--ink)", background: "var(--paper)" }}>
-                <div
-                  className="flex items-center justify-between"
-                  style={{ padding: "12px 16px", borderBottom: "1px solid var(--ink)", background: "var(--ink)", color: "var(--paper)" }}
-                >
-                  <span style={{ fontFamily: "var(--mono)", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" }}>
-                    Men’s Top 5
-                  </span>
-                  <Link
-                    href="/rankings"
-                    style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--paper)", opacity: 0.7 }}
-                  >
-                    Full →
-                  </Link>
-                </div>
-                <table className="w-full">
-                  <tbody>
-                    {topMen.map((p, i) => (
-                      <tr key={p.id} style={{ borderBottom: i < topMen.length - 1 ? "1px solid rgba(0,0,0,0.08)" : "none" }}>
-                        <td style={{ padding: "10px 12px", width: 40, textAlign: "center" }}>
-                          <span className="score-mono" style={{ fontSize: 14, color: "var(--red)" }}>
-                            {p.ranking}
-                          </span>
-                        </td>
-                        <td style={{ padding: "10px 8px" }}>
-                          <Link href={`/players/${p.id}`} className="flex items-center gap-2 group">
-                            {p.photo_url ? (
-                              <Image src={p.photo_url} alt={p.name} width={24} height={24} className="w-6 h-6 rounded-full object-cover" style={{ background: "var(--paper-2)" }} />
-                            ) : (
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "var(--paper-2)", fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--mute)" }}>
-                                {p.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                              </div>
-                            )}
-                            <span style={{ fontFamily: "var(--sans)", fontSize: 13, fontWeight: 700, color: "var(--ink)" }} className="truncate">
-                              {countryFlag(p.nationality)} {p.name}
-                            </span>
-                          </Link>
-                        </td>
-                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                          <span className="score-mono" style={{ fontSize: 12, color: "var(--ink-soft)" }}>
-                            {p.points?.toLocaleString() ?? "—"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 3: Latest News — editorial grid */}
-      <section style={{ background: "var(--paper-2)", borderBottom: "1px solid var(--ink)" }}>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-          <div className="flex items-baseline justify-between mb-10">
-            <div>
-              <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 8 }}>■ Section 02</div>
-              <h2 className="display" style={{ fontSize: "clamp(32px, 4.5vw, 56px)" }}>
-                The <span className="italic-serif">latest</span>.
+      {/* === Section 2: LAST NEWS === */}
+      {lastNewsHero && (
+        <section className="px-16 py-48 md:px-32 md:py-64 lg:px-48 lg:py-80">
+          <div className="mx-auto max-w-[1440px]">
+            <div className="mb-32 flex items-end justify-between gap-16 md:mb-40">
+              <h2 className="text-mobile-heading-l md:text-desktop-heading-l text-text-primary">
+                LAST NEWS
               </h2>
-            </div>
-            <Link
-              href="/news"
-              style={{ fontFamily: "var(--mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink)" }}
-              className="hover:text-[var(--red)] transition-colors hidden sm:inline"
-            >
-              All news →
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
-            {latestNews.map((article) => (
-              <NewsCard key={article.slug} article={article} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Section 4: Active tournament — ink band */}
-      {activeTournament && (
-        <section style={{ background: "var(--ink)", color: "var(--paper)" }}>
-          <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-              <div>
-                <div
-                  className="flex items-center gap-3 mb-4 flex-wrap"
-                  style={{ fontFamily: "var(--mono)", fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" }}
-                >
-                  {activeTournament.status === "live" && (
-                    <span className="badge-live">Live Now</span>
-                  )}
-                  {activeTournament.status === "pending" && (
-                    <span style={{ color: "var(--lime)" }}>■ Upcoming</span>
-                  )}
-                  <span style={{ color: "var(--red)" }}>{levelLabel(activeTournament.level)}</span>
-                </div>
-                <h2
-                  className="display"
-                  style={{ fontSize: "clamp(28px, 4.5vw, 56px)", color: "var(--paper)", marginBottom: 10 }}
-                >
-                  {activeTournament.name}
-                </h2>
-                <p style={{ fontFamily: "var(--mono)", fontSize: 13, letterSpacing: "0.08em", color: "rgba(243,238,228,0.65)" }}>
-                  {activeTournament.location}, {activeTournament.country} · {formatDateRange(activeTournament.start_date, activeTournament.end_date)}
-                </p>
-              </div>
-              <div className="flex gap-3 self-start sm:self-end">
-                <Link href={`/tournaments/${activeTournament.id}`} className="btn btn-primary">
-                  View draws →
-                </Link>
-                <Link
-                  href="/scores"
-                  className="btn"
-                  style={{ borderColor: "var(--paper)", color: "var(--paper)" }}
-                >
-                  Schedule
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Section 5: Recent results */}
-      <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--ink)" }}>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-          <div className="flex items-baseline justify-between mb-10">
-            <div>
-              <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 8 }}>■ Section 03 · Scoreboard</div>
-              <h2 className="display" style={{ fontSize: "clamp(32px, 4.5vw, 56px)" }}>
-                Recent <span className="italic-serif">results</span>.
-              </h2>
-            </div>
-            <Link
-              href="/scores"
-              style={{ fontFamily: "var(--mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink)" }}
-              className="hover:text-[var(--red)] transition-colors hidden sm:inline"
-            >
-              All results →
-            </Link>
-          </div>
-          {recentMatches.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {recentMatches.map((match) => (
-                <MatchCard key={match.id} match={match} tournamentName={getTournamentName(match)} />
-              ))}
-            </div>
-          ) : (
-            <p style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--mute)" }}>
-              No recent results available.
-            </p>
-          )}
-        </div>
-      </section>
-
-      {/* Section 6: Business of Padel */}
-      {businessArticles.length > 0 && (
-        <section style={{ background: "var(--paper-2)", borderBottom: "1px solid var(--ink)" }}>
-          <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-            <div className="flex items-baseline justify-between mb-10">
-              <div>
-                <div className="eyebrow" style={{ color: "var(--clay)", marginBottom: 8 }}>■ Section 04</div>
-                <h2 className="display" style={{ fontSize: "clamp(32px, 4.5vw, 56px)" }}>
-                  The <span className="italic-serif">business</span> of padel.
-                </h2>
-              </div>
-              <Link
-                href="/hub/business"
-                style={{ fontFamily: "var(--mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink)" }}
-                className="hover:text-[var(--red)] transition-colors hidden sm:inline"
+              <Button
+                as={Link}
+                href="/hub"
+                variant="ghost"
+                size="sm"
+                trailingIcon="arrow"
+                className="hidden sm:inline-flex"
               >
-                Explore →
-              </Link>
+                All news
+              </Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-              {businessArticles.map((article) => (
-                <NewsCard key={article.slug} article={article} />
-              ))}
+
+            <div className="grid grid-cols-1 gap-24 lg:grid-cols-12 lg:gap-32">
+              <div className="lg:col-span-8">
+                <ArticleCardHero article={lastNewsHero} />
+              </div>
+              <div className="flex flex-col gap-20 lg:col-span-4">
+                {lastNewsSidebar.map((a) => (
+                  <ArticleCardHorizontal key={a.slug} article={a} />
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-32 sm:hidden">
+              <Button
+                as={Link}
+                href="/hub"
+                variant="ghost"
+                trailingIcon="arrow"
+                className="w-full justify-between"
+              >
+                All news
+              </Button>
             </div>
           </div>
         </section>
       )}
 
-      {/* Section 7: Newsletter CTA (bottom, editorial) */}
-      <section style={{ background: "var(--ink)", color: "var(--paper)" }}>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
-            <div className="lg:col-span-7">
-              <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>
-                ■ The padel brief
-              </div>
-              <h2 className="display" style={{ color: "var(--paper)" }}>
-                Never miss a <span className="italic-serif">match</span>.
+      {/* === Section 3: TOURNAMENTS dark band === */}
+      {featuredTournaments.length > 0 && (
+        <section className="bg-bg-constant text-text-contrast">
+          <div className="mx-auto max-w-[1440px] px-16 py-48 md:px-32 md:py-64 lg:px-48 lg:py-80">
+            <div className="mb-32 flex items-end justify-between gap-16 md:mb-40">
+              <h2 className="text-mobile-heading-l md:text-desktop-heading-l text-text-contrast">
+                ON THE TOUR
               </h2>
-              <p
-                className="mt-6"
-                style={{ fontFamily: "var(--sans)", fontSize: 17, lineHeight: 1.5, color: "rgba(243,238,228,0.7)", maxWidth: 560 }}
+              <Button
+                as={Link}
+                href="/tournaments"
+                variant="outline"
+                size="sm"
+                trailingIcon="arrow"
+                className="hidden sm:inline-flex"
               >
-                Weekly. Recaps, rankings, one gear recommendation. Delivered to your inbox. Free.
-              </p>
+                View calendar
+              </Button>
             </div>
-            <div className="lg:col-span-5">
-              <form className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  style={{
-                    flex: 1,
-                    padding: "12px 16px",
-                    background: "transparent",
-                    border: "1px solid rgba(243,238,228,0.3)",
-                    color: "var(--paper)",
-                    fontFamily: "var(--mono)",
-                    fontSize: 14,
-                    outline: "none",
-                  }}
+
+            <div className="grid grid-cols-1 gap-16 sm:grid-cols-2 lg:grid-cols-4">
+              {featuredTournaments.map((t) => (
+                <TournamentCard
+                  key={t.id}
+                  tournament={t}
+                  variant="dark"
                 />
-                <button type="button" className="btn btn-primary">
-                  Subscribe →
-                </button>
-              </form>
+              ))}
+            </div>
+
+            <div className="mt-32 sm:hidden">
+              <Button
+                as={Link}
+                href="/tournaments"
+                variant="outline"
+                trailingIcon="arrow"
+                className="w-full justify-between"
+              >
+                View calendar
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* === Section 4: BEST REVIEWS — hidden when empty === */}
+      {reviewArticles.length > 0 && (
+        <section className="px-16 py-48 md:px-32 md:py-64 lg:px-48 lg:py-80">
+          <div className="mx-auto max-w-[1440px]">
+            <div className="mb-32 flex items-end justify-between gap-16 md:mb-40">
+              <h2 className="text-mobile-heading-l md:text-desktop-heading-l text-text-primary">
+                BEST REVIEWS
+              </h2>
+              <Button
+                as={Link}
+                href="/hub/review"
+                variant="ghost"
+                size="sm"
+                trailingIcon="arrow"
+                className="hidden sm:inline-flex"
+              >
+                All reviews
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-24 sm:grid-cols-2 lg:grid-cols-4">
+              {reviewArticles.map((a) => (
+                <ArticleCard key={a.slug} article={a} hrefBase="/hub" />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* === Section 5: PADELSPOTS / LIVE FROM PREMIER PADEL placeholder === */}
+      <section className="bg-bg-constant text-text-contrast">
+        <div className="mx-auto max-w-[1440px] px-16 py-48 md:px-32 md:py-64 lg:px-48 lg:py-80">
+          <div className="mb-32 flex items-end justify-between gap-16 md:mb-40">
+            <h2 className="text-mobile-heading-l md:text-desktop-heading-l text-text-contrast">
+              PADELSPOTS
+            </h2>
+          </div>
+
+          <div className="relative overflow-hidden rounded-32 bg-bg-gray">
+            <div
+              className="relative flex flex-col justify-end gap-20 p-24 md:p-40 lg:p-48"
+              style={{ aspectRatio: "16 / 7", minHeight: 320 }}
+            >
+              {/* Decorative gradient stand-in for video */}
+              <div
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(24,29,39,0.95) 0%, rgba(24,29,39,0.7) 40%, rgba(254,76,0,0.55) 100%)",
+                }}
+              />
+              <div className="relative z-[5] flex max-w-[640px] flex-col gap-16">
+                <span className="text-uppercase-eyebrow text-brand">
+                  LIVE STREAM
+                </span>
+                <h3 className="text-mobile-heading-l md:text-desktop-heading-m text-text-contrast">
+                  Live from the Premier Padel circuit
+                </h3>
+                <p className="text-body-l text-text-contrast/85">
+                  Catch every point as it happens — match feeds, highlights and
+                  on-court interviews.
+                </p>
+                <div>
+                  <Button
+                    as={Link}
+                    href="/scores"
+                    variant="primary"
+                    trailingIcon="arrow"
+                  >
+                    Watch live
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* === Section 6: PREMIER PADEL content row === */}
+      {premierPadelArticles.length > 0 && (
+        <section className="px-16 py-48 md:px-32 md:py-64 lg:px-48 lg:py-80">
+          <div className="mx-auto max-w-[1440px]">
+            <div className="mb-32 flex items-end justify-between gap-16 md:mb-40">
+              <h2 className="text-mobile-heading-l md:text-desktop-heading-l text-text-primary">
+                PREMIER PADEL
+              </h2>
+              <Button
+                as={Link}
+                href="/hub"
+                variant="ghost"
+                size="sm"
+                trailingIcon="arrow"
+                className="hidden sm:inline-flex"
+              >
+                More stories
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-24 sm:grid-cols-2 lg:grid-cols-4">
+              {premierPadelArticles.map((a) => (
+                <ArticleCard key={a.slug} article={a} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* === Section 7: AUTHOR articles === */}
+      {topAuthor && authorArticles.length > 0 && (
+        <section className="bg-bg-gray">
+          <div className="mx-auto max-w-[1440px] px-16 py-48 md:px-32 md:py-64 lg:px-48 lg:py-80">
+            <div className="mb-32 flex items-end justify-between gap-16 md:mb-40">
+              <h2 className="text-mobile-heading-l md:text-desktop-heading-l text-text-primary">
+                {topAuthor.name.toUpperCase()}&rsquo;S ARTICLES
+              </h2>
+              <Button
+                as={Link}
+                href="/hub"
+                variant="ghost"
+                size="sm"
+                trailingIcon="arrow"
+                className="hidden sm:inline-flex"
+              >
+                All articles
+              </Button>
+            </div>
+
+            {/* Mobile: horizontal scroll */}
+            <div className="-mx-16 overflow-x-auto px-16 pb-8 md:hidden">
+              <div className="flex w-max gap-16">
+                {authorArticles.map((a) => (
+                  <div key={a.slug} className="w-[300px] shrink-0">
+                    <ArticleCardHorizontal article={a} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop: 3-col grid */}
+            <div className="hidden gap-24 md:grid md:grid-cols-2 lg:grid-cols-3">
+              {authorArticles.slice(0, 6).map((a) => (
+                <ArticleCardHorizontal key={a.slug} article={a} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

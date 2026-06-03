@@ -1,99 +1,93 @@
-import NewsletterSignup from "@/components/NewsletterSignup";
+import Link from "next/link";
+
+export const metadata = {
+  title: "About | VAMOS",
+  description:
+    "Vamos.net is the definitive platform for the world of padel — live scores, rankings, editorial coverage, and the business of the fastest-growing racquet sport.",
+};
+
+const COVERAGE = [
+  [
+    "Live scores",
+    "Real-time match updates from Premier Padel, FIP Tour, and every major circuit.",
+  ],
+  [
+    "Rankings",
+    "Up-to-date men’s and women’s rankings with proper points-based sorting.",
+  ],
+  [
+    "News",
+    "Tour coverage, player profiles, business developments, and coaching insights.",
+  ],
+  [
+    "Analysis",
+    "Deep dives into tactics, form, and the evolution of the sport.",
+  ],
+] as const;
 
 export default function AboutPage() {
   return (
-    <main style={{ background: "var(--paper)" }}>
+    <main className="bg-bg-page">
       {/* Hero band */}
-      <section style={{ borderBottom: "1px solid var(--ink)" }}>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>■ About</div>
-          <h1 className="display" style={{ marginBottom: 20 }}>
-            Everything happens at the <span className="italic-serif">net</span>.
+      <section className="border-b border-border-primary">
+        <div className="mx-auto max-w-[1320px] px-16 py-40 sm:px-24 md:py-64 lg:px-32">
+          <span className="text-uppercase-eyebrow text-brand">■ About</span>
+          <h1 className="mt-12 text-mobile-display-l md:text-desktop-display-l text-text-primary">
+            About Vamos
           </h1>
-          <p
-            style={{
-              fontFamily: "var(--sans)",
-              fontSize: 18,
-              lineHeight: 1.55,
-              color: "var(--ink-soft)",
-              maxWidth: 680,
-            }}
-          >
-            Vamos.net is the definitive platform for the world of padel. Live scores,
-            real-time rankings, editorial coverage, and the business of the fastest-growing
-            racquet sport on the planet.
+          <p className="mt-20 max-w-[680px] text-body-l text-text-secondary">
+            Vamos.net is the definitive platform for the world of padel. Live
+            scores, real-time rankings, editorial coverage, and the business of
+            the fastest-growing racquet sport on the planet.
           </p>
         </div>
       </section>
 
       {/* Mission + What we cover */}
       <section>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+        <div className="mx-auto max-w-[1320px] px-16 py-40 sm:px-24 md:py-64 lg:px-32">
+          <div className="grid grid-cols-1 gap-40 lg:grid-cols-12 lg:gap-48">
             <div className="lg:col-span-7">
-              <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>■ Mission</div>
-              <h2 className="headline" style={{ marginBottom: 20 }}>
+              <span className="text-uppercase-eyebrow text-brand">
+                ■ Mission
+              </span>
+              <h2 className="mt-12 text-mobile-heading-l md:text-desktop-heading-l text-text-primary">
                 Make padel accessible to every fan, everywhere.
               </h2>
-              <div
-                style={{
-                  fontFamily: "var(--sans)",
-                  fontSize: 16,
-                  lineHeight: 1.7,
-                  color: "var(--ink-soft)",
-                  maxWidth: 640,
-                }}
-                className="space-y-5"
-              >
+              <div className="mt-24 flex max-w-[640px] flex-col gap-20 text-body-l text-text-secondary">
                 <p>
-                  Whether you follow the Premier Padel tour, track your favourite players in the
-                  rankings, or read about the sport&rsquo;s explosive global growth, Vamos.net is your home.
+                  Whether you follow the Premier Padel tour, track your
+                  favourite players in the rankings, or read about the
+                  sport&rsquo;s explosive global growth, Vamos.net is your
+                  home.
                 </p>
                 <p>
-                  We treat every layout like a magazine spread. Strong hierarchy, considered typography,
-                  real content. Our editorial mandate: confident, informed, concise.
+                  We treat every layout like a magazine spread. Strong
+                  hierarchy, considered typography, real content. Our editorial
+                  mandate: confident, informed, concise.
                 </p>
               </div>
             </div>
 
             <div className="lg:col-span-5">
-              <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 16 }}>■ What we cover</div>
-              <div style={{ border: "1px solid var(--ink)" }}>
-                {[
-                  ["Live scores", "Real-time match updates from Premier Padel, WPT, and every major tour."],
-                  ["Rankings", "Up-to-date men\u2019s and women\u2019s rankings with proper points-based sorting."],
-                  ["News", "Tour coverage, player profiles, business developments, and coaching insights."],
-                  ["Analysis", "Deep dives into tactics, form, and the evolution of the sport."],
-                ].map(([title, body], i, arr) => (
+              <span className="text-uppercase-eyebrow text-brand">
+                ■ What we cover
+              </span>
+              <div className="mt-16 overflow-hidden rounded-32 bg-bg-gray">
+                {COVERAGE.map(([title, body], i) => (
                   <div
                     key={title}
-                    style={{
-                      padding: "18px 20px",
-                      borderBottom: i < arr.length - 1 ? "1px solid rgba(0,0,0,0.1)" : "none",
-                    }}
+                    className={
+                      "flex flex-col gap-8 px-24 py-20" +
+                      (i < COVERAGE.length - 1
+                        ? " border-b border-border-primary"
+                        : "")
+                    }
                   >
-                    <div
-                      style={{
-                        fontFamily: "var(--sans)",
-                        fontSize: 14,
-                        fontWeight: 800,
-                        letterSpacing: "-0.01em",
-                        color: "var(--ink)",
-                        marginBottom: 6,
-                      }}
-                    >
+                    <div className="text-title-m text-text-primary">
                       {title}
                     </div>
-                    <div
-                      style={{
-                        fontFamily: "var(--sans)",
-                        fontSize: 13,
-                        lineHeight: 1.5,
-                        color: "var(--ink-soft)",
-                      }}
-                    >
-                      {body}
-                    </div>
+                    <p className="text-body-s text-text-secondary">{body}</p>
                   </div>
                 ))}
               </div>
@@ -103,32 +97,23 @@ export default function AboutPage() {
       </section>
 
       {/* Contact */}
-      <section style={{ borderTop: "1px solid var(--ink)", background: "var(--paper-2)" }}>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>■ Contact</div>
-          <h2 className="display" style={{ fontSize: "clamp(28px, 4vw, 48px)", marginBottom: 16 }}>
-            Get in <span className="italic-serif">touch</span>.
+      <section className="border-t border-border-primary bg-bg-gray">
+        <div className="mx-auto max-w-[1320px] px-16 py-40 sm:px-24 md:py-64 lg:px-32">
+          <span className="text-uppercase-eyebrow text-brand">■ Contact</span>
+          <h2 className="mt-12 text-mobile-heading-l md:text-desktop-heading-l text-text-primary">
+            Get in touch
           </h2>
-          <p
-            style={{
-              fontFamily: "var(--sans)",
-              fontSize: 16,
-              color: "var(--ink-soft)",
-              marginBottom: 20,
-            }}
-          >
+          <p className="mt-16 max-w-[560px] text-body-l text-text-secondary">
             Tips, pitches, partnerships, or just to say hello.
           </p>
-          <a
+          <Link
             href="mailto:hello@vamos.net"
-            className="btn btn-primary"
+            className="mt-24 inline-flex items-center justify-center rounded-full bg-brand px-24 py-12 text-body-s-semibold text-text-contrast transition-opacity hover:opacity-90"
           >
             hello@vamos.net →
-          </a>
+          </Link>
         </div>
       </section>
-
-      <NewsletterSignup />
     </main>
   );
 }

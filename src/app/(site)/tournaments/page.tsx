@@ -1,264 +1,268 @@
 import Link from "next/link";
-import { getSeasonTournaments, levelLabel, type Tournament } from "@/lib/padel-api";
+import Tabs from "@/components/v3/Tabs";
+import TournamentCard from "@/components/v3/TournamentCard";
+import TournamentCardDesktop from "@/components/v3/TournamentCardDesktop";
+import {
+  getSeasonTournaments,
+  type Tournament,
+} from "@/lib/padel-api";
 
 // Tournament list changes weekly when events start/finish
 export const revalidate = 1800;
 
 export const metadata = {
   title: "Tournaments | VAMOS",
-  description: "2026 Premier Padel tournament calendar. Dates, locations, draws, and results for all events.",
+  description:
+    "2026 Premier Padel tournament calendar. Dates, locations, draws, and results for all events.",
 };
 
-function StatusBadge({ status }: { status: Tournament["status"] }) {
-  const base = {
-    fontFamily: "var(--mono)",
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: "0.14em",
-    textTransform: "uppercase" as const,
-  };
-  if (status === "live") {
-    return (
-      <span
-        className="badge-live"
-        style={{ padding: "2px 6px" }}
-      >
-        LIVE
-      </span>
-    );
+type StatusFilter = "all" | "live" | "upcoming" | "finished";
+type CategoryFilter = "all" | "men" | "women";
+
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
+
+async function fetchTournaments(): Promise<Tournament[]> {
+  let all: Tournament[] = [];
+  try {
+    const res = await getSeasonTournaments(5, { per_page: "50" });
+    all = res.data;
+    if (res.meta.last_page > 1) {
+      const pages = Array.from(
+        { length: res.meta.last_page - 1 },
+        (_, i) => i + 2,
+      );
+      const extras = await Promise.all(
+        pages.map((p) =>
+          getSeasonTournaments(5, { per_page: "50", page: String(p) }),
+        ),
+      );
+      for (const e of extras) all = all.concat(e.data);
+    }
+  } catch {
+    // swallow — empty list renders an empty state
   }
-  if (status === "finished") {
-    return <span style={{ ...base, color: "var(--mute)" }}>Finished</span>;
-  }
-  return <span style={{ ...base, color: "var(--red)" }}>■ Upcoming</span>;
+  all.sort(
+    (a, b) =>
+      new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+  );
+  return all;
 }
 
-function formatDateRange(start: string, end: string): string {
-  const s = new Date(start);
-  const e = new Date(end);
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  if (s.getMonth() === e.getMonth()) {
-    return `${s.getDate()}–${e.getDate()} ${months[s.getMonth()]} ${s.getFullYear()}`;
-  }
-  return `${s.getDate()} ${months[s.getMonth()]} – ${e.getDate()} ${months[e.getMonth()]} ${s.getFullYear()}`;
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+function monthKey(t: Tournament): string {
+  const d = new Date(t.start_date);
+  return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function groupByMonth(tournaments: Tournament[]): Record<string, Tournament[]> {
-  const groups: Record<string, Tournament[]> = {};
-  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  for (const t of tournaments) {
-    const d = new Date(t.start_date);
-    const key = `${months[d.getMonth()]} ${d.getFullYear()}`;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(t);
-  }
-  return groups;
+function buildUrl(
+  base: string,
+  next: Partial<{ status: StatusFilter; category: CategoryFilter }>,
+  current: { status: StatusFilter; category: CategoryFilter },
+): string {
+  const params = new URLSearchParams();
+  const status = next.status ?? current.status;
+  const category = next.category ?? current.category;
+  if (status !== "all") params.set("status", status);
+  if (category !== "all") params.set("category", category);
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
 }
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 export default async function TournamentsPage({
   searchParams,
 }: {
-  searchParams: { level?: string };
+  searchParams: { status?: string; category?: string };
 }) {
-  const levelFilter = searchParams.level;
+  const all = await fetchTournaments();
 
-  let allTournaments: Tournament[] = [];
-  try {
-    const res = await getSeasonTournaments(5, { per_page: "50" });
-    allTournaments = res.data;
-    if (res.meta.last_page > 1) {
-      const pages = Array.from({ length: res.meta.last_page - 1 }, (_, i) => i + 2);
-      const extras = await Promise.all(
-        pages.map((p) => getSeasonTournaments(5, { per_page: "50", page: String(p) }))
-      );
-      for (const e of extras) {
-        allTournaments = allTournaments.concat(e.data);
-      }
-    }
-  } catch {
-    // API error
-  }
+  const status = (
+    ["all", "live", "upcoming", "finished"].includes(searchParams.status ?? "")
+      ? searchParams.status
+      : "all"
+  ) as StatusFilter;
 
-  allTournaments.sort(
-    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-  );
+  const category = (
+    ["all", "men", "women"].includes(searchParams.category ?? "")
+      ? searchParams.category
+      : "all"
+  ) as CategoryFilter;
 
-  const levels = Array.from(new Set(allTournaments.map((t) => t.level))).sort();
-  const filteredTournaments = levelFilter
-    ? allTournaments.filter((t) => t.level === levelFilter)
-    : allTournaments;
-  const grouped = groupByMonth(filteredTournaments);
-
-  const chipStyle = (active: boolean) => ({
-    padding: "8px 14px",
-    fontFamily: "var(--mono)" as const,
-    fontSize: 11,
-    fontWeight: 700 as const,
-    letterSpacing: "0.14em",
-    textTransform: "uppercase" as const,
-    border: `1px solid ${active ? "var(--red)" : "var(--ink)"}`,
-    background: active ? "var(--red)" : "transparent",
-    color: active ? "#fff" : "var(--ink)",
-    whiteSpace: "nowrap" as const,
+  // Status filter (note: Tournament.status is "pending" | "live" | "finished")
+  let filtered = all.filter((t) => {
+    if (status === "live") return t.status === "live";
+    if (status === "upcoming") return t.status === "pending";
+    if (status === "finished") return t.status === "finished";
+    return true;
   });
 
+  // Category filter — Tournament has no top-level category, but tournament names
+  // commonly encode "Women" / "Femenino" / "Female"; otherwise we treat as both.
+  // We keep this filter as a no-op for "all" and rely on a simple name heuristic
+  // since the data set doesn't expose a clean category field. Safer to leave
+  // tournaments visible than to over-filter — show ALL when category=all.
+  if (category === "women") {
+    filtered = filtered.filter((t) =>
+      /women|female|femenino|femenina|wta/i.test(t.name),
+    );
+  } else if (category === "men") {
+    // Hide explicit "women" tournaments only — most events are mixed, leave them.
+    filtered = filtered.filter(
+      (t) => !/women|female|femenino|femenina|wta/i.test(t.name),
+    );
+  }
+
+  // Group by month for display
+  const grouped = new Map<string, Tournament[]>();
+  for (const t of filtered) {
+    const key = monthKey(t);
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(t);
+  }
+
+  const current = { status, category };
+
+  const statusTabs = [
+    {
+      label: "All",
+      href: buildUrl("/tournaments", { status: "all" }, current),
+      active: status === "all",
+    },
+    {
+      label: "Live",
+      href: buildUrl("/tournaments", { status: "live" }, current),
+      active: status === "live",
+    },
+    {
+      label: "Upcoming",
+      href: buildUrl("/tournaments", { status: "upcoming" }, current),
+      active: status === "upcoming",
+    },
+    {
+      label: "Finished",
+      href: buildUrl("/tournaments", { status: "finished" }, current),
+      active: status === "finished",
+    },
+  ];
+
+  const categoryTabs = [
+    {
+      label: "All",
+      href: buildUrl("/tournaments", { category: "all" }, current),
+      active: category === "all",
+    },
+    {
+      label: "Men",
+      href: buildUrl("/tournaments", { category: "men" }, current),
+      active: category === "men",
+    },
+    {
+      label: "Women",
+      href: buildUrl("/tournaments", { category: "women" }, current),
+      active: category === "women",
+    },
+  ];
+
   return (
-    <main style={{ background: "var(--paper)" }}>
-      {/* Header band */}
-      <section style={{ borderBottom: "1px solid var(--ink)" }}>
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="eyebrow" style={{ color: "var(--red)", marginBottom: 12 }}>■ 2026 Season</div>
-          <h1 className="display" style={{ marginBottom: 12 }}>
-            The <span className="italic-serif">calendar</span>.
-          </h1>
-          <p style={{ fontFamily: "var(--sans)", fontSize: 16, color: "var(--ink-soft)" }}>
-            Premier Padel 2026 · {filteredTournaments.length} tournaments
-          </p>
-        </div>
-      </section>
+    <div className="bg-bg-page min-h-screen">
+      <div className="mx-auto max-w-[1320px] px-16 py-32 sm:px-24 lg:px-32">
+        {/* Title */}
+        <h1 className="mb-24 text-text-primary text-mobile-display-l md:text-desktop-display-l">
+          TOURNAMENTS
+        </h1>
 
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Level filter */}
-        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto mb-10">
-          <div className="flex gap-2">
-            <span
-              className="eyebrow shrink-0 flex items-center"
-              style={{ color: "var(--mute)", paddingRight: 14, borderRight: "1px solid var(--ink)" }}
+        {/* Status tabs */}
+        <div className="mb-12 -mx-16 sm:-mx-24 lg:-mx-32 sm:mx-0">
+          <Tabs items={statusTabs} ariaLabel="Tournament status filter" />
+        </div>
+
+        {/* Category sub-tabs */}
+        <div className="mb-32 -mx-16 sm:-mx-24 lg:-mx-32 sm:mx-0">
+          <Tabs items={categoryTabs} ariaLabel="Tournament category filter" />
+        </div>
+
+        {/* Empty state */}
+        {grouped.size === 0 && (
+          <div className="rounded-16 border border-border-primary bg-bg-white p-48 text-center">
+            <p className="font-sans text-14 text-text-secondary">
+              No tournaments match this filter.
+            </p>
+            <Link
+              href="/tournaments"
+              className="mt-12 inline-block font-sans text-12 font-semibold text-brand hover:underline"
             >
-              ■ Level
-            </span>
-            <Link href="/tournaments" style={{ ...chipStyle(!levelFilter), flexShrink: 0 }}>
-              All
+              Clear filters →
             </Link>
-            {levels.map((level) => (
-              <Link
-                key={level}
-                href={`/tournaments?level=${level}`}
-                style={{ ...chipStyle(levelFilter === level), flexShrink: 0 }}
-              >
-                {levelLabel(level)}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {Object.entries(grouped).length === 0 && (
-          <div
-            style={{
-              padding: "60px 24px",
-              border: "1px solid var(--ink)",
-              textAlign: "center",
-              fontFamily: "var(--mono)",
-              fontSize: 12,
-              letterSpacing: "0.08em",
-              color: "var(--mute)",
-            }}
-          >
-            No tournaments found.
           </div>
         )}
 
-        {Object.entries(grouped).map(([month, tournaments]) => (
-          <section key={month} className="mb-12">
-            <div
-              className="flex items-baseline gap-4 mb-4"
-              style={{ paddingBottom: 12, borderBottom: "1px solid var(--ink)" }}
-            >
-              <h2
-                style={{
-                  fontFamily: "var(--sans)",
-                  fontWeight: 900,
-                  fontStyle: "italic",
-                  fontSize: 32,
-                  letterSpacing: "-0.03em",
-                  color: "var(--ink)",
-                }}
-              >
-                {month}
-              </h2>
-              <span
-                style={{
-                  fontFamily: "var(--mono)",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "var(--mute)",
-                }}
-              >
-                · {tournaments.length} {tournaments.length === 1 ? "event" : "events"}
-              </span>
-            </div>
-            <div style={{ border: "1px solid var(--ink)" }}>
-              {tournaments.map((t, i) => (
-                <Link
-                  key={t.id}
-                  href={`/tournaments/${t.id}`}
-                  className={`block transition-colors ${t.status !== "live" ? "hover:bg-[var(--paper-2)]" : ""}`}
-                  style={{
-                    padding: "20px 24px",
-                    borderBottom: i < tournaments.length - 1 ? "1px solid rgba(0,0,0,0.1)" : "none",
-                    background:
-                      t.status === "live" ? "rgba(193,68,58,0.05)" : "transparent",
-                  }}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <span
-                          style={{
-                            fontFamily: "var(--mono)",
-                            fontSize: 10,
-                            fontWeight: 700,
-                            letterSpacing: "0.16em",
-                            textTransform: "uppercase",
-                            padding: "3px 8px",
-                            border: "1px solid var(--ink)",
-                            color: "var(--ink)",
-                          }}
-                        >
-                          {levelLabel(t.level)}
-                        </span>
-                        <StatusBadge status={t.status} />
-                      </div>
-                      <h3
-                        style={{
-                          fontFamily: "var(--sans)",
-                          fontSize: 18,
-                          fontWeight: 800,
-                          letterSpacing: "-0.02em",
-                          color: "var(--ink)",
-                          marginBottom: 4,
-                        }}
-                      >
-                        {t.name}
-                      </h3>
-                      <p
-                        style={{
-                          fontFamily: "var(--mono)",
-                          fontSize: 11,
-                          letterSpacing: "0.1em",
-                          color: "var(--mute)",
-                        }}
-                      >
-                        {t.location}, {t.country}
-                      </p>
-                    </div>
-                    <div className="sm:text-right shrink-0">
-                      <div
-                        className="score-mono"
-                        style={{ fontSize: 14, color: "var(--ink)" }}
-                      >
-                        {formatDateRange(t.start_date, t.end_date)}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ))}
+        {/* Grouped sections */}
+        <div className="space-y-40">
+          {Array.from(grouped.entries()).map(([month, tournaments]) => (
+            <section key={month}>
+              <div className="mb-16 flex items-baseline gap-12 border-b border-border-primary pb-8">
+                <h2 className="text-text-primary text-mobile-heading-l md:text-desktop-heading-l">
+                  {month}
+                </h2>
+                <span className="font-sans text-12 font-semibold text-text-secondary tracking-[0.04em]">
+                  {tournaments.length}{" "}
+                  {tournaments.length === 1 ? "event" : "events"}
+                </span>
+              </div>
+
+              {/* Mobile: grid of TournamentCard */}
+              <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 md:hidden">
+                {tournaments.map((t) => (
+                  <TournamentCard
+                    key={t.id}
+                    tournament={t}
+                    variant={t.status === "live" ? "dark" : "default"}
+                  />
+                ))}
+              </div>
+
+              {/* Desktop: list of TournamentCardDesktop */}
+              <div className="hidden flex-col gap-8 md:flex">
+                {tournaments.map((t) => (
+                  <TournamentCardDesktop
+                    key={t.id}
+                    tournament={t}
+                    variant={t.status === "live" ? "dark" : "default"}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        {/* Footer count */}
+        <p className="mt-32 text-center font-sans text-12 font-semibold tracking-[0.04em] text-text-secondary">
+          Showing {filtered.length} of {all.length} tournaments
+        </p>
       </div>
-    </main>
+    </div>
   );
 }

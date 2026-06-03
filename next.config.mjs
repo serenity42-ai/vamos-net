@@ -7,6 +7,18 @@ const nextConfig = {
         hostname: "storage.googleapis.com",
         pathname: "/fantasypadeltour/**",
       },
+      // Ghost CDN — hero images for posts come back from here when the CMS
+      // is configured (the Hub article reader renders them via next/image).
+      {
+        protocol: "https",
+        hostname: "storage.ghost.io",
+      },
+      // Legacy preview deployment that mock.ts still references for hero JPGs.
+      // Safe to whitelist — read-only image fetches.
+      {
+        protocol: "https",
+        hostname: "vamos-net.vercel.app",
+      },
     ],
   },
 
