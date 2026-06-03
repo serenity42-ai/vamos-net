@@ -58,7 +58,7 @@ export default function Header() {
 
   return (
     <header
-      className="hidden md:flex w-full items-center justify-between bg-bg-page"
+      className="sticky top-0 z-40 hidden md:flex w-full items-center justify-between bg-bg-page border-b border-border-primary"
       style={{ paddingTop: 12, paddingBottom: 12, paddingLeft: 60, paddingRight: 60, height: 80 }}
     >
       {/* Left cluster: logo + divider + menu */}

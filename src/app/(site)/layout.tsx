@@ -28,10 +28,8 @@ export default function SiteLayout({
       <Header />
       <div className="flex-1 pb-[72px] md:pb-0">{children}</div>
       <Footer />
-      {/* Mobile bottom tab bar (hidden on md+) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        <Tabbar />
-      </div>
+      {/* Mobile bottom tab bar (Tabbar handles its own fixed positioning) */}
+      <Tabbar />
     </MatchModalProvider>
   );
 }

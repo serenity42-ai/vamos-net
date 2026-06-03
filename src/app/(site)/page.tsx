@@ -6,6 +6,10 @@ import ArticleCard from "@/components/v3/ArticleCard";
 import ArticleCardHero from "@/components/v3/ArticleCardHero";
 import ArticleCardHorizontal from "@/components/v3/ArticleCardHorizontal";
 import TournamentCard from "@/components/v3/TournamentCard";
+import QuickLinks from "@/components/v3/QuickLinks";
+import MostSearched from "@/components/v3/MostSearched";
+import SidebarNewsletter from "@/components/v3/SidebarNewsletter";
+import LastNewsMini from "@/components/v3/LastNewsMini";
 import { fetchArticles } from "@/lib/ghost";
 import {
   getSeasonTournaments,
@@ -103,9 +107,15 @@ export default async function Home() {
     ctaHref: `/news/${a.slug}`,
   }));
 
-  // === Last news: 1 hero + 3 horizontal sidebar ===
-  const lastNewsHero = articles[3] ?? articles[0];
-  const lastNewsSidebar = articles.slice(4, 7);
+  // === Last news (left column): 1 hero (450px fixed) + 2×2 grid of 4 cards ===
+  // Per Figma spec: max 1200px, left 768px / right 400px.
+  // Excludes Reviews — they live in a separate block lower on the page.
+  const nonReviewArticles = articles.filter(
+    (a) => (a.category ?? "").toLowerCase() !== "reviews"
+  );
+  const lastNewsHero = nonReviewArticles[0];
+  const lastNewsGrid = nonReviewArticles.slice(1, 5); // 4 cards in 2×2
+  const sidebarLastNews = nonReviewArticles.slice(5, 10); // 5 in the mini list
 
   // === Tournaments band ===
   const featuredTournaments = pickTournaments(tournaments, 4);
@@ -142,10 +152,14 @@ export default async function Home() {
         </section>
       )}
 
-      {/* === Section 2: LAST NEWS === */}
+      {/* === Section 2: LAST NEWS ===
+          Spec (Figma annotation): max 1200px width.
+          Left column 768px: 1 hero (450h fixed) + 2 rows × 2 equal cards (12px gap).
+          Right column 400px: stack of QuickLinks / MostSearched / Newsletter / LastNewsMini.
+          Mobile/tablet: right column hidden entirely. */}
       {lastNewsHero && (
         <section className="px-16 py-48 md:px-32 md:py-64 lg:px-48 lg:py-80">
-          <div className="mx-auto max-w-[1440px]">
+          <div className="mx-auto max-w-[1200px]">
             <div className="mb-32 flex items-end justify-between gap-16 md:mb-40">
               <h2 className="text-mobile-heading-l md:text-desktop-heading-l text-text-primary">
                 LAST NEWS
@@ -162,15 +176,47 @@ export default async function Home() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 gap-24 lg:grid-cols-12 lg:gap-32">
-              <div className="lg:col-span-8">
-                <ArticleCardHero article={lastNewsHero} />
+            <div
+              className="grid grid-cols-1 gap-24 lg:gap-32"
+              style={{ gridTemplateColumns: "minmax(0, 1fr)" }}
+            >
+              {/* Use inline media query via Tailwind arbitrary template */}
+            </div>
+
+            {/* Real 2-column grid */}
+            <div className="grid grid-cols-1 gap-24 lg:gap-32 lg:[grid-template-columns:768px_400px]">
+              {/* === Left column: hero (450h) + 2×2 grid === */}
+              <div className="flex flex-col gap-12">
+                {/* Hero: full width of left column, 450h fixed on desktop, responsive on mobile */}
+                <div className="w-full lg:h-[450px] [&>a]:lg:h-full [&_article]:lg:!h-full [&_article]:lg:!aspect-auto">
+                  <ArticleCardHero
+                    article={lastNewsHero}
+                    hrefBase="/hub"
+                    aspect="16 / 9"
+                  />
+                </div>
+
+                {/* 2×2 grid */}
+                {lastNewsGrid.length > 0 && (
+                  <div className="grid grid-cols-1 gap-12 sm:grid-cols-2">
+                    {lastNewsGrid.map((a) => (
+                      <ArticleCard key={a.slug} article={a} hrefBase="/hub" />
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex flex-col gap-20 lg:col-span-4">
-                {lastNewsSidebar.map((a) => (
-                  <ArticleCardHorizontal key={a.slug} article={a} />
-                ))}
-              </div>
+
+              {/* === Right column (hidden on mobile/tablet) === */}
+              <aside className="hidden lg:flex lg:flex-col gap-20">
+                <QuickLinks tournaments={tournaments} />
+                <MostSearched articles={nonReviewArticles} hrefBase="/hub" />
+                <SidebarNewsletter />
+                <LastNewsMini
+                  articles={sidebarLastNews}
+                  hrefBase="/hub"
+                  limit={5}
+                />
+              </aside>
             </div>
 
             <div className="mt-32 sm:hidden">
