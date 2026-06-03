@@ -82,6 +82,80 @@ function HeroAvatar({
   );
 }
 
+function PairBlock({
+  players,
+  playerDetails,
+  isLoser,
+  isWinner,
+  alignRight,
+}: {
+  players: MatchPlayer[];
+  playerDetails: Map<number, Player>;
+  isLoser: boolean;
+  isWinner: boolean;
+  alignRight: boolean;
+}) {
+  // On mobile we always render left-aligned (avatar row + name). On sm+ we
+  // mirror the right team so it aligns toward the score in the middle.
+  return (
+    <div
+      className={[
+        "flex items-center gap-16 min-w-0",
+        alignRight ? "sm:flex-row-reverse sm:text-right" : "",
+      ].join(" ")}
+    >
+      <div className="flex shrink-0 -space-x-12">
+        {players.map((p) => (
+          <HeroAvatar
+            key={p.id}
+            player={p}
+            detail={playerDetails.get(p.id)}
+            size={64}
+          />
+        ))}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p
+          className={[
+            "font-display font-semibold uppercase",
+            isLoser ? "text-text-tertiary" : "text-text-contrast",
+          ].join(" ")}
+          style={{ fontSize: 20, lineHeight: "24px" }}
+        >
+          {players.length > 0
+            ? players.map((p) => displaySurname(p.name)).join(" / ")
+            : "TBD"}
+        </p>
+        <div
+          className={[
+            "flex items-center gap-8 mt-8 flex-wrap",
+            alignRight ? "sm:justify-end" : "",
+          ].join(" ")}
+        >
+          {players.map((p) => {
+            const detail = playerDetails.get(p.id);
+            if (!detail?.nationality) return null;
+            return (
+              <span
+                key={p.id}
+                className="inline-flex items-center font-sans text-12 font-semibold uppercase tracking-[0.06em] text-text-contrast rounded-4 px-8 py-4"
+                style={{ background: "var(--color-bg-overlay)" }}
+              >
+                {detail.nationality.toUpperCase()}
+              </span>
+            );
+          })}
+          {isWinner && (
+            <span className="inline-flex items-center font-sans text-12 font-semibold uppercase tracking-[0.06em] text-brand">
+              ✓ WON
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function isWin(a: string, b: string): boolean {
   const ai = parseInt(a, 10);
   const bi = parseInt(b, 10);
@@ -136,7 +210,7 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
     }) ?? null;
 
   const dateLabel = match.played_at
-    ? new Date(match.played_at).toLocaleString(undefined, {
+    ? new Date(match.played_at).toLocaleString("en-GB", {
         month: "short",
         day: "numeric",
         hour: "2-digit",
@@ -211,70 +285,30 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
         />
       </div>
 
-      {/* Pair blocks + score */}
-      <div className="px-20 pb-24 pt-24 sm:px-32 sm:pb-32 sm:pt-32 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-24 items-center">
-        {teams.map(({ players, key, isWinner }, idx) => {
-          const isLoser = !!match.winner && !isWinner;
-          const alignRight = idx === 1;
+      {/* Pair blocks + score —
+          Mobile: stack vertically (team1 row → score row → team2 row)
+          sm+:    3-column grid (team1 | score | team2) */}
+      <div className="px-20 pb-24 pt-24 sm:px-32 sm:pb-32 sm:pt-32 flex flex-col gap-20 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-24 sm:items-center">
+        {/* Team 1 */}
+        {(() => {
+          const t = teams[0];
+          const isLoser = !!match.winner && !t.isWinner;
           return (
-            <div
-              key={key}
-              className={[
-                "flex items-center gap-16 min-w-0",
-                alignRight ? "sm:flex-row-reverse sm:text-right" : "",
-              ].join(" ")}
-              style={{ gridColumn: idx === 0 ? "1 / 2" : "3 / 4" }}
-            >
-              <div className={["flex shrink-0", alignRight ? "-space-x-12" : "-space-x-12"].join(" ")}>
-                {players.map((p) => (
-                  <HeroAvatar key={p.id} player={p} detail={playerDetails.get(p.id)} size={72} />
-                ))}
-              </div>
-              <div className="min-w-0">
-                <p
-                  className={[
-                    "font-display font-semibold uppercase truncate",
-                    isLoser ? "text-text-tertiary" : "text-text-contrast",
-                  ].join(" ")}
-                  style={{ fontSize: 24, lineHeight: "28px" }}
-                >
-                  {players.length > 0
-                    ? players.map((p) => displaySurname(p.name)).join(" / ")
-                    : "TBD"}
-                </p>
-                <div className={["flex items-center gap-8 mt-8 flex-wrap", alignRight ? "sm:justify-end" : ""].join(" ")}>
-                  {players.map((p) => {
-                    const detail = playerDetails.get(p.id);
-                    if (!detail?.nationality) return null;
-                    return (
-                      <span
-                        key={p.id}
-                        className="inline-flex items-center font-sans text-12 font-semibold uppercase tracking-[0.06em] text-text-contrast rounded-4 px-8 py-4"
-                        style={{ background: "var(--color-bg-overlay)" }}
-                      >
-                        {detail.nationality.toUpperCase()}
-                      </span>
-                    );
-                  })}
-                  {isWinner && (
-                    <span className="inline-flex items-center font-sans text-12 font-semibold uppercase tracking-[0.06em] text-brand">
-                      ✓ WON
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+            <PairBlock
+              players={t.players}
+              playerDetails={playerDetails}
+              isLoser={isLoser}
+              isWinner={t.isWinner}
+              alignRight={false}
+            />
           );
-        })}
+        })()}
 
         {/* Center score column */}
-        <div
-          className="flex flex-col items-center justify-center gap-12"
-          style={{ gridColumn: "2 / 3", gridRow: "1 / 2" }}
-        >
+        <div className="flex flex-col items-center justify-center gap-12 order-last sm:order-none">
           {score && score.length > 0 ? (
             <div className="flex items-center gap-16">
-              <div className="flex flex-col items-center gap-8">
+              <div className="flex flex-col items-center gap-4">
                 {score.map((s, i) => {
                   const win = isWin(s.team_1, s.team_2);
                   return (
@@ -284,15 +318,19 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
                         "font-display font-semibold tabular-nums",
                         win ? "text-text-contrast" : "text-text-tertiary",
                       ].join(" ")}
-                      style={{ fontSize: 40, lineHeight: "40px" }}
+                      style={{ fontSize: 36, lineHeight: "40px" }}
                     >
                       {s.team_1 || "–"}
                     </span>
                   );
                 })}
               </div>
-              <div className="w-px h-full bg-border-secondary" aria-hidden />
-              <div className="flex flex-col items-center gap-8">
+              <div
+                className="self-stretch"
+                aria-hidden
+                style={{ width: 1, background: "var(--color-border-secondary)" }}
+              />
+              <div className="flex flex-col items-center gap-4">
                 {score.map((s, i) => {
                   const win = isWin(s.team_2, s.team_1);
                   return (
@@ -302,7 +340,7 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
                         "font-display font-semibold tabular-nums",
                         win ? "text-text-contrast" : "text-text-tertiary",
                       ].join(" ")}
-                      style={{ fontSize: 40, lineHeight: "40px" }}
+                      style={{ fontSize: 36, lineHeight: "40px" }}
                     >
                       {s.team_2 || "–"}
                     </span>
@@ -316,41 +354,24 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
             </span>
           )}
 
-          {isLive && currentPoint && (() => {
-            // S13 — split current game score and highlight the higher number lime.
-            const parts = currentPoint.split(/[-–—:]/).map((s) => s.trim());
-            const order = (v: string): number => {
-              const u = v.toUpperCase();
-              if (u === "AD") return 50;
-              const n = parseInt(u, 10);
-              return Number.isNaN(n) ? -1 : n;
-            };
-            let leftCls = "text-text-contrast";
-            let rightCls = "text-text-contrast";
-            if (parts.length === 2) {
-              const la = order(parts[0]);
-              const ra = order(parts[1]);
-              if (la >= 0 && ra >= 0 && la !== ra) {
-                if (la > ra) leftCls = "text-[var(--color-accent-lime)]";
-                else rightCls = "text-[var(--color-accent-lime)]";
-              }
-            }
-            return (
-              <span className="inline-flex items-center gap-8 font-display font-semibold text-text-contrast bg-brand rounded-full px-12 py-4 text-14 tabular-nums">
-                <span className="live-dot inline-block rounded-full bg-text-contrast" style={{ width: 6, height: 6 }} />
-                {parts.length === 2 ? (
-                  <span>
-                    <span className={leftCls}>{parts[0]}</span>
-                    <span className="text-text-contrast">-</span>
-                    <span className={rightCls}>{parts[1]}</span>
-                  </span>
-                ) : (
-                  <span>{currentPoint}</span>
-                )}
-              </span>
-            );
-          })()}
+          {/* Current game point is shown in the top-right StatusBadge —
+              no duplicate pill needed here. */}
         </div>
+
+        {/* Team 2 */}
+        {(() => {
+          const t = teams[1];
+          const isLoser = !!match.winner && !t.isWinner;
+          return (
+            <PairBlock
+              players={t.players}
+              playerDetails={playerDetails}
+              isLoser={isLoser}
+              isWinner={t.isWinner}
+              alignRight={true}
+            />
+          );
+        })()}
       </div>
     </section>
   );
