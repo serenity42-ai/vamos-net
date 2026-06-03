@@ -118,7 +118,8 @@ export default async function Home() {
   const sidebarLastNews = nonReviewArticles.slice(5, 10); // 5 in the mini list
 
   // === Tournaments band ===
-  const featuredTournaments = pickTournaments(tournaments, 4);
+  // 2 featured + up to 4 in the right list = 6 total
+  const featuredTournaments = pickTournaments(tournaments, 6);
 
   // === Best Reviews — articles in "Reviews" category, else hide ===
   const reviewArticles = articles
@@ -234,7 +235,10 @@ export default async function Home() {
         </section>
       )}
 
-      {/* === Section 3: TOURNAMENTS dark band === */}
+      {/* === Section 3: TOURNAMENTS dark band ===
+          Spec (Figma annotation 306:82507 + 455:33961):
+          Block with featured + upcoming tournaments. 2-3 most-important
+          tournaments featured on the LEFT (asymmetric), rest as list on right. */}
       {featuredTournaments.length > 0 && (
         <section className="bg-bg-constant text-text-contrast">
           <div className="mx-auto max-w-[1440px] px-16 py-48 md:px-32 md:py-64 lg:px-48 lg:py-80">
@@ -254,14 +258,32 @@ export default async function Home() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 gap-16 sm:grid-cols-2 lg:grid-cols-4">
-              {featuredTournaments.map((t) => (
-                <TournamentCard
-                  key={t.id}
-                  tournament={t}
-                  variant="dark"
-                />
-              ))}
+            {/* Asymmetric layout: 2 featured (left) + list (right) on lg+
+                Falls back to a stack on mobile. */}
+            <div className="grid grid-cols-1 gap-24 lg:grid-cols-12 lg:gap-32">
+              {/* Featured (top 2) — larger, side-by-side on lg, stacked on md */}
+              <div className="lg:col-span-7">
+                <div className="grid grid-cols-1 gap-16 sm:grid-cols-2">
+                  {featuredTournaments.slice(0, 2).map((t) => (
+                    <TournamentCard key={t.id} tournament={t} variant="dark" />
+                  ))}
+                </div>
+              </div>
+
+              {/* Remaining list on right (4 more) */}
+              {featuredTournaments.length > 2 && (
+                <div className="lg:col-span-5">
+                  <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-1">
+                    {featuredTournaments.slice(2, 6).map((t) => (
+                      <TournamentCard
+                        key={t.id}
+                        tournament={t}
+                        variant="dark"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-32 sm:hidden">
