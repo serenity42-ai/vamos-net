@@ -124,7 +124,7 @@ export default function BannerMobile({
     <section
       ref={containerRef}
       className="relative w-full overflow-hidden rounded-40 bg-bg-constant text-text-contrast"
-      style={{ aspectRatio: "390 / 500", minHeight: 500, touchAction: "pan-y" }}
+      style={{ height: 500, touchAction: "pan-y" }}
       aria-roledescription="carousel"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
@@ -181,11 +181,13 @@ export default function BannerMobile({
               {slide.eyebrow}
             </span>
           )}
-          <h2 className="text-mobile-heading-l text-text-contrast">
+          <h2 className="text-mobile-heading-l text-text-contrast line-clamp-3">
             {slide.title}
           </h2>
           {slide.body && (
-            <p className="text-body-m text-text-contrast/85">{slide.body}</p>
+            <p className="text-body-m text-text-contrast/85 line-clamp-2">
+              {slide.body}
+            </p>
           )}
         </div>
 

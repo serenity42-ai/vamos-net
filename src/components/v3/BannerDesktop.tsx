@@ -212,11 +212,13 @@ export default function BannerDesktop({
             </span>
           )}
           <div className="flex flex-col gap-8">
-            <h2 className="text-desktop-heading-l text-text-contrast">
+            <h2 className="text-desktop-heading-l text-text-contrast line-clamp-3">
               {slide.title}
             </h2>
             {slide.body && (
-              <p className="text-body-l text-text-contrast/85">{slide.body}</p>
+              <p className="text-body-l text-text-contrast/85 line-clamp-2">
+                {slide.body}
+              </p>
             )}
           </div>
           <div>
