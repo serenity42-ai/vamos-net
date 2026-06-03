@@ -29,15 +29,15 @@ type FooterLink = { href: string; label: string };
 
 const FOOTER_LINKS: FooterLink[] = [
   { href: "/", label: "Home" },
-  { href: "/reviews", label: "Reviews" },
-  { href: "/tournaments", label: "Tournament Calendar" },
   { href: "/scores", label: "Scores" },
+  { href: "/schedule", label: "Schedule" },
+  { href: "/tournaments", label: "Tournament Calendar" },
+  { href: "/rankings", label: "Rankings" },
+  { href: "/players", label: "Players" },
   { href: "/hub", label: "Padel Hub" },
-  { href: "/collaborate", label: "Suggest collaborate" },
-  { href: "/contact", label: "Contact" },
-  { href: "/podcasts", label: "Podcasts" },
-  { href: "/guides", label: "Guides" },
-  { href: "/pro-news", label: "Pro News" },
+  { href: "/hub?category=reviews", label: "Reviews" },
+  { href: "/about", label: "About" },
+  { href: "/about#contribute", label: "Write for us" },
 ];
 
 type Social = { href: string; label: string; icon: React.ReactNode };

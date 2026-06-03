@@ -26,6 +26,8 @@ const NAV: NavItem[] = [
   { href: "/", label: "Spotlight", matchPrefix: "/" },
   { href: "/hub", label: "Padel Hub", matchPrefix: "/hub" },
   { href: "/scores", label: "Scores", matchPrefix: "/scores" },
+  { href: "/tournaments", label: "Tournaments", matchPrefix: "/tournaments" },
+  { href: "/rankings", label: "Rankings", matchPrefix: "/rankings" },
 ];
 
 function isActive(pathname: string, item: NavItem) {
@@ -77,7 +79,7 @@ export default function Header() {
           }}
         />
 
-        <nav aria-label="Primary" className="flex items-center gap-40">
+        <nav aria-label="Primary" className="flex items-center gap-32 lg:gap-40">
           {NAV.map((item) => {
             const active = isActive(pathname, item);
             return (

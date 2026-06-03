@@ -279,6 +279,15 @@ body {
   .live-dot, .live-flash { animation: none; }
 }
 
+/* Scrollbar hide for horizontal scrollers (ticker, scroll-snap rows) */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE / Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* WebKit (Safari / Chrome) */
+}
+
 /* Ticker marquee (kept for legacy ScoresTicker, may be retired in new design) */
 @keyframes ticker-marquee {
   from { transform: translateX(0); }

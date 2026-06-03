@@ -10,6 +10,7 @@ import QuickLinks from "@/components/v3/QuickLinks";
 import MostSearched from "@/components/v3/MostSearched";
 import SidebarNewsletter from "@/components/v3/SidebarNewsletter";
 import LastNewsMini from "@/components/v3/LastNewsMini";
+import LiveScoresBand from "@/components/v3/LiveScoresBand";
 import { fetchArticles } from "@/lib/ghost";
 import {
   getSeasonTournaments,
@@ -28,14 +29,24 @@ import type { Article } from "@/data/mock";
 export const revalidate = 30;
 
 async function fetchHomeData() {
+  // Pull matches around today (±1 day) so live + about-to-start matches show
+  // up alongside finished-today recaps. Wider net than the previous 20-most-recent.
+  const today = new Date();
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  const yesterdayStr = yesterday.toISOString().split("T")[0];
+  const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
   // Parallel fetch — none of these depend on each other.
   const [s5Res, s6Res, recentMatchesRes, liveRes] = await Promise.allSettled([
     getSeasonTournaments(5, { per_page: "50" }),
     getSeasonTournaments(6, { per_page: "50" }),
     getMatches({
+      after_date: yesterdayStr,
+      before_date: tomorrowStr,
       sort_by: "played_at",
       order_by: "desc",
-      per_page: "20",
+      per_page: "100",
     }),
     getLiveMatches(),
   ]);
@@ -91,7 +102,7 @@ function pickTopAuthor(articles: Article[]): {
 export default async function Home() {
   // Kick off Ghost articles in parallel with the PadelAPI fetches so CMS
   // latency doesn't stack on top of the data layer.
-  const [{ tournaments }, articles] = await Promise.all([
+  const [{ tournaments, matches }, articles] = await Promise.all([
     fetchHomeData(),
     fetchArticles(),
   ]);
@@ -137,8 +148,14 @@ export default async function Home() {
   const topAuthor = pickTopAuthor(articles);
   const authorArticles = topAuthor?.articles.slice(0, 6) ?? [];
 
+  // === Live matches band (top of homepage when matches are live) ===
+  const liveMatches = matches.filter((m) => m.displayStatus === "live");
+
   return (
     <main className="bg-bg-page">
+      {/* === Section 0: Live scores band (only when matches are live) === */}
+      <LiveScoresBand matches={liveMatches} tournaments={tournaments} />
+
       {/* === Section 1: Hero carousel === */}
       {bannerSlides.length > 0 && (
         <section className="px-16 pt-24 md:px-32 md:pt-32 lg:px-48">
