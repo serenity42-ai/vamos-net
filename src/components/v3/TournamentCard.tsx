@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { Tournament } from "@/lib/padel-api";
 
@@ -52,25 +55,63 @@ function LiveBadge() {
   );
 }
 
+function ChevronDown({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+      style={{ transition: "transform 300ms ease" }}
+    >
+      <path
+        d="M6 9l6 6 6-6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export interface TournamentCardProps {
   tournament: Tournament;
   variant?: Variant;
   href?: string;
+  /** S4 — when true, the card body collapses under a clickable header. */
+  expandable?: boolean;
+  /** Initial expanded state (S4). Default true. */
+  defaultExpanded?: boolean;
+  /** Optional content rendered inside the card body when expanded (e.g. match count, child cards). */
+  children?: ReactNode;
+  /** When collapsed and provided, shows a small summary line (e.g. "6 matches"). */
+  collapsedSummary?: string;
 }
 
 export default function TournamentCard({
   tournament,
   variant = "default",
   href,
+  expandable = false,
+  defaultExpanded = true,
+  children,
+  collapsedSummary,
 }: TournamentCardProps) {
   const isLive = tournament.status === "live";
   const isDark = variant === "dark";
   const target = href ?? `/tournaments/${tournament.id}`;
+  const [expanded, setExpanded] = useState<boolean>(defaultExpanded);
 
   // Existing Tournament type uses `location` (city/region) — not `city`.
   const location = tournament.location || tournament.country;
 
-  return (
+  // When expandable, the outer element must be a div (header is a button).
+  // When not expandable, keep the existing Link-as-card behaviour for back-compat.
+  if (!expandable) {
+    return (
     <Link
       href={target}
       className={[
@@ -156,5 +197,99 @@ export default function TournamentCard({
         </div>
       </div>
     </Link>
+  );
+  }
+
+  // ---- Expandable variant (S4) -----------------------------------------
+  return (
+    <div
+      className={[
+        "group relative overflow-hidden rounded-16 border transition-colors",
+        "w-full",
+        isDark
+          ? "bg-bg-constant border-[var(--color-border-secondary)] text-text-contrast"
+          : "bg-bg-white border-border-primary text-text-primary",
+      ].join(" ")}
+    >
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className={[
+          "relative flex w-full items-start gap-16 p-20 text-left",
+          isDark ? "hover:bg-bg-overlay" : "hover:bg-bg-gray",
+        ].join(" ")}
+      >
+        {/* Logo (initials fallback) */}
+        <div
+          className={[
+            "relative flex h-48 w-48 shrink-0 items-center justify-center overflow-hidden rounded-full border",
+            isDark
+              ? "border-[var(--color-border-secondary)] bg-bg-constant"
+              : "border-border-primary bg-bg-white",
+          ].join(" ")}
+        >
+          <span
+            className={[
+              "text-title-m",
+              isDark ? "text-text-contrast" : "text-text-primary",
+            ].join(" ")}
+          >
+            {tournament.name.slice(0, 2).toUpperCase()}
+          </span>
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-8">
+            <h3
+              className={[
+                "text-title-l line-clamp-2",
+                isDark ? "text-text-contrast" : "text-text-primary",
+              ].join(" ")}
+            >
+              {tournament.name}
+            </h3>
+            {isLive && <LiveBadge />}
+          </div>
+          <div
+            className={[
+              "flex flex-wrap items-center gap-x-8 gap-y-2 text-body-s",
+              isDark ? "text-text-contrast/80" : "text-text-secondary",
+            ].join(" ")}
+          >
+            <span className="truncate">
+              {formatDateRange(tournament.start_date, tournament.end_date)}
+            </span>
+            {location && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="truncate">{location}</span>
+              </>
+            )}
+            {!expanded && collapsedSummary && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="truncate font-semibold">{collapsedSummary}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <ChevronDown
+          className={
+            (isDark ? "text-text-contrast" : "text-text-secondary") +
+            (expanded ? " rotate-180" : "")
+          }
+        />
+      </button>
+      {/* Collapsible body */}
+      <div
+        className="overflow-hidden"
+        style={{
+          maxHeight: expanded ? 1000 : 0,
+          transition: "max-height 300ms ease",
+        }}
+      >
+        <div className="px-20 pb-20">{children}</div>
+      </div>
+    </div>
   );
 }

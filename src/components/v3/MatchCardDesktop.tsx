@@ -162,10 +162,23 @@ export default function MatchCardDesktop({
         {([1, 2] as const).map((teamIdx) => {
           const players = teamIdx === 1 ? match.players.team_1 : match.players.team_2;
           const label = teamIdx === 1 ? team1Label : team2Label;
+          // S2 — derive winner from set scores when finished, fall back to match.winner.
+          const isFinished = displayStatus === "finished";
+          let winnerKey: "team_1" | "team_2" | null = match.winner ?? null;
+          if (isFinished && !winnerKey && displayScore && displayScore.length > 0) {
+            let s1 = 0;
+            let s2 = 0;
+            for (const s of displayScore) {
+              if (isWin(s.team_1, s.team_2)) s1++;
+              else if (isWin(s.team_2, s.team_1)) s2++;
+            }
+            if (s1 > s2) winnerKey = "team_1";
+            else if (s2 > s1) winnerKey = "team_2";
+          }
           const isWinner =
-            (teamIdx === 1 && match.winner === "team_1") ||
-            (teamIdx === 2 && match.winner === "team_2");
-          const isLoser = !!match.winner && !isWinner;
+            (teamIdx === 1 && winnerKey === "team_1") ||
+            (teamIdx === 2 && winnerKey === "team_2");
+          const isLoser = !!winnerKey && !isWinner;
           return (
             <div
               key={teamIdx}
@@ -179,7 +192,11 @@ export default function MatchCardDesktop({
               <p
                 className={[
                   "truncate font-sans text-14 leading-20 flex-1 min-w-0",
-                  isLoser ? "text-text-tertiary" : "text-text-primary",
+                  isFinished && isLoser
+                    ? "text-text-secondary"
+                    : isLoser
+                      ? "text-text-tertiary"
+                      : "text-text-primary",
                   isWinner ? "font-semibold" : "font-normal",
                 ].join(" ")}
               >

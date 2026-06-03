@@ -174,16 +174,44 @@ export default function MatchCard({ match, tournamentName, onSelect }: MatchCard
       </div>
 
       {/* Two pair rows */}
-      <div className="px-12 pb-8 pt-4">
+      <div className="relative px-12 pb-8 pt-4">
+        {/* Animated serving-ball indicator (S1) — only rendered when current_server is known. */}
+        {isLive && servingTeam !== null && (
+          <span
+            aria-label="serving"
+            aria-hidden
+            className="absolute left-12 inline-block rounded-full bg-brand shrink-0 pointer-events-none"
+            style={{
+              width: 8,
+              height: 8,
+              top: 16,
+              transform: `translateY(${(servingTeam - 1) * 40}px)`,
+              transition: "transform 200ms ease",
+            }}
+          />
+        )}
         {([1, 2] as const).map((teamIdx) => {
           const players =
             teamIdx === 1 ? match.players.team_1 : match.players.team_2;
           const label = teamIdx === 1 ? team1Label : team2Label;
+          // S2 — determine winner from score sets when displayStatus=finished,
+          // falling back to match.winner when available.
+          const isFinished = displayStatus === "finished";
+          let winnerKey: "team_1" | "team_2" | null = match.winner ?? null;
+          if (isFinished && !winnerKey && displayScore && displayScore.length > 0) {
+            let s1 = 0;
+            let s2 = 0;
+            for (const s of displayScore) {
+              if (isWin(s.team_1, s.team_2)) s1++;
+              else if (isWin(s.team_2, s.team_1)) s2++;
+            }
+            if (s1 > s2) winnerKey = "team_1";
+            else if (s2 > s1) winnerKey = "team_2";
+          }
           const isWinner =
-            (teamIdx === 1 && match.winner === "team_1") ||
-            (teamIdx === 2 && match.winner === "team_2");
-          const isLoser = !!match.winner && !isWinner;
-          const serving = servingTeam === teamIdx;
+            (teamIdx === 1 && winnerKey === "team_1") ||
+            (teamIdx === 2 && winnerKey === "team_2");
+          const isLoser = !!winnerKey && !isWinner;
           return (
             <div
               key={teamIdx}
@@ -194,20 +222,22 @@ export default function MatchCard({ match, tournamentName, onSelect }: MatchCard
                   : undefined
               }
             >
-              {/* Names + (optional) ball icon */}
-              <div className="flex items-center gap-8 min-w-0 flex-1">
-                {serving && isLive && (
-                  <span
-                    aria-label="serving"
-                    className="inline-block rounded-full bg-brand shrink-0"
-                    style={{ width: 8, height: 8 }}
-                  />
-                )}
+              {/* Names — leave room on the left for the absolutely-positioned ball icon */}
+              <div
+                className="flex items-center gap-8 min-w-0 flex-1"
+                style={
+                  isLive && servingTeam !== null ? { paddingLeft: 16 } : undefined
+                }
+              >
                 <div className="min-w-0">
                   <p
                     className={[
                       "truncate font-sans text-14 leading-20",
-                      isLoser ? "text-text-tertiary" : "text-text-primary",
+                      isFinished && isLoser
+                        ? "text-text-secondary"
+                        : isLoser
+                          ? "text-text-tertiary"
+                          : "text-text-primary",
                       isWinner ? "font-semibold" : "font-normal",
                     ].join(" ")}
                   >
@@ -215,7 +245,14 @@ export default function MatchCard({ match, tournamentName, onSelect }: MatchCard
                   </p>
                   {/* Optional second-line: player count for doubles */}
                   {players.length > 1 && (
-                    <p className="truncate font-sans text-12 text-text-tertiary">
+                    <p
+                      className={[
+                        "truncate font-sans text-12",
+                        isFinished && isLoser
+                          ? "text-text-tertiary"
+                          : "text-text-tertiary",
+                      ].join(" ")}
+                    >
                       {players.map((p) => p.name.split(" ").slice(-1)[0]).join(" · ")}
                     </p>
                   )}

@@ -16,6 +16,20 @@ import IconButton from "@/components/IconButton";
  *  - Pagination dots at top right (orange = active)
  *  - "Read article" button outline variant
  *  - Slider chevrons (prev/next) at right
+ *
+ * Animation spec:
+ *  - Track-based slider: all slides rendered side-by-side, container
+ *    translates by -100% per index. Transition:
+ *      transform 500ms cubic-bezier(0.4, 0, 0.2, 1)
+ *  - Content (eyebrow + title + body + cta) re-mounts on slide change
+ *    (keyed) and fades + slides up:
+ *      opacity 0→1, translateY(12px)→0,
+ *      400ms ease, 200ms delay
+ *  - Background image starts at scale(1.03) and settles to scale(1)
+ *      transform 600ms ease
+ *  - Pagination dot active-color uses 300ms ease background transition.
+ *  - Autoplay 5s, resets when the user clicks the arrow buttons.
+ *  - Respects prefers-reduced-motion (motion-reduce: variant).
  */
 
 export interface BannerSlide {
@@ -49,11 +63,12 @@ function ChevronRight() {
 
 export default function BannerDesktop({
   slides,
-  autoPlayMs = 6000,
+  autoPlayMs = 5000,
 }: BannerDesktopProps) {
   const [index, setIndex] = useState(0);
   const count = slides.length;
-  const slide = slides[index];
+  // Tick state used to reset the autoplay timer when user interacts.
+  const [autoplayTick, setAutoplayTick] = useState(0);
 
   const go = useCallback(
     (delta: number) => {
@@ -62,12 +77,30 @@ export default function BannerDesktop({
     [count]
   );
 
+  // Autoplay — dependent on autoplayTick so we can reset by bumping it.
   useEffect(() => {
     if (!autoPlayMs || count <= 1) return;
-    const id = window.setInterval(() => go(1), autoPlayMs);
+    const id = window.setInterval(() => {
+      setIndex((i) => (i + 1) % count);
+    }, autoPlayMs);
     return () => window.clearInterval(id);
-  }, [autoPlayMs, count, go]);
+  }, [autoPlayMs, count, autoplayTick]);
 
+  const handleArrow = useCallback(
+    (delta: number) => {
+      go(delta);
+      setAutoplayTick((t) => t + 1); // reset autoplay timer
+    },
+    [go]
+  );
+
+  const handleDot = useCallback((i: number) => {
+    setIndex(i);
+    setAutoplayTick((t) => t + 1);
+  }, []);
+
+  if (count === 0) return null;
+  const slide = slides[index];
   if (!slide) return null;
 
   const cta = slide.ctaText ?? "Read article";
@@ -79,28 +112,44 @@ export default function BannerDesktop({
       style={{ aspectRatio: "1420 / 513" }}
       aria-roledescription="carousel"
     >
-      {/* Background image (left, 1141/1420 ≈ 80%) */}
-      <div className="absolute inset-0">
-        <Image
-          src={slide.image}
-          alt=""
-          fill
-          priority
-          sizes="(min-width: 1280px) 1420px, 100vw"
-          className="object-cover"
-        />
-        {/* Dark gradient overlay on right ~55% */}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(24,29,39,0) 30%, rgba(24,29,39,0.85) 70%, rgba(24,29,39,0.95) 100%)",
-          }}
-        />
+      {/* ──────────────────────────────────────────────────────────────
+          SLIDE TRACK — horizontal flex, translated by index.
+          Each slide carries its own background image + Ken-Burns scale.
+         ────────────────────────────────────────────────────────────── */}
+      <div
+        className="absolute inset-0 flex motion-reduce:!transition-none"
+        style={{
+          width: `${count * 100}%`,
+          transform: `translateX(-${(index * 100) / count}%)`,
+          transition: "transform 500ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+        aria-live="polite"
+      >
+        {slides.map((s, i) => (
+          <div
+            key={i}
+            className="relative h-full"
+            style={{ width: `${100 / count}%` }}
+            aria-hidden={i !== index}
+          >
+            {/* Background image with scale-in animation.
+                Keyed remount when this slide becomes active so the
+                transition replays. */}
+            <BannerImage src={s.image} active={i === index} activeKey={index} />
+            {/* Dark gradient overlay on right ~55% — static */}
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(24,29,39,0) 30%, rgba(24,29,39,0.85) 70%, rgba(24,29,39,0.95) 100%)",
+              }}
+            />
+          </div>
+        ))}
       </div>
 
-      {/* Orange ellipse decoration — bottom-right */}
+      {/* Orange ellipse decoration — bottom-right (static) */}
       <div
         aria-hidden
         className="pointer-events-none absolute -right-[80px] -bottom-[80px] h-[327px] w-[327px] rounded-full bg-brand opacity-90"
@@ -115,11 +164,12 @@ export default function BannerDesktop({
               type="button"
               aria-label={`Go to slide ${i + 1}`}
               aria-current={i === index ? "true" : undefined}
-              onClick={() => setIndex(i)}
+              onClick={() => handleDot(i)}
               className={[
-                "h-8 w-8 rounded-full transition-colors",
-                i === index ? "bg-brand" : "bg-text-contrast/70 hover:bg-text-contrast",
+                "h-8 w-8 rounded-full motion-reduce:!transition-none",
+                i === index ? "bg-brand" : "bg-bg-white",
               ].join(" ")}
+              style={{ transition: "background 300ms ease" }}
             />
           ))}
         </div>
@@ -133,20 +183,28 @@ export default function BannerDesktop({
             size="lg"
             icon={<ChevronLeft />}
             label="Previous slide"
-            onClick={() => go(-1)}
+            onClick={() => handleArrow(-1)}
           />
           <IconButton
             variant="ghost-dark"
             size="lg"
             icon={<ChevronRight />}
             label="Next slide"
-            onClick={() => go(1)}
+            onClick={() => handleArrow(1)}
           />
         </div>
       )}
 
-      {/* Content — right column */}
-      <div className="relative z-[5] flex h-full items-end p-32 lg:p-48">
+      {/* Content — right column, KEYED on index so it remounts and
+          replays the fade + slide-up animation on slide change. */}
+      <div
+        key={index}
+        className="relative z-[5] flex h-full items-end p-32 lg:p-48 motion-reduce:!animate-none"
+        style={{
+          animation:
+            "vamosBannerContentIn 400ms ease 200ms both",
+        }}
+      >
         <div className="flex max-w-[428px] flex-col gap-20 lg:ml-auto">
           {slide.eyebrow && (
             <span className="text-uppercase-eyebrow text-brand">
@@ -173,6 +231,71 @@ export default function BannerDesktop({
           </div>
         </div>
       </div>
+
+      {/* Local keyframes + reduced-motion fallback */}
+      <style jsx>{`
+        @keyframes vamosBannerContentIn {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          :global(section[aria-roledescription="carousel"] *) {
+            animation: none !important;
+            transition: none !important;
+          }
+        }
+      `}</style>
     </section>
+  );
+}
+
+/* Background image wrapper. Keyed remount on activeKey replays the
+   scale-in (1.03 → 1) animation. */
+function BannerImage({
+  src,
+  active,
+  activeKey,
+}: {
+  src: string;
+  active: boolean;
+  activeKey: number;
+}) {
+  return (
+    <div
+      key={active ? `active-${activeKey}` : "idle"}
+      className="absolute inset-0 motion-reduce:!transform-none motion-reduce:!transition-none"
+      style={
+        active
+          ? {
+              animation: "vamosBannerImageIn 600ms ease both",
+            }
+          : { transform: "scale(1)" }
+      }
+    >
+      <Image
+        src={src}
+        alt=""
+        fill
+        priority={active}
+        sizes="(min-width: 1280px) 1420px, 100vw"
+        className="object-cover"
+      />
+      <style jsx>{`
+        @keyframes vamosBannerImageIn {
+          from {
+            transform: scale(1.03);
+          }
+          to {
+            transform: scale(1);
+          }
+        }
+      `}</style>
+    </div>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import MatchCard from "@/components/v3/MatchCard";
 import MatchCardDesktop from "@/components/v3/MatchCardDesktop";
 import Tabs from "@/components/v3/Tabs";
+import FilterSheet from "@/components/v3/FilterSheet";
 import type { Match, Tournament } from "@/lib/padel-api";
 import type { NormalizedMatch } from "@/lib/normalize-match";
 
@@ -14,6 +15,12 @@ interface TournamentGroup {
   tournament: Tournament | undefined;
   tournamentId: number;
   matches: NormalizedMatch[];
+}
+
+interface OrganizerGroup {
+  organizer: string;
+  tournaments: TournamentGroup[];
+  liveCount: number;
 }
 
 interface ScoresClientProps {
@@ -33,6 +40,143 @@ function getTournamentForMatch(
   return tournaments.find((t) => t.id === id);
 }
 
+// S7 — detect organizer from tournament name.
+function detectOrganizer(name: string | undefined): string {
+  if (!name) return "Other";
+  const n = name.toLowerCase();
+  if (n.includes("premier padel")) return "Premier Padel";
+  if (n.includes("fip")) return "FIP";
+  if (n.includes("hexagon")) return "Hexagon";
+  if (n.includes("a1 padel") || n.includes("a1padel")) return "A1 Padel";
+  return "Other";
+}
+
+const ORGANIZER_ORDER = ["Premier Padel", "FIP", "Hexagon", "A1 Padel", "Other"];
+
+function FilterIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M3 6h18M6 12h12M9 18h6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ChevronDown({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+      style={{ transition: "transform 300ms ease" }}
+    >
+      <path
+        d="M6 9l6 6 6-6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
+ * S4 + S7 — collapsible tournament block used in the organizer grouping.
+ * Local state so each tournament card remembers its expanded state.
+ */
+function ExpandableTournamentBlock({
+  group,
+  onSelect,
+}: {
+  group: TournamentGroup;
+  onSelect: (m: Match) => void;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const count = group.matches.length;
+  const liveCount = group.matches.filter((m) => m.displayStatus === "live").length;
+
+  return (
+    <div className="rounded-16 border border-border-primary bg-bg-white overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className="flex w-full items-center justify-between gap-12 p-16 text-left hover:bg-bg-gray transition-colors"
+      >
+        <div className="min-w-0">
+          <h3 className="font-display font-semibold text-text-primary text-title-m truncate">
+            {group.tournament?.name || "Other matches"}
+          </h3>
+          <p className="font-sans text-12 text-text-secondary mt-2 truncate">
+            {group.tournament?.location}
+            {group.tournament?.country ? `, ${group.tournament.country}` : ""}
+            {!expanded && (
+              <>
+                <span aria-hidden> · </span>
+                <span className="font-semibold">
+                  {count} match{count === 1 ? "" : "es"}
+                  {liveCount > 0 ? ` · ${liveCount} live` : ""}
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+        <ChevronDown
+          className={
+            "text-text-secondary shrink-0" + (expanded ? " rotate-180" : "")
+          }
+        />
+      </button>
+      <div
+        className="overflow-hidden"
+        style={{
+          maxHeight: expanded ? 4000 : 0,
+          transition: "max-height 300ms ease",
+        }}
+      >
+        <div className="p-16 pt-0">
+          {/* Mobile */}
+          <div className="space-y-8 md:hidden">
+            {group.matches.map((m) => (
+              <MatchCard
+                key={m.id}
+                match={m}
+                tournamentName={group.tournament?.name}
+                onSelect={onSelect}
+              />
+            ))}
+          </div>
+          {/* Desktop */}
+          <div className="hidden space-y-8 md:block">
+            {group.matches.map((m) => (
+              <MatchCardDesktop
+                key={m.id}
+                match={m}
+                tournamentName={group.tournament?.name}
+                onSelect={onSelect}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ScoresClient({
   matches,
   tournaments,
@@ -42,8 +186,11 @@ export default function ScoresClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const statusParam = (searchParams.get("status") as StatusFilter | null) || "today";
+  const statusParam =
+    (searchParams.get("status") as StatusFilter | null) || "today";
   const tournamentParam = searchParams.get("tournament") || "all";
+
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const buildUrl = (next: Partial<{ status: string; tournament: string }>) => {
     const p = new URLSearchParams(searchParams.toString());
@@ -121,31 +268,86 @@ export default function ScoresClient({
     return arr;
   }, [filtered, tournaments]);
 
+  // S7 — group tournament groups by organizer
+  const organizerGroups = useMemo<OrganizerGroup[]>(() => {
+    const byOrg = new Map<string, OrganizerGroup>();
+    for (const tg of groups) {
+      const org = detectOrganizer(tg.tournament?.name);
+      if (!byOrg.has(org)) {
+        byOrg.set(org, { organizer: org, tournaments: [], liveCount: 0 });
+      }
+      const og = byOrg.get(org)!;
+      og.tournaments.push(tg);
+      og.liveCount += tg.matches.filter((m) => m.displayStatus === "live").length;
+    }
+    const arr = Array.from(byOrg.values());
+    arr.sort(
+      (a, b) =>
+        ORGANIZER_ORDER.indexOf(a.organizer) -
+        ORGANIZER_ORDER.indexOf(b.organizer),
+    );
+    return arr;
+  }, [groups]);
+
   const tabItems = [
-    { label: "Live", href: buildUrl({ status: "live" }), active: statusParam === "live" },
-    { label: "Today", href: buildUrl({ status: "today" }), active: statusParam === "today" },
-    { label: "Upcoming", href: buildUrl({ status: "upcoming" }), active: statusParam === "upcoming" },
-    { label: "Finished", href: buildUrl({ status: "finished" }), active: statusParam === "finished" },
+    {
+      label: "Live",
+      href: buildUrl({ status: "live" }),
+      active: statusParam === "live",
+    },
+    {
+      label: "Today",
+      href: buildUrl({ status: "today" }),
+      active: statusParam === "today",
+    },
+    {
+      label: "Upcoming",
+      href: buildUrl({ status: "upcoming" }),
+      active: statusParam === "upcoming",
+    },
+    {
+      label: "Finished",
+      href: buildUrl({ status: "finished" }),
+      active: statusParam === "finished",
+    },
   ];
 
   const handleMatchClick = (match: Match) => {
     router.push(`/matches/${match.id}`);
   };
 
+  const handleSaveFilter = (next: string) => {
+    setFilterOpen(false);
+    router.push(buildUrl({ tournament: next }));
+  };
+
+  const isLiveEmpty = statusParam === "live" && groups.length === 0;
+
   return (
     <div className="bg-bg-page min-h-screen">
       <div className="mx-auto max-w-[1320px] px-16 py-32 sm:px-24 lg:px-32">
-        {/* Title */}
-        <h1 className="font-display font-bold text-text-primary mb-24 text-mobile-display-l md:text-desktop-display-l">
-          SCORES
-        </h1>
+        {/* Title + Filter button row */}
+        <div className="mb-24 flex items-center justify-between gap-16">
+          <h1 className="font-display font-bold text-text-primary text-mobile-display-l md:text-desktop-display-l">
+            SCORES
+          </h1>
+          <button
+            type="button"
+            onClick={() => setFilterOpen(true)}
+            className="inline-flex items-center gap-8 rounded-full border border-border-primary bg-bg-white px-16 py-8 font-sans text-12 font-semibold text-text-primary hover:bg-bg-gray transition-colors"
+            aria-label="Open tournament filters"
+          >
+            <FilterIcon />
+            <span className="hidden sm:inline">Filters</span>
+          </button>
+        </div>
 
         {/* Tabs */}
         <div className="mb-24 -mx-16 sm:-mx-24 lg:-mx-32 sm:mx-0">
           <Tabs items={tabItems} ariaLabel="Match status filter" />
         </div>
 
-        {/* Tournament filter pills */}
+        {/* Inline tournament filter pills (still useful) */}
         {activeTournaments.length > 0 && (
           <div className="mb-32 flex gap-8 overflow-x-auto pb-8 [&::-webkit-scrollbar]:hidden">
             <button
@@ -166,7 +368,9 @@ export default function ScoresClient({
                 <button
                   key={t.id}
                   type="button"
-                  onClick={() => router.push(buildUrl({ tournament: String(t.id) }))}
+                  onClick={() =>
+                    router.push(buildUrl({ tournament: String(t.id) }))
+                  }
                   className={[
                     "shrink-0 rounded-full border px-16 py-8 font-sans text-12 font-semibold transition-colors",
                     active
@@ -181,48 +385,60 @@ export default function ScoresClient({
           </div>
         )}
 
-        {/* Tournament groups */}
-        {groups.length > 0 ? (
-          <div className="space-y-32">
-            {groups.map((group) => (
-              <section key={group.tournamentId}>
+        {/* Organizer-grouped tournament blocks */}
+        {organizerGroups.length > 0 ? (
+          <div className="space-y-40">
+            {organizerGroups.map((og) => (
+              <section key={og.organizer}>
                 <div className="mb-12 flex items-baseline gap-12">
-                  <h2 className="font-display font-semibold text-text-primary text-title-l">
-                    {group.tournament?.name || "Other matches"}
+                  <h2 className="font-display font-bold text-text-primary text-mobile-heading-m md:text-desktop-heading-m uppercase">
+                    {og.organizer}
                   </h2>
-                  {group.tournament && (
-                    <span className="font-sans text-12 text-text-secondary">
-                      {group.tournament.location}
-                      {group.tournament.country ? `, ${group.tournament.country}` : ""}
+                  {og.liveCount > 0 && (
+                    <span className="inline-flex items-center gap-4 rounded-full bg-brand px-8 py-2 font-sans text-12 font-semibold text-text-contrast">
+                      <span
+                        className="live-dot inline-block rounded-full bg-text-contrast"
+                        style={{ width: 6, height: 6 }}
+                        aria-hidden
+                      />
+                      {og.liveCount} live
                     </span>
                   )}
+                  <span className="font-sans text-12 text-text-secondary">
+                    {og.tournaments.length} tournament
+                    {og.tournaments.length === 1 ? "" : "s"}
+                  </span>
                 </div>
 
-                {/* Mobile cards */}
-                <div className="space-y-8 md:hidden">
-                  {group.matches.map((m) => (
-                    <MatchCard
-                      key={m.id}
-                      match={m}
-                      tournamentName={group.tournament?.name}
-                      onSelect={handleMatchClick}
-                    />
-                  ))}
-                </div>
-
-                {/* Desktop cards */}
-                <div className="hidden space-y-8 md:block">
-                  {group.matches.map((m) => (
-                    <MatchCardDesktop
-                      key={m.id}
-                      match={m}
-                      tournamentName={group.tournament?.name}
+                <div className="space-y-12">
+                  {og.tournaments.map((tg) => (
+                    <ExpandableTournamentBlock
+                      key={tg.tournamentId}
+                      group={tg}
                       onSelect={handleMatchClick}
                     />
                   ))}
                 </div>
               </section>
             ))}
+          </div>
+        ) : isLiveEmpty ? (
+          // S8 — empty state CTA when live-only and nothing live
+          <div className="rounded-16 border border-border-primary bg-bg-white p-48 text-center">
+            <p className="font-display font-semibold text-text-primary text-title-l mb-8">
+              No live matches right now
+            </p>
+            <p className="font-sans text-14 text-text-secondary mb-24">
+              No matches are streaming live at the moment. Check today&apos;s
+              schedule instead.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push(buildUrl({ status: "today" }))}
+              className="inline-flex items-center gap-8 rounded-full bg-brand text-text-contrast font-display font-semibold px-24 py-12 text-14 hover:bg-brand-dark transition-colors"
+            >
+              Show today&apos;s matches
+            </button>
           </div>
         ) : (
           <div className="rounded-16 border border-border-primary bg-bg-white p-48 text-center">
@@ -232,6 +448,15 @@ export default function ScoresClient({
           </div>
         )}
       </div>
+
+      {/* Filter sheet / modal */}
+      <FilterSheet
+        open={filterOpen}
+        tournaments={activeTournaments}
+        value={tournamentParam}
+        onSave={handleSaveFilter}
+        onClose={() => setFilterOpen(false)}
+      />
     </div>
   );
 }

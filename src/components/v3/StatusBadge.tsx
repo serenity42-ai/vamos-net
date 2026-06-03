@@ -34,6 +34,32 @@ export default function StatusBadge({
   const compact = variant === "compact";
 
   if (status === "live") {
+    // S13 — split current point (e.g. "40-30" or "AD-40") and highlight the higher
+    // game score with the lime accent. Equal scores stay white.
+    const cp = currentPoint?.trim();
+    let leftCls = "text-text-contrast";
+    let rightCls = "text-text-contrast";
+    let left = "";
+    let right = "";
+    if (cp) {
+      const parts = cp.split(/[-–—:]/).map((s) => s.trim());
+      if (parts.length === 2) {
+        left = parts[0];
+        right = parts[1];
+        const order = (v: string): number => {
+          const u = v.toUpperCase();
+          if (u === "AD") return 50;
+          const n = parseInt(u, 10);
+          return Number.isNaN(n) ? -1 : n;
+        };
+        const la = order(left);
+        const ra = order(right);
+        if (la >= 0 && ra >= 0 && la !== ra) {
+          if (la > ra) leftCls = "text-[var(--color-accent-lime)]";
+          else rightCls = "text-[var(--color-accent-lime)]";
+        }
+      }
+    }
     return (
       <span
         className={[
@@ -49,11 +75,15 @@ export default function StatusBadge({
           aria-hidden
         />
         <span>LIVE</span>
-        {currentPoint && (
-          <span className="ml-4 font-display text-text-contrast">
-            {currentPoint}
+        {cp && left && right ? (
+          <span className="ml-4 font-display">
+            <span className={leftCls}>{left}</span>
+            <span className="text-text-contrast">-</span>
+            <span className={rightCls}>{right}</span>
           </span>
-        )}
+        ) : cp ? (
+          <span className="ml-4 font-display text-text-contrast">{cp}</span>
+        ) : null}
       </span>
     );
   }

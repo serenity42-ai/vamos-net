@@ -32,6 +32,9 @@
   --color-brand-primary-dark: #CC3D00;
   --color-brand-primary-light: #FFE6DB;
 
+  /* ===== Accent (game-score highlight, etc.) ===== */
+  --color-accent-lime: #D4FF3A;
+
   /* ===== Background ===== */
   --color-bg-page: #F5F4F4;
   --color-bg-white: #FFFFFF;

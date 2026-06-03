@@ -7,6 +7,8 @@ import {
   type Tournament,
 } from "@/lib/padel-api";
 import { normalizeMatch, buildContext } from "@/lib/normalize-match";
+import { fetchArticles } from "@/lib/ghost";
+import type { Article } from "@/data/mock";
 import MatchDetailClient from "./MatchDetailClient";
 
 export const revalidate = 30;
@@ -77,7 +79,30 @@ export default async function MatchDetailPage({
   const ctx = buildContext(liveData, today);
   const normalized = normalizeMatch(match, ctx);
 
+  // S16 — News for this match: articles mentioning the tournament name.
+  let relatedNews: Article[] = [];
+  if (tournament?.name) {
+    try {
+      const all = await fetchArticles();
+      const needle = tournament.name.toLowerCase();
+      relatedNews = all
+        .filter(
+          (a) =>
+            a.title.toLowerCase().includes(needle) ||
+            a.excerpt.toLowerCase().includes(needle) ||
+            a.body.toLowerCase().includes(needle),
+        )
+        .slice(0, 4);
+    } catch {
+      /* ignore */
+    }
+  }
+
   return (
-    <MatchDetailClient match={normalized} tournamentName={tournament?.name} />
+    <MatchDetailClient
+      match={normalized}
+      tournamentName={tournament?.name}
+      relatedNews={relatedNews}
+    />
   );
 }

@@ -316,12 +316,40 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
             </span>
           )}
 
-          {isLive && currentPoint && (
-            <span className="inline-flex items-center gap-8 font-display font-semibold text-text-contrast bg-brand rounded-full px-12 py-4 text-14 tabular-nums">
-              <span className="live-dot inline-block rounded-full bg-text-contrast" style={{ width: 6, height: 6 }} />
-              {currentPoint}
-            </span>
-          )}
+          {isLive && currentPoint && (() => {
+            // S13 — split current game score and highlight the higher number lime.
+            const parts = currentPoint.split(/[-–—:]/).map((s) => s.trim());
+            const order = (v: string): number => {
+              const u = v.toUpperCase();
+              if (u === "AD") return 50;
+              const n = parseInt(u, 10);
+              return Number.isNaN(n) ? -1 : n;
+            };
+            let leftCls = "text-text-contrast";
+            let rightCls = "text-text-contrast";
+            if (parts.length === 2) {
+              const la = order(parts[0]);
+              const ra = order(parts[1]);
+              if (la >= 0 && ra >= 0 && la !== ra) {
+                if (la > ra) leftCls = "text-[var(--color-accent-lime)]";
+                else rightCls = "text-[var(--color-accent-lime)]";
+              }
+            }
+            return (
+              <span className="inline-flex items-center gap-8 font-display font-semibold text-text-contrast bg-brand rounded-full px-12 py-4 text-14 tabular-nums">
+                <span className="live-dot inline-block rounded-full bg-text-contrast" style={{ width: 6, height: 6 }} />
+                {parts.length === 2 ? (
+                  <span>
+                    <span className={leftCls}>{parts[0]}</span>
+                    <span className="text-text-contrast">-</span>
+                    <span className={rightCls}>{parts[1]}</span>
+                  </span>
+                ) : (
+                  <span>{currentPoint}</span>
+                )}
+              </span>
+            );
+          })()}
         </div>
       </div>
     </section>

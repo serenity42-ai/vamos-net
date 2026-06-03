@@ -1,7 +1,48 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { Tournament } from "@/lib/padel-api";
 import Button from "@/components/Button";
+import IconButton from "@/components/IconButton";
 import Link from "next/link";
+
+function ChevronLeft() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M15 18l-6-6 6-6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ChevronDown({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+      style={{ transition: "transform 300ms ease" }}
+    >
+      <path
+        d="M6 9l6 6 6-6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 /**
  * TournamentBanner — large hero for /tournaments/[id] (1250×440).
@@ -67,6 +108,11 @@ export interface TournamentBannerProps {
   /** Optional explicit CTA override */
   ctaText?: string;
   ctaHref?: string;
+  /** S22 — when true the banner body collapses; default expanded=true. */
+  collapsible?: boolean;
+  defaultExpanded?: boolean;
+  /** Show the back chevron in the top-left (S22). Default true. */
+  showBack?: boolean;
 }
 
 export default function TournamentBanner({
@@ -74,7 +120,12 @@ export default function TournamentBanner({
   imageUrl,
   ctaText,
   ctaHref,
+  collapsible = false,
+  defaultExpanded = true,
+  showBack = true,
 }: TournamentBannerProps) {
+  const router = useRouter();
+  const [expanded, setExpanded] = useState<boolean>(defaultExpanded);
   const isLive = tournament.status === "live";
   const isFinished = tournament.status === "finished";
   const defaultCtaText = isLive
@@ -132,16 +183,43 @@ export default function TournamentBanner({
       {/* Content */}
       <div
         className="relative flex flex-col gap-24 p-24 md:p-32 lg:p-40"
-        style={{ minHeight: 440 }}
+        style={{ minHeight: expanded ? 440 : 120 }}
       >
         <div className="flex items-center gap-16">
+          {showBack && (
+            <IconButton
+              variant="ghost-dark"
+              size="md"
+              icon={<ChevronLeft />}
+              label="Back"
+              onClick={() => router.back()}
+            />
+          )}
           <StatusBadge status={tournament.status} />
           <span className="text-body-m-semibold text-text-contrast/80">
             {formatDateRange(tournament.start_date, tournament.end_date)}
           </span>
+          {collapsible && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+              aria-label={expanded ? "Collapse banner" : "Expand banner"}
+              className="ml-auto inline-flex h-44 w-44 items-center justify-center rounded-full border border-[var(--color-border-secondary)] text-text-contrast hover:bg-bg-overlay"
+            >
+              <ChevronDown className={expanded ? "rotate-180" : ""} />
+            </button>
+          )}
         </div>
 
-        <div className="mt-auto flex flex-col gap-16 md:gap-24">
+        <div
+          className="mt-auto flex flex-col gap-16 md:gap-24 overflow-hidden"
+          style={{
+            maxHeight: !collapsible || expanded ? 1000 : 0,
+            opacity: !collapsible || expanded ? 1 : 0,
+            transition: "max-height 300ms ease, opacity 200ms ease",
+          }}
+        >
           <div className="flex items-end gap-16 md:gap-24">
             {/* Tournament logo (initials fallback) */}
             <div className="hidden h-72 w-72 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border-secondary)] bg-bg-constant md:flex md:h-96 md:w-96">
