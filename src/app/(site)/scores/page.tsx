@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   getSeasonTournaments,
   getMatches,
@@ -68,11 +69,13 @@ export default async function ScoresPage({
     .slice(0, 12);
 
   return (
-    <ScoresClient
-      matches={allMatches}
-      tournaments={tournaments}
-      activeTournaments={activeTournaments}
-      todayStr={todayStr}
-    />
+    <Suspense fallback={null}>
+      <ScoresClient
+        matches={allMatches}
+        tournaments={tournaments}
+        activeTournaments={activeTournaments}
+        todayStr={todayStr}
+      />
+    </Suspense>
   );
 }

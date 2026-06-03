@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   getSeasonTournaments,
   getMatches,
@@ -76,12 +77,14 @@ export default async function SchedulePage({
   }
 
   return (
-    <ScheduleClient
-      matches={allMatches}
-      tournaments={tournaments}
-      dateCounts={dateCounts}
-      dateList={dateList}
-      todayStr={todayStr}
-    />
+    <Suspense fallback={null}>
+      <ScheduleClient
+        matches={allMatches}
+        tournaments={tournaments}
+        dateCounts={dateCounts}
+        dateList={dateList}
+        todayStr={todayStr}
+      />
+    </Suspense>
   );
 }

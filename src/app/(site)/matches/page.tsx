@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   getSeasonTournaments,
   getMatches,
@@ -51,5 +52,9 @@ export default async function MatchesPage() {
   const ctx = buildContext(liveRes.data, todayStr);
   const allMatches = normalizeMatches(matchesRes.data, ctx);
 
-  return <MatchesClient matches={allMatches} tournaments={tournaments} />;
+  return (
+    <Suspense fallback={null}>
+      <MatchesClient matches={allMatches} tournaments={tournaments} />
+    </Suspense>
+  );
 }
