@@ -149,10 +149,13 @@ export default function BannerDesktop({
         ))}
       </div>
 
-      {/* Orange ellipse decoration — bottom-right (static) */}
+      {/* Orange ellipse decoration — bottom-right (static).
+          Softened with blur + reduced opacity so it reads as a brand glow
+          rather than a hard disc that fights the headline + CTA above it.
+          Spec calls for 327×327 #FE4C00; visually it's an atmospheric accent. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-[80px] -bottom-[80px] h-[327px] w-[327px] rounded-full bg-brand opacity-90"
+        className="pointer-events-none absolute -right-[120px] -bottom-[120px] h-[327px] w-[327px] rounded-full bg-brand opacity-40 blur-3xl"
       />
 
       {/* Pagination dots — top right */}
