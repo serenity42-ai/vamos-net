@@ -1,4 +1,5 @@
 import Header from "@/components/v3/Header";
+import MobileHeader from "@/components/v3/MobileHeader";
 import Footer from "@/components/v3/Footer";
 import Tabbar from "@/components/v3/Tabbar";
 import MatchModalProvider from "@/components/MatchModalProvider";
@@ -25,6 +26,8 @@ export default function SiteLayout({
 }) {
   return (
     <MatchModalProvider>
+      {/* Mobile-only sticky top header (64px); desktop Header is hidden md:flex */}
+      <MobileHeader />
       <Header />
       <div className="flex-1 pb-[72px] md:pb-0">{children}</div>
       <Footer />

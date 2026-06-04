@@ -266,7 +266,8 @@ export default function HubPageClient({ articles }: Props) {
 
       {/* Tabs filter row — sticky under the global header (PH4).
           The header sits at ~80px so we pin tabs just under it. */}
-      <section className="sticky top-0 md:top-[80px] z-30 border-b border-border-primary bg-bg-page">
+      {/* top-[56px] on mobile accounts for the 56px MobileHeader; on md+ the desktop Header is 80px */}
+      <section className="sticky top-[56px] md:top-[80px] z-30 border-b border-border-primary bg-bg-page">
         <div className="mx-auto max-w-[1320px] px-4 sm:px-12">
           <Tabs items={tabItems} ariaLabel="Hub content type filter" />
         </div>
