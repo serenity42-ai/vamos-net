@@ -357,9 +357,11 @@ export default async function Home() {
           </div>
 
           <div className="relative overflow-hidden rounded-32 bg-bg-gray">
+            {/* Mobile: content-driven height (no aspect-ratio that would force
+                width > viewport). Desktop: keep cinematic 16/7 ratio. */}
             <div
-              className="relative flex flex-col justify-end gap-20 p-24 md:p-40 lg:p-48"
-              style={{ aspectRatio: "16 / 7", minHeight: 320 }}
+              className="relative flex w-full flex-col justify-end gap-20 p-24 md:p-40 lg:p-48 md:[aspect-ratio:16/7]"
+              style={{ minHeight: 320 }}
             >
               {/* Decorative gradient stand-in for video */}
               <div
@@ -370,7 +372,7 @@ export default async function Home() {
                     "linear-gradient(135deg, rgba(24,29,39,0.95) 0%, rgba(24,29,39,0.7) 40%, rgba(254,76,0,0.55) 100%)",
                 }}
               />
-              <div className="relative z-[5] flex max-w-[640px] flex-col gap-16">
+              <div className="relative z-[5] flex w-full min-w-0 max-w-[640px] flex-col gap-16">
                 <span className="text-uppercase-eyebrow text-brand">
                   LIVE STREAM
                 </span>
