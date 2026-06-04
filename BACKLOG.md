@@ -113,6 +113,13 @@
 
 ---
 
+## Mechanics To Define (added 2026-06-04 from Gap Audit triage)
+
+- [ ] **H4 — "Most Searched" section mechanics.** v1 ships as 4-most-recent fallback. Define real mechanics later: search analytics source (Plausible? GA? own server logs?), how often "most searched" recomputes (hourly/daily), tie-breaking, fallback when no data yet. Owner: Alex.
+- [ ] **A4/A5 — "Where to Buy" mechanics.** v1 ships with "Coming soon" placeholder. Define: geo-referenced online shops (which countries → which shops), delivery filtering (only show shops that ship to the visitor's country), data model (shop catalog + per-product price + affiliate links?), source of pricing (manual CMS vs. API scrape), single-shop CTA vs. multi-shop list logic. Owner: Alex.
+
+---
+
 ## Autoresearch Experiments (Karpathy Pattern)
 *Added: 2026-03-10 | Start: 2026-03-11*
 
