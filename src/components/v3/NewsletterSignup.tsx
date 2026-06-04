@@ -75,16 +75,16 @@ export default function NewsletterSignup() {
           </p>
         </div>
 
-        {/* Email form */}
+        {/* Email form — flex row; input takes flex-1, button is fixed 56×56 */}
         <form
           onSubmit={handleSubmit}
-          className="flex items-center gap-4 w-full md:w-[376px] shrink-0"
+          className="flex items-center gap-8 w-full md:w-[376px] shrink-0"
         >
           <label htmlFor="newsletter-email" className="sr-only">
             Email address
           </label>
           <div
-            className="flex items-center bg-bg-white rounded-full flex-1"
+            className="flex items-center bg-bg-white rounded-full flex-1 min-w-0"
             style={{
               height: 56,
               paddingTop: 16,
@@ -101,15 +101,17 @@ export default function NewsletterSignup() {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-transparent outline-none text-16 text-text-primary placeholder:text-text-tertiary"
+              className="w-full min-w-0 bg-transparent outline-none text-16 text-text-primary placeholder:text-text-tertiary"
             />
           </div>
+          {/* shrink-0 prevents the button from being squashed on narrow viewports */}
           <IconButton
             type="submit"
             variant="primary"
             size="lg"
             label="Subscribe"
             icon={<ArrowUpRight />}
+            className="shrink-0"
           />
         </form>
       </div>
