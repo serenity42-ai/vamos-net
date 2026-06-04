@@ -24,6 +24,8 @@ type TabItem = {
   href: string;
   label: string;
   matchPrefix?: string;
+  /** Additional path prefixes that should also activate this tab. */
+  extraPrefixes?: string[];
   icon: (props: { active: boolean }) => React.ReactElement;
 };
 
@@ -110,12 +112,17 @@ function ZapIcon({ active }: { active: boolean }) {
 const TABS: TabItem[] = [
   { href: "/", label: "Spotlight", matchPrefix: "/", icon: FlameIcon },
   { href: "/hub", label: "Hub", matchPrefix: "/hub", icon: BallIcon },
-  { href: "/scores", label: "Scores", matchPrefix: "/scores", icon: ZapIcon },
+  // Match detail pages live under /matches/[id] — include that prefix so
+  // the Scores tab stays active when the user drills into a match.
+  { href: "/scores", label: "Scores", matchPrefix: "/scores", extraPrefixes: ["/matches"], icon: ZapIcon },
 ];
 
 function isActive(pathname: string, item: TabItem) {
   if (item.matchPrefix === "/") return pathname === "/";
-  return pathname === item.href || pathname.startsWith(item.href + "/");
+  const prefixes = [item.href, ...(item.extraPrefixes ?? [])];
+  return prefixes.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
 }
 
 export default function Tabbar() {

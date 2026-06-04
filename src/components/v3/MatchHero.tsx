@@ -104,14 +104,15 @@ function PairBlock({
         alignRight ? "sm:flex-row-reverse sm:text-right" : "",
       ].join(" ")}
     >
-      <div className="flex shrink-0 -space-x-12">
-        {players.map((p) => (
-          <HeroAvatar
-            key={p.id}
-            player={p}
-            detail={playerDetails.get(p.id)}
-            size={64}
-          />
+      <div className="flex shrink-0 -space-x-12 relative">
+        {players.map((p, i) => (
+          <div key={p.id} className="relative" style={{ zIndex: i + 1 }}>
+            <HeroAvatar
+              player={p}
+              detail={playerDetails.get(p.id)}
+              size={64}
+            />
+          </div>
         ))}
       </div>
       <div className="min-w-0 flex-1">
@@ -238,7 +239,6 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
   return (
     <section
       className="w-full bg-bg-constant text-text-contrast rounded-32 overflow-hidden relative"
-      style={{ minHeight: 411 }}
     >
       {/* Top bar: back + eyebrows + status */}
       <div className="flex items-start justify-between gap-16 px-20 pt-20 sm:px-32 sm:pt-32">
@@ -304,8 +304,9 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
           );
         })()}
 
-        {/* Center score column */}
-        <div className="flex flex-col items-center justify-center gap-12 order-last sm:order-none">
+        {/* Center score column — no order-last so it sits between the two
+            team blocks on mobile (flex-col) and in the centre on desktop grid. */}
+        <div className="flex flex-col items-center justify-center gap-12">
           {score && score.length > 0 ? (
             <div className="flex items-center gap-16">
               <div className="flex flex-col items-center gap-4">
