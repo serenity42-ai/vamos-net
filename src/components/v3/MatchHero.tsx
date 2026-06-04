@@ -17,7 +17,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import type { Match, MatchPlayer, Player } from "@/lib/padel-api";
+import type { Match, MatchPlayer, Player, SetScore } from "@/lib/padel-api";
 import type { DisplayStatus, NormalizedMatch } from "@/lib/normalize-match";
 import { displaySurname } from "@/lib/player-utils";
 import { useLiveScore } from "@/hooks/useLiveScore";
@@ -201,14 +201,25 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
     };
   }, [match.id, match.players.team_1, match.players.team_2]);
 
-  const score =
-    liveScore?.filter((s) => {
-      const a = (s.team_1 ?? "").toString().trim();
-      const b = (s.team_2 ?? "").toString().trim();
-      if (!a && !b) return false;
-      if (a === "0" && b === "0") return false;
-      return true;
-    }) ?? null;
+  // Build display score. Don't strip the LAST entry even if 0-0 because that's
+  // the in-progress set (server returns 0-0 when a new set just started before
+  // any games complete). We DO strip earlier 0-0 entries (stale/empty data).
+  // We also preserve the index so set numbers stay accurate when filtering.
+  const score: (SetScore & { setNumber: number; inProgress: boolean })[] | null =
+    liveScore && liveScore.length > 0
+      ? liveScore
+          .map((s, i) => {
+            const a = (s.team_1 ?? "").toString().trim();
+            const b = (s.team_2 ?? "").toString().trim();
+            const isLast = i === liveScore.length - 1;
+            const empty = (!a && !b) || (a === "0" && b === "0");
+            // In-progress = last set with no winner AND match is live
+            const inProgress = isLast && isLive && !match.winner;
+            return { ...s, setNumber: i + 1, inProgress, _empty: empty, _isLast: isLast };
+          })
+          .filter((s) => !s._empty || s._isLast)
+          .map(({ _empty, _isLast, ...rest }) => rest)
+      : null;
 
   const dateLabel = match.played_at
     ? new Date(match.played_at).toLocaleString("en-GB", {
@@ -304,50 +315,67 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
           );
         })()}
 
-        {/* Center score column — no order-last so it sits between the two
-            team blocks on mobile (flex-col) and in the centre on desktop grid. */}
+        {/* Center score column — set-by-set grid with SET N labels above each
+            column. In-progress set highlighted with lime accent + dot. */}
         <div className="flex flex-col items-center justify-center gap-12">
           {score && score.length > 0 ? (
-            <div className="flex items-center gap-16">
-              <div className="flex flex-col items-center gap-4">
-                {score.map((s, i) => {
-                  const win = isWin(s.team_1, s.team_2);
-                  return (
+            <div className="flex items-end gap-12">
+              {score.map((s, i) => {
+                const t1Win = isWin(s.team_1, s.team_2);
+                const t2Win = isWin(s.team_2, s.team_1);
+                const active = s.inProgress;
+                return (
+                  <div
+                    key={`set-${s.setNumber}`}
+                    className="flex flex-col items-center gap-4"
+                  >
+                    {/* SET N label */}
                     <span
-                      key={`t1-${i}`}
                       className={[
-                        "font-display font-semibold tabular-nums",
-                        win ? "text-text-contrast" : "text-text-tertiary",
+                        "font-sans font-semibold uppercase tracking-[0.04em] tabular-nums text-10",
+                        active
+                          ? "text-[var(--color-accent-lime)]"
+                          : "text-text-tertiary",
                       ].join(" ")}
-                      style={{ fontSize: 36, lineHeight: "40px" }}
+                      style={{ lineHeight: "12px" }}
                     >
-                      {s.team_1 || "–"}
+                      {active ? (
+                        <>
+                          <span
+                            className="live-dot mr-4 inline-block rounded-full bg-[var(--color-accent-lime)] align-middle"
+                            style={{ width: 4, height: 4 }}
+                            aria-hidden
+                          />
+                          SET {s.setNumber}
+                        </>
+                      ) : (
+                        <>SET {s.setNumber}</>
+                      )}
                     </span>
-                  );
-                })}
-              </div>
-              <div
-                className="self-stretch"
-                aria-hidden
-                style={{ width: 1, background: "var(--color-border-secondary)" }}
-              />
-              <div className="flex flex-col items-center gap-4">
-                {score.map((s, i) => {
-                  const win = isWin(s.team_2, s.team_1);
-                  return (
-                    <span
-                      key={`t2-${i}`}
-                      className={[
-                        "font-display font-semibold tabular-nums",
-                        win ? "text-text-contrast" : "text-text-tertiary",
-                      ].join(" ")}
-                      style={{ fontSize: 36, lineHeight: "40px" }}
-                    >
-                      {s.team_2 || "–"}
-                    </span>
-                  );
-                })}
-              </div>
+                    {/* Stack of two team scores for this set */}
+                    <div className="flex flex-col items-center gap-2">
+                      <span
+                        className={[
+                          "font-display font-semibold tabular-nums",
+                          t1Win ? "text-text-contrast" : "text-text-tertiary",
+                        ].join(" ")}
+                        style={{ fontSize: 32, lineHeight: "36px" }}
+                      >
+                        {s.team_1 || "–"}
+                      </span>
+                      <span
+                        className={[
+                          "font-display font-semibold tabular-nums",
+                          t2Win ? "text-text-contrast" : "text-text-tertiary",
+                        ].join(" ")}
+                        style={{ fontSize: 32, lineHeight: "36px" }}
+                      >
+                        {s.team_2 || "–"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <span className="font-display font-semibold text-text-tertiary" style={{ fontSize: 40 }}>
