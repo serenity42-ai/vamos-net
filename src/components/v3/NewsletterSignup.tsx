@@ -40,6 +40,11 @@ function ArrowUpRight({ className }: { className?: string }) {
   );
 }
 
+// H3 (audit): newsletter backend not wired for Monday launch. Show the copy
+// with a 'Coming soon' badge instead of a black-hole form. Flip this flag
+// (or wire a provider) when ready — see BACKLOG.md.
+const NEWSLETTER_ENABLED = false;
+
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("");
 
@@ -76,6 +81,24 @@ export default function NewsletterSignup() {
         </div>
 
         {/* Email form — flex row; input takes flex-1, button is fixed 56×56 */}
+        {!NEWSLETTER_ENABLED && (
+          <div
+            className="shrink-0 inline-flex items-center self-start rounded-full border border-white/20"
+            style={{
+              padding: "10px 18px",
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.7)",
+            }}
+            aria-label="Newsletter signup coming soon"
+          >
+            Coming soon
+          </div>
+        )}
+        {NEWSLETTER_ENABLED && (
         <form
           onSubmit={handleSubmit}
           className="flex items-center gap-8 w-full md:w-[376px] shrink-0"
@@ -114,6 +137,7 @@ export default function NewsletterSignup() {
             className="shrink-0"
           />
         </form>
+        )}
       </div>
     </section>
   );

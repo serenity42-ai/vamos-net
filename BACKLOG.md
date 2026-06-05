@@ -132,4 +132,12 @@ Pattern: `agent + sandbox + one metric + autonomous loop = 100 experiments overn
 Ref: github.com/karpathy/autoresearch
 
 ---
+
+## Pre-launch audit follow-ups (Claude Code, 2026-06-05)
+
+- [ ] **Newsletter backend** — wire NewsletterSignup + SidebarNewsletter to a real provider (Beehiiv / Mailchimp / Ghost members). Both components currently show a `Coming soon` badge with the form hidden behind `const NEWSLETTER_ENABLED = false`. Flip the flag and add a POST endpoint when ready. *(Audit H3.)*
+  - Files: `src/components/v3/NewsletterSignup.tsx`, `src/components/v3/SidebarNewsletter.tsx`
+  - Decision: defer to post-launch, owner picks provider.
+
+---
 *Backlog is alive. Check off items as completed. Last verified against live site: 2026-03-04 23:30.*

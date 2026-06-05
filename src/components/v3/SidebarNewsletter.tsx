@@ -31,6 +31,12 @@ function ArrowUpRight() {
   );
 }
 
+// H3 (audit): newsletter backend not wired for Monday launch. Hide the form
+// to avoid a fake-confirmation black hole (previous code flipped a 'thanks'
+// state without actually sending anything). Flip this when backend is live
+// — see BACKLOG.md.
+const NEWSLETTER_ENABLED = false;
+
 export default function SidebarNewsletter() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -63,7 +69,23 @@ export default function SidebarNewsletter() {
         what matters in padel.
       </p>
 
-      {submitted ? (
+      {!NEWSLETTER_ENABLED ? (
+        <div
+          className="inline-flex items-center rounded-full border border-white/20"
+          style={{
+            padding: "8px 14px",
+            fontFamily: "var(--mono)",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.7)",
+          }}
+          aria-label="Newsletter signup coming soon"
+        >
+          Coming soon
+        </div>
+      ) : submitted ? (
         <p className="text-body-m text-text-contrast">
           Thanks — check your inbox to confirm.
         </p>
