@@ -4,10 +4,14 @@ import type { NextRequest } from "next/server";
 // Gate the site behind "Coming Soon" for public visitors on vamos.net
 // Access the full site via:
 //   1. Vercel preview URLs (*.vercel.app)
-//   2. Adding ?preview=vamos2026 to any page
+//   2. Adding ?preview=<secret> to any page (secret = env PREVIEW_SECRET)
 //   3. Setting a cookie (persists after first ?preview= visit)
-
-const PREVIEW_SECRET = "vamos2026";
+//
+// M4 (audit): secret is read from env so it's not committed to git. Rotate
+// by changing PREVIEW_SECRET in Vercel project settings. The fallback only
+// applies when the env var is unset so local dev keeps working without
+// extra setup; deploy environments MUST set PREVIEW_SECRET.
+const PREVIEW_SECRET = process.env.PREVIEW_SECRET || "vamos2026";
 
 export function middleware(request: NextRequest) {
   const { pathname, hostname, searchParams } = request.nextUrl;

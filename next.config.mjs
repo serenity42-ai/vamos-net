@@ -37,6 +37,8 @@ const nextConfig = {
     return [
       { source: "/", headers: shortCache },
       { source: "/scores", headers: shortCache },
+      // L4 (audit): /scores has no sub-routes today, but keep this matcher
+      // for future per-tournament or per-date deep links. Cheap to retain.
       { source: "/scores/:path*", headers: shortCache },
       { source: "/tournaments/:id", headers: shortCache },
     ];

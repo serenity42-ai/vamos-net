@@ -57,16 +57,21 @@ async function fetchRankings() {
       }
       return true;
     });
-    // Re-sort by points and re-assign rankings (API ranking field is unreliable)
-    filtered.sort((a, b) => (b.points || 0) - (a.points || 0));
+    // Re-sort by points and re-assign rankings (API ranking field is unreliable).
+    // M3 (audit): clone before reassigning so we don't mutate API objects that
+    // are reused elsewhere (e.g. the JSON-LD schema block reads the same array).
+    // Tie handling: competition ranking ('1224') — tied players share the
+    // higher rank, the next distinct points value skips slots accordingly.
+    const cloned = filtered.map((p) => ({ ...p }));
+    cloned.sort((a, b) => (b.points || 0) - (a.points || 0));
     let currentRank = 1;
-    for (let i = 0; i < filtered.length; i++) {
-      if (i > 0 && (filtered[i].points || 0) < (filtered[i - 1].points || 0)) {
+    for (let i = 0; i < cloned.length; i++) {
+      if (i > 0 && (cloned[i].points || 0) < (cloned[i - 1].points || 0)) {
         currentRank = i + 1;
       }
-      filtered[i].ranking = currentRank;
+      cloned[i].ranking = currentRank;
     }
-    return filtered;
+    return cloned;
   };
 
   return {

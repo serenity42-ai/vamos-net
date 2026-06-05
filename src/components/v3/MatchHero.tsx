@@ -200,7 +200,10 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
     return () => {
       cancelled = true;
     };
-  }, [match.id, match.players.team_1, match.players.team_2]);
+    // L7 (audit): depend on match.id only — player arrays are new
+    // references every render and would re-fire /api/players/:id fetches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [match.id]);
 
   // Build display score. Don't strip the LAST entry even if 0-0 because that's
   // the in-progress set (server returns 0-0 when a new set just started before

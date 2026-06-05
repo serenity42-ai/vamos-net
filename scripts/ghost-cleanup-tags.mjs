@@ -1,8 +1,14 @@
 // Cleanup: remove the two hash-import-* tags that Ghost's bulk import
 // auto-created. They're internal housekeeping and clutter the Tags UI.
+//
+// M5 (audit): dry-run is the default. Pass --apply (or -y) to actually
+// delete tags. This script is destructive — without the gate a typo on
+// the slug prefix could wipe tags you wanted to keep.
 
 import { readFileSync } from "node:fs";
 import GhostAdminAPI from "@tryghost/admin-api";
+
+const APPLY = process.argv.includes("--apply") || process.argv.includes("-y");
 
 const env = Object.fromEntries(
   readFileSync("./.env.local", "utf8")
@@ -22,7 +28,17 @@ const api = new GhostAdminAPI({
 
 const tags = await api.tags.browse({ limit: 200, fields: "id,slug,name" });
 const hashTags = tags.filter((t) => t.slug.startsWith("hash-import-"));
-console.log(`Found ${hashTags.length} hash-import tag(s) to delete.`);
+console.log(
+  `Found ${hashTags.length} hash-import tag(s) ${APPLY ? "to delete" : "(dry-run — no changes)"}:`
+);
+for (const t of hashTags) {
+  console.log(`  ${APPLY ? "DELETE" : "would delete"}  ${t.slug}  (id=${t.id})`);
+}
+
+if (!APPLY) {
+  console.log("\nDry-run only. Re-run with --apply to actually delete.");
+  process.exit(0);
+}
 
 for (const t of hashTags) {
   try {

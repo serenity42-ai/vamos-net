@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 import type { Match } from "@/lib/padel-api";
 import MatchModal from "./MatchModal";
 
@@ -30,8 +30,12 @@ export default function MatchModalProvider({ children }: { children: ReactNode }
     setTournamentName(undefined);
   }, []);
 
+  // L6 (audit): memoize so context consumers don't re-render on every
+  // provider render (e.g. when state flips on open/close).
+  const value = useMemo(() => ({ openMatch }), [openMatch]);
+
   return (
-    <MatchModalContext.Provider value={{ openMatch }}>
+    <MatchModalContext.Provider value={value}>
       {children}
       {activeMatch && (
         <MatchModal

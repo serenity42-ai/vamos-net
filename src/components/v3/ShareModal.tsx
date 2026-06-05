@@ -132,12 +132,18 @@ export default function ShareModal({ url, title, onClose }: ShareModalProps) {
     };
   }, []);
 
-  // Resolve URL at click-time so SSR-safe (window may not exist on first render).
-  const liveUrl = typeof window !== "undefined" ? window.location.href : url;
+  // M6 (audit): one source of truth for the shared URL. Previously copy
+  // used window.location.href while social buttons used the `url` prop — a
+  // user could copy one link and tweet a different one (different query
+  // params, modals open, etc.). Prefer the prop — it's what the caller meant
+  // to share; the live URL is only a fallback if no prop was supplied.
+  const shareUrl =
+    url ||
+    (typeof window !== "undefined" ? window.location.href : "");
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(liveUrl);
+      await navigator.clipboard.writeText(shareUrl);
       setToast("Link copied!");
     } catch {
       setToast("Could not copy");
@@ -145,7 +151,7 @@ export default function ShareModal({ url, title, onClose }: ShareModalProps) {
     window.setTimeout(() => setToast(null), 2000);
   }
 
-  const encoded = encodeURIComponent(url);
+  const encoded = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encoded}`;
   // Instagram has no public web share endpoint; per spec, fall back to Twitter intent.

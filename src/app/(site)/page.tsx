@@ -122,7 +122,9 @@ export default async function Home() {
     title: a.title,
     body: a.excerpt,
     ctaText: "Read article",
-    ctaHref: `/news/${a.slug}`,
+    // L2 (audit): link straight to /hub/{slug} instead of /news/{slug} (which
+    // 301-redirects). Avoids an extra hop on the most prominent CTA.
+    ctaHref: `/hub/${a.slug}`,
   }));
 
   // === Last news (left column): 1 hero (450px fixed) + 2×2 grid of 4 cards ===

@@ -308,11 +308,15 @@ export async function getLiveMatches(): Promise<PaginatedResponse<LiveMatchData>
  */
 function normalizeTiebreak(score: string): string {
   if (!score) return score;
-  const num = parseInt(score);
-  // Normal game scores are 0-7. If it's > 9 and not already formatted, it's a tiebreak.
-  if (num > 9 && !score.includes("(")) {
-    // First digit is game score (6 or 7), rest is tiebreak points
-    return `${score[0]}(${score.slice(1)})`;
+  if (score.includes("(")) return score; // already formatted
+  // Regular tiebreak: API returns concatenated "6X" or "7X" where X is
+  // 2+ digits of TB points (e.g. "65" = 6 games + TB 5, "713" = 7 games + TB 13).
+  // We split iff the leading digit is 6 or 7 and there's at least one more digit.
+  // L3 (audit): plain "10" used to be misparsed as "1(0)". That score appears
+  // when a deciding set is played as a super-tiebreak — leave it untouched.
+  const first = score[0];
+  if ((first === "6" || first === "7") && score.length > 1) {
+    return `${first}(${score.slice(1)})`;
   }
   return score;
 }

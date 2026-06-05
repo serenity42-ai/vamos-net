@@ -138,7 +138,11 @@ export default function MatchModal({ match, tournamentName, onClose }: MatchModa
     return () => {
       cancelled = true;
     };
-  }, [match.id, match.players.team_1, match.players.team_2]);
+    // L7 (audit): depend on match.id only — the player arrays are new
+    // references every render and would re-fire the effect (and the
+    // /api/players/:id fetches) needlessly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [match.id]);
 
   const score =
     liveScore?.filter((s) => {

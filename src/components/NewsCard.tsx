@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Article } from "@/data/mock";
 
 /** Pretty date: '2026-03-30T00:00:00.000Z' -> '30 Mar 2026'. */
@@ -21,7 +22,7 @@ function formatEditorialDate(input: string): string {
  */
 export default function NewsCard({ article }: { article: Article }) {
   return (
-    <Link href={`/news/${article.slug}`} className="group block h-full">
+    <Link href={`/hub/${article.slug}`} className="group block h-full">
       <article
         className="h-full flex flex-col transition-colors"
         style={{ border: "1px solid var(--ink)", background: "var(--paper)" }}
@@ -32,10 +33,13 @@ export default function NewsCard({ article }: { article: Article }) {
           style={{ background: "var(--paper-2)", borderBottom: "1px solid var(--ink)" }}
         >
           {article.imageUrl ? (
-            <img
+            // M9 (audit): next/image fill so CLS + perf match the v3 cards.
+            <Image
               src={article.imageUrl}
               alt={article.title}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center" style={{ transform: "skewX(-6deg)" }}>
