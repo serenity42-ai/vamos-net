@@ -7,6 +7,7 @@ import {
   type LiveMatchData,
 } from "@/lib/padel-api";
 import { normalizeMatches, buildContext } from "@/lib/normalize-match";
+import { getTourToday } from "@/lib/tour-date";
 import MatchesClient from "./MatchesClient";
 
 export const revalidate = 60;
@@ -24,8 +25,8 @@ function addDays(iso: string, n: number): string {
 }
 
 export default async function MatchesPage() {
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  // Use tour-TZ today so the ±7-day window doesn't drift to UTC at night.
+  const todayStr = getTourToday();
   const after = addDays(todayStr, -7);
   const before = addDays(todayStr, 7);
 
@@ -49,7 +50,7 @@ export default async function MatchesPage() {
     getLiveMatches().catch(() => ({ data: [] as LiveMatchData[] })),
   ]);
 
-  const ctx = buildContext(liveRes.data, todayStr);
+  const ctx = buildContext(liveRes.data, todayStr, todayStr);
   const allMatches = normalizeMatches(matchesRes.data, ctx);
 
   return (

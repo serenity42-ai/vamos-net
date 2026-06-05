@@ -7,6 +7,7 @@ import {
   type LiveMatchData,
 } from "@/lib/padel-api";
 import { normalizeMatches, buildContext } from "@/lib/normalize-match";
+import { getTourToday } from "@/lib/tour-date";
 import ScheduleClient from "./ScheduleClient";
 
 export const revalidate = 60;
@@ -30,8 +31,8 @@ export default async function SchedulePage({
 }: {
   searchParams: { date?: string };
 }) {
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  // Use tour-TZ today so the 14-day window starts at the right date for European viewers.
+  const todayStr = getTourToday();
 
   // Build a 14-day window starting today
   const dateList: string[] = [];
@@ -63,7 +64,7 @@ export default async function SchedulePage({
   ]);
 
   const selectedDate = searchParams.date || todayStr;
-  const ctx = buildContext(liveRes.data, selectedDate);
+  const ctx = buildContext(liveRes.data, selectedDate, todayStr);
   const allMatches = normalizeMatches(matchesRes.data, ctx);
 
   // Per-date counts (only count matches with at least one player or scheduled)

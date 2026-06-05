@@ -8,6 +8,7 @@ import {
   type LiveMatchData,
 } from "@/lib/padel-api";
 import { normalizeMatches, buildContext } from "@/lib/normalize-match";
+import { getTourToday } from "@/lib/tour-date";
 import ScoresClient from "./ScoresClient";
 
 export const revalidate = 30;
@@ -38,7 +39,7 @@ async function fetchScoresData(date: string) {
     getLiveMatches().catch(() => ({ data: [] as LiveMatchData[] })),
   ]);
 
-  const ctx = buildContext(liveRes.data, date);
+  const ctx = buildContext(liveRes.data, date, getTourToday());
   const allMatches = normalizeMatches(matchesRes.data, ctx);
 
   return { allMatches, tournaments };
@@ -49,8 +50,8 @@ export default async function ScoresPage({
 }: {
   searchParams: { status?: string; tournament?: string; date?: string };
 }) {
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  // Use tour-TZ today so /scores doesn't fetch yesterday's matches at 00:30 CET.
+  const todayStr = getTourToday();
   const selectedDate = searchParams.date || todayStr;
 
   const { allMatches, tournaments } = await fetchScoresData(selectedDate);

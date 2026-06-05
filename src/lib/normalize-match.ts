@@ -17,6 +17,7 @@
 
 import type { Match, SetScore, LiveMatchData } from "./padel-api";
 import { liveDataToScore } from "./padel-api";
+import { getTourToday } from "./tour-date";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,12 +60,18 @@ export function extractMatchId(liveMatch: LiveMatchData): number {
   );
 }
 
-/** Build a NormalizeContext from raw /live endpoint data */
+/**
+ * Build a NormalizeContext from raw /live endpoint data.
+ *
+ * Pass `today` explicitly when the caller has already computed it (every
+ * page does — they need it for date pickers and queries). Falls back to
+ * tour-TZ today if omitted so library callers don't have to import the helper.
+ */
 export function buildContext(
   liveData: LiveMatchData[],
-  viewDate?: string
+  viewDate?: string,
+  today: string = getTourToday()
 ): NormalizeContext {
-  const today = new Date().toISOString().split("T")[0];
   const liveMatchIds = new Set<number>();
   const liveScoreMap = new Map<number, SetScore[]>();
 
