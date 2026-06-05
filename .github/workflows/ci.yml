@@ -9,7 +9,17 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+
+    # Env vars exposed to every step so both `next build` and the spawned
+    # `next start` inside the Playwright webServer pick them up. Without
+    # GHOST_* the Hub/article pages crash at request time.
+    env:
+      PADEL_API_TOKEN: ${{ secrets.PADEL_API_TOKEN }}
+      GHOST_URL: ${{ secrets.GHOST_URL }}
+      GHOST_CONTENT_API_KEY: ${{ secrets.GHOST_CONTENT_API_KEY }}
+      GHOST_ADMIN_API_KEY: ${{ secrets.GHOST_ADMIN_API_KEY }}
+      BASE_URL: http://localhost:3000
 
     steps:
       - uses: actions/checkout@v4
@@ -24,21 +34,22 @@ jobs:
 
       - name: Build
         run: npx next build
-        env:
-          PADEL_API_TOKEN: ${{ secrets.PADEL_API_TOKEN }}
 
       - name: Install Playwright
         run: npx playwright install chromium --with-deps
 
       - name: Run Playwright tests
+        # playwright.config.ts starts `next start -p 3000` automatically when
+        # BASE_URL points at localhost. That means CI tests THIS PR's build,
+        # not the live Vercel deployment (which would let a broken PR pass).
         run: npx playwright test
-        env:
-          BASE_URL: https://vamos-net.vercel.app
 
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: test-results/
+          path: |
+            test-results/
+            playwright-report/
           retention-days: 7
