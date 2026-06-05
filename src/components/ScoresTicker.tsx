@@ -135,6 +135,10 @@ export default function ScoresTicker({
         }}
       >
         {isLiveOrRecent && mode === "live" && (
+          /* Lime (#D4FF3A) matches the live-score chips in LiveScoresBand and
+             the serving-ball indicator on MatchHero — consistent 'this is
+             happening right now' signal across the site. Previously this was
+             --red which clashed with the brand orange around it. */
           <span
             aria-hidden
             className="live-dot"
@@ -142,7 +146,7 @@ export default function ScoresTicker({
               width: 8,
               height: 8,
               borderRadius: "50%",
-              background: "var(--red)",
+              background: "var(--lime)",
               display: "inline-block",
             }}
           />

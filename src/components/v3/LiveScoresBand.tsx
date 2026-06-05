@@ -82,10 +82,12 @@ export default function LiveScoresBand({ matches, tournaments }: LiveScoresBandP
       <div className="mx-auto flex items-stretch max-w-[1440px] px-16 md:px-32 lg:px-48 py-12 gap-16">
         {/* LIVE badge */}
         <div className="flex items-center gap-8 shrink-0 pr-16 border-r border-[var(--color-border-secondary)]">
+          {/* Lime dot matches the live-score chips in this same band so the
+              'right now' signal is consistent. Previously brand orange. */}
           <span
             aria-hidden="true"
             className="inline-block live-dot rounded-full"
-            style={{ width: 8, height: 8, background: "var(--color-brand-primary)" }}
+            style={{ width: 8, height: 8, background: "var(--color-accent-lime, #D4FF3A)" }}
           />
           <span className="text-uppercase-eyebrow text-text-contrast">
             Live now
