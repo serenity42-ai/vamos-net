@@ -6,14 +6,14 @@ import {
   getSeasonTournaments,
   type Tournament,
 } from "@/lib/padel-api";
+import { getActiveSeasonIds, getCurrentYear } from "@/lib/seasons";
 
 // Tournament list changes weekly when events start/finish
 export const revalidate = 1800;
 
 export const metadata = {
   title: "Tournaments | VAMOS",
-  description:
-    "2026 Premier Padel tournament calendar. Dates, locations, draws, and results for all events.",
+  description: `${getCurrentYear()} Premier Padel tournament calendar. Dates, locations, draws, and results for all events.`,
 };
 
 type StatusFilter = "all" | "live" | "upcoming" | "finished";
@@ -24,9 +24,16 @@ type CategoryFilter = "all" | "men" | "women";
 // ---------------------------------------------------------------------------
 
 async function fetchTournaments(): Promise<Tournament[]> {
+  // Tournaments page historically showed only Premier Padel (season 5). Keep
+  // that behaviour by taking the first active season — Premier Padel comes
+  // first in the /seasons response. If filtering by tour becomes a feature,
+  // pull all active seasons here.
   let all: Tournament[] = [];
   try {
-    const res = await getSeasonTournaments(5, { per_page: "50" });
+    const seasonIds = await getActiveSeasonIds();
+    const primaryId = seasonIds[0];
+    if (!primaryId) return [];
+    const res = await getSeasonTournaments(primaryId, { per_page: "50" });
     all = res.data;
     if (res.meta.last_page > 1) {
       const pages = Array.from(
@@ -35,7 +42,7 @@ async function fetchTournaments(): Promise<Tournament[]> {
       );
       const extras = await Promise.all(
         pages.map((p) =>
-          getSeasonTournaments(5, { per_page: "50", page: String(p) }),
+          getSeasonTournaments(primaryId, { per_page: "50", page: String(p) }),
         ),
       );
       for (const e of extras) all = all.concat(e.data);

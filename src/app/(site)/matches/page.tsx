@@ -8,6 +8,7 @@ import {
 } from "@/lib/padel-api";
 import { normalizeMatches, buildContext } from "@/lib/normalize-match";
 import { getTourToday } from "@/lib/tour-date";
+import { getActiveSeasonIds } from "@/lib/seasons";
 import MatchesClient from "./MatchesClient";
 
 export const revalidate = 60;
@@ -30,14 +31,13 @@ export default async function MatchesPage() {
   const after = addDays(todayStr, -7);
   const before = addDays(todayStr, 7);
 
-  const [s5Res, s6Res] = await Promise.allSettled([
-    getSeasonTournaments(5, { per_page: "50" }),
-    getSeasonTournaments(6, { per_page: "50" }),
-  ]);
-  const tournaments = [
-    ...(s5Res.status === "fulfilled" ? s5Res.value.data : []),
-    ...(s6Res.status === "fulfilled" ? s6Res.value.data : []),
-  ];
+  const seasonIds = await getActiveSeasonIds();
+  const seasonResults = await Promise.allSettled(
+    seasonIds.map((id) => getSeasonTournaments(id, { per_page: "50" })),
+  );
+  const tournaments = seasonResults.flatMap((r) =>
+    r.status === "fulfilled" ? r.value.data : [],
+  );
 
   const [matchesRes, liveRes] = await Promise.all([
     getMatches({

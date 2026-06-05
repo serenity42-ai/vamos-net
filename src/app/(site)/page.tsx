@@ -21,6 +21,8 @@ import {
   type LiveMatchData,
 } from "@/lib/padel-api";
 import { normalizeMatches, buildContext } from "@/lib/normalize-match";
+import { getTourToday } from "@/lib/tour-date";
+import { getActiveSeasonIds } from "@/lib/seasons";
 import type { Article } from "@/data/mock";
 
 // Revalidate the homepage every 30s so live scores/tournaments don't go stale
@@ -31,16 +33,21 @@ export const revalidate = 30;
 async function fetchHomeData() {
   // Pull matches around today (±1 day) so live + about-to-start matches show
   // up alongside finished-today recaps. Wider net than the previous 20-most-recent.
-  const today = new Date();
-  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-  const yesterdayStr = yesterday.toISOString().split("T")[0];
-  const tomorrowStr = tomorrow.toISOString().split("T")[0];
+  //
+  // Date math is anchored to tour TZ (Europe/Madrid) so the homepage doesn't
+  // silently scroll to yesterday's recaps after 01:00 CET (B1 in audit).
+  const todayStr = getTourToday();
+  const seasonIds = await getActiveSeasonIds();
+  const dayAnchor = new Date(todayStr + "T12:00:00Z");
+  const yesterdayStr = new Date(dayAnchor.getTime() - 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+  const tomorrowStr = new Date(dayAnchor.getTime() + 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
 
   // Parallel fetch — none of these depend on each other.
-  const [s5Res, s6Res, recentMatchesRes, liveRes] = await Promise.allSettled([
-    getSeasonTournaments(5, { per_page: "50" }),
-    getSeasonTournaments(6, { per_page: "50" }),
+  const [recentMatchesRes, liveRes, ...seasonResults] = await Promise.allSettled([
     getMatches({
       after_date: yesterdayStr,
       before_date: tomorrowStr,
@@ -49,18 +56,18 @@ async function fetchHomeData() {
       per_page: "100",
     }),
     getLiveMatches(),
+    ...seasonIds.map((id) => getSeasonTournaments(id, { per_page: "50" })),
   ]);
 
-  const tournaments: Tournament[] = [
-    ...(s5Res.status === "fulfilled" ? s5Res.value.data : []),
-    ...(s6Res.status === "fulfilled" ? s6Res.value.data : []),
-  ];
+  const tournaments: Tournament[] = seasonResults.flatMap((r) =>
+    r.status === "fulfilled" ? r.value.data : [],
+  );
   const recentMatches: Match[] =
     recentMatchesRes.status === "fulfilled" ? recentMatchesRes.value.data : [];
   const liveData: LiveMatchData[] =
     liveRes.status === "fulfilled" ? liveRes.value.data : [];
 
-  const ctx = buildContext(liveData);
+  const ctx = buildContext(liveData, todayStr, todayStr);
   const matches = normalizeMatches(recentMatches, ctx);
 
   return { tournaments, matches };

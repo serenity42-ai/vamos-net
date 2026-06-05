@@ -13,6 +13,7 @@ import {
   type MatchPlayer,
   type Tournament,
 } from "@/lib/padel-api";
+import { getActiveSeasonIds } from "@/lib/seasons";
 
 // Player profile: form table can update mid-day; 10 min
 export const revalidate = 600;
@@ -39,24 +40,24 @@ export async function generateMetadata({
 
 async function fetchPlayerData(id: number) {
   try {
-    const [player, matchesRes, s5Res, s6Res] = await Promise.all([
+    const seasonIds = await getActiveSeasonIds();
+    const [player, matchesRes, ...seasonResults] = await Promise.all([
       getPlayer(id),
       getPlayerMatches(id, {
         per_page: "20",
         sort_by: "played_at",
         order_by: "desc",
       }),
-      getSeasonTournaments(5, { per_page: "50" }).catch(() => ({
-        data: [] as Tournament[],
-      })),
-      getSeasonTournaments(6, { per_page: "50" }).catch(() => ({
-        data: [] as Tournament[],
-      })),
+      ...seasonIds.map((sid) =>
+        getSeasonTournaments(sid, { per_page: "50" }).catch(() => ({
+          data: [] as Tournament[],
+        })),
+      ),
     ]);
 
     const tournamentNameMap = new Map<number, string>();
-    for (const t of [...s5Res.data, ...s6Res.data]) {
-      tournamentNameMap.set(t.id, t.name);
+    for (const res of seasonResults) {
+      for (const t of res.data) tournamentNameMap.set(t.id, t.name);
     }
 
     return { player, matches: matchesRes.data, tournamentNameMap };
