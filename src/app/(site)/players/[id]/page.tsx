@@ -116,7 +116,10 @@ function summariseForm(matches: Match[], playerId: number) {
   const partnerCounts = new Map<number, { player: MatchPlayer; count: number }>();
 
   for (const m of matches) {
-    if (m.status !== "finished" || !m.winner) continue;
+    // H4: trust winner > raw status. PadelAPI sometimes leaves status='live'
+    // or 'scheduled' on already-decided matches (see MATCH-STATUS-ARCHITECTURE.md).
+    // The presence of a winner is the most reliable 'finished' signal.
+    if (!m.winner) continue;
     const inTeam1 = m.players.team_1.some((p) => p.id === playerId);
     const inTeam2 = m.players.team_2.some((p) => p.id === playerId);
     if (!inTeam1 && !inTeam2) continue;

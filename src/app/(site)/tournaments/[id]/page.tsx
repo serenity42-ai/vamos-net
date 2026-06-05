@@ -8,11 +8,15 @@ import Cell from "@/components/v3/Cell";
 import {
   getTournament,
   getTournamentMatches,
+  getLiveMatches,
   levelLabel,
   type Tournament,
   type Match,
   type MatchPlayer,
+  type LiveMatchData,
 } from "@/lib/padel-api";
+import { normalizeMatches, buildContext, type NormalizedMatch } from "@/lib/normalize-match";
+import { getTourToday } from "@/lib/tour-date";
 
 // Tournament page shows live match state — short revalidate
 export const revalidate = 60;
@@ -72,8 +76,8 @@ function dateKey(iso: string | null): string {
 /**
  * Groups matches by round, preserving the original numerical round order.
  */
-function groupByRound(matchList: Match[]): Array<[string, Match[]]> {
-  const groups = new Map<string, Match[]>();
+function groupByRound(matchList: NormalizedMatch[]): Array<[string, NormalizedMatch[]]> {
+  const groups = new Map<string, NormalizedMatch[]>();
   for (const m of matchList) {
     const key = m.round_name || `Round ${m.round}`;
     if (!groups.has(key)) groups.set(key, []);
@@ -89,8 +93,8 @@ function groupByRound(matchList: Match[]): Array<[string, Match[]]> {
 /**
  * Groups matches by ISO date string, oldest first.
  */
-function groupByDate(matchList: Match[]): Array<[string, Match[]]> {
-  const groups = new Map<string, Match[]>();
+function groupByDate(matchList: NormalizedMatch[]): Array<[string, NormalizedMatch[]]> {
+  const groups = new Map<string, NormalizedMatch[]>();
   for (const m of matchList) {
     const key = dateKey(m.played_at);
     if (!groups.has(key)) groups.set(key, []);
@@ -102,7 +106,7 @@ function groupByDate(matchList: Match[]): Array<[string, Match[]]> {
 /**
  * Returns a unique roster (player id → player) extracted from every match.
  */
-function collectRoster(matchList: Match[]): MatchPlayer[] {
+function collectRoster(matchList: NormalizedMatch[]): MatchPlayer[] {
   const map = new Map<number, MatchPlayer>();
   for (const m of matchList) {
     for (const p of [...m.players.team_1, ...m.players.team_2]) {
@@ -128,24 +132,33 @@ export default async function TournamentDetailPage({
 
   let tournament: Tournament;
   let matches: Match[] = [];
+  let liveData: LiveMatchData[] = [];
 
   try {
     tournament = await getTournament(id);
-    const matchesRes = await getTournamentMatches(id, {
-      per_page: "100",
-      sort_by: "played_at",
-      order_by: "asc",
-    });
+    const [matchesRes, liveRes] = await Promise.all([
+      getTournamentMatches(id, {
+        per_page: "100",
+        sort_by: "played_at",
+        order_by: "asc",
+      }),
+      getLiveMatches().catch(() => ({ data: [] as LiveMatchData[] })),
+    ]);
     matches = matchesRes.data;
+    liveData = liveRes.data;
   } catch {
     notFound();
   }
 
-  const validMatches = matches.filter(
+  // Route every match through the normalizer (H4) so we filter on displayStatus,
+  // not the raw API status that contradicts itself (see MATCH-STATUS-ARCHITECTURE.md).
+  const todayStr = getTourToday();
+  const ctx = buildContext(liveData, undefined, todayStr);
+  const normalized = normalizeMatches(matches, ctx);
+
+  const validMatches = normalized.filter(
     (m) =>
-      m.status !== "bye" &&
-      m.status !== "cancelled" &&
-      (m.players.team_1.length > 0 || m.players.team_2.length > 0),
+      m.players.team_1.length > 0 || m.players.team_2.length > 0,
   );
 
   const tab = (
@@ -155,10 +168,10 @@ export default async function TournamentDetailPage({
   ) as DetailTab;
 
   const scheduledMatches = validMatches.filter(
-    (m) => m.status === "scheduled" || m.status === "live",
+    (m) => m.displayStatus === "scheduled" || m.displayStatus === "live",
   );
   const finishedMatches = validMatches.filter(
-    (m) => m.status === "finished",
+    (m) => m.displayStatus === "finished",
   );
 
   const scheduleGroups = groupByDate(scheduledMatches);
