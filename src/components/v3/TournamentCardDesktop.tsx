@@ -92,11 +92,14 @@ export default function TournamentCardDesktop({
       )}
 
       <div className="relative flex items-center gap-32 px-32 py-24 lg:gap-64">
-        {/* Date stack + live badge */}
-        <div className="flex shrink-0 flex-col gap-8">
+        {/* Date stack + live badge.
+            Fixed-width column so the tier circle + tournament name align
+            vertically across rows regardless of date label length
+            (e.g. '13–19 JUL' vs '27 JUL – 2 AUG'). */}
+        <div className="flex w-[180px] shrink-0 flex-col gap-8">
           <span
             className={[
-              "text-body-m-semibold uppercase tracking-wide",
+              "text-body-m-semibold uppercase tracking-wide whitespace-nowrap",
               isDark ? "text-text-contrast" : "text-text-primary",
             ].join(" ")}
           >
