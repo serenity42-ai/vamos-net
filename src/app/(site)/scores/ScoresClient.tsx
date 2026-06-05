@@ -40,18 +40,47 @@ function getTournamentForMatch(
   return tournaments.find((t) => t.id === id);
 }
 
-// S7 — detect organizer from tournament name.
-function detectOrganizer(name: string | undefined): string {
-  if (!name) return "Other";
-  const n = name.toLowerCase();
-  if (n.includes("premier padel")) return "Premier Padel";
-  if (n.includes("fip")) return "FIP";
-  if (n.includes("hexagon")) return "Hexagon";
-  if (n.includes("a1 padel") || n.includes("a1padel")) return "A1 Padel";
+// S7 — detect organizer + tier ranking from tournament.level (authoritative).
+// Previously this read tournament name and looked for the substring
+// 'premier padel', but no tournament is actually named that — events are
+// 'Italy Major 2026', 'Riyadh Season P1 2026', etc. — so every Premier
+// event was wrongly bucketed as 'Other' and FIP floated to the top.
+//
+// `level` values seen in PadelAPI:
+//   Premier Padel (season 5): 'major', 'p1', 'p2', 'finals', 'fip_other'
+//   FIP Tour (season 6):      'fip_platinum', 'fip_gold', 'fip_silver'
+// Anything else falls back to 'Other'.
+//
+// Lower rankWithinOrganizer = higher up in the list.
+const TIER_RANK: Record<string, { organizer: string; rank: number }> = {
+  major:        { organizer: "Premier Padel", rank: 1 },
+  p1:           { organizer: "Premier Padel", rank: 2 },
+  p2:           { organizer: "Premier Padel", rank: 3 },
+  finals:       { organizer: "Premier Padel", rank: 4 },
+  fip_other:    { organizer: "Premier Padel", rank: 5 },
+  fip_platinum: { organizer: "FIP Tour",      rank: 1 },
+  fip_gold:     { organizer: "FIP Tour",      rank: 2 },
+  fip_silver:   { organizer: "FIP Tour",      rank: 3 },
+};
+
+function detectOrganizer(tournament: { level?: string | null; name?: string } | undefined): string {
+  if (!tournament) return "Other";
+  const level = (tournament.level || "").toLowerCase();
+  const tier = TIER_RANK[level];
+  if (tier) return tier.organizer;
+  // Fallback heuristic for tournaments without a recognised level
+  const name = (tournament.name || "").toLowerCase();
+  if (name.includes("hexagon")) return "Hexagon";
+  if (name.includes("a1 padel") || name.includes("a1padel")) return "A1 Padel";
   return "Other";
 }
 
-const ORGANIZER_ORDER = ["Premier Padel", "FIP", "Hexagon", "A1 Padel", "Other"];
+function tierRankWithinOrganizer(tournament: { level?: string | null } | undefined): number {
+  const level = (tournament?.level || "").toLowerCase();
+  return TIER_RANK[level]?.rank ?? 99;
+}
+
+const ORGANIZER_ORDER = ["Premier Padel", "FIP Tour", "Hexagon", "A1 Padel", "Other"];
 
 function FilterIcon() {
   return (
@@ -268,17 +297,32 @@ export default function ScoresClient({
     return arr;
   }, [filtered, tournaments]);
 
-  // S7 — group tournament groups by organizer
+  // S7 — group tournament groups by organizer, with tier ordering inside.
   const organizerGroups = useMemo<OrganizerGroup[]>(() => {
     const byOrg = new Map<string, OrganizerGroup>();
     for (const tg of groups) {
-      const org = detectOrganizer(tg.tournament?.name);
+      const org = detectOrganizer(tg.tournament);
       if (!byOrg.has(org)) {
         byOrg.set(org, { organizer: org, tournaments: [], liveCount: 0 });
       }
       const og = byOrg.get(org)!;
       og.tournaments.push(tg);
       og.liveCount += tg.matches.filter((m) => m.displayStatus === "live").length;
+    }
+    // Sort tournaments within each organizer by tier: Major > P1 > P2 > Finals
+    // for Premier; Platinum > Gold > Silver for FIP. Tiebreak: live tournament
+    // first (existing behaviour), then alphabetical so the list is stable.
+    for (const og of byOrg.values()) {
+      og.tournaments.sort((a, b) => {
+        const rankDelta =
+          tierRankWithinOrganizer(a.tournament) -
+          tierRankWithinOrganizer(b.tournament);
+        if (rankDelta !== 0) return rankDelta;
+        const aLive = a.tournament?.status === "live" ? 0 : 1;
+        const bLive = b.tournament?.status === "live" ? 0 : 1;
+        if (aLive !== bLive) return aLive - bLive;
+        return (a.tournament?.name || "").localeCompare(b.tournament?.name || "");
+      });
     }
     const arr = Array.from(byOrg.values());
     arr.sort(
