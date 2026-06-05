@@ -56,8 +56,9 @@ export default function ClickableMatchRow({
   const t2 = teamName(match.players.team_2);
 
   return (
-    <div
-      className="flex items-center gap-3 sm:gap-4 transition-colors cursor-pointer"
+    <button
+      type="button"
+      className="w-full text-left flex items-center gap-3 sm:gap-4 transition-colors cursor-pointer"
       style={{
         padding: "12px 16px",
         borderBottom: "1px solid rgba(0,0,0,0.08)",
@@ -65,19 +66,15 @@ export default function ClickableMatchRow({
       }}
       onMouseEnter={(e) => {
         if (displayStatus !== "live") {
-          (e.currentTarget as HTMLDivElement).style.background = "var(--paper-2)";
+          (e.currentTarget as HTMLButtonElement).style.background = "var(--paper-2)";
         }
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background =
+        (e.currentTarget as HTMLButtonElement).style.background =
           displayStatus === "live" ? "rgba(193,68,58,0.04)" : "transparent";
       }}
       onClick={() => openMatch(match, tournamentName)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") openMatch(match, tournamentName);
-      }}
+      aria-label={`${t1} vs ${t2}`}
     >
       {/* Status */}
       <div className="w-14 sm:w-16 shrink-0 text-center">
@@ -160,6 +157,6 @@ export default function ClickableMatchRow({
           {match.category === "women" ? "W" : "M"}
         </span>
       </div>
-    </div>
+    </button>
   );
 }

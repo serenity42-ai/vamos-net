@@ -76,18 +76,15 @@ export default function MatchCard({
   const team2Label = teamName(match.players.team_2);
 
   return (
-    <div
-      className="transition-colors cursor-pointer group"
+    <button
+      type="button"
+      className="block w-full text-left transition-colors cursor-pointer group"
       style={{
         background: "var(--paper)",
         border: `1px solid ${displayStatus === "live" ? "var(--red)" : "var(--ink)"}`,
       }}
       onClick={() => openMatch(match, tournamentName)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") openMatch(match, tournamentName);
-      }}
+      aria-label={`${team1Label} vs ${team2Label}`}
     >
       {/* Header strip */}
       <div
@@ -265,6 +262,6 @@ export default function MatchCard({
           </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
