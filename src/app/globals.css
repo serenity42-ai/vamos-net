@@ -24,7 +24,10 @@
  * No shadows by default (editorial flat surfaces).
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,800;1,900&family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+/* Fonts: loaded via next/font/google in src/app/layout.tsx (self-hosted,
+   zero render-blocking, no runtime google fonts connection). The variable
+   names below (--font-archivo, --font-inter, --font-instrument-serif,
+   --font-jetbrains-mono) come from next/font and are stable per build. */
 
 :root {
   /* ===== Brand ===== */
@@ -83,8 +86,8 @@
   --line-height-30: 30px; --line-height-32: 32px; --line-height-40: 40px;
 
   /* ===== Font families ===== */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Archivo', 'Inter', system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-archivo), var(--font-inter), system-ui, sans-serif;
 
   /* ===== Legacy palette (Editorial v2) — KEPT FOR /coming-soon ONLY =====
      The coming-soon page is locked to its original design per Alex's decision
@@ -100,9 +103,9 @@
   --clay: #D8825C;
   --lime: #D4FF3A;
   --court: #1F4D3F;
-  --sans: 'Archivo', 'Helvetica Neue', sans-serif;
-  --serif: 'Instrument Serif', Georgia, serif;
-  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --sans: var(--font-archivo), 'Helvetica Neue', sans-serif;
+  --serif: var(--font-instrument-serif), Georgia, serif;
+  --mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --r-sm: 2px;
   --r-md: 6px;
   --r-lg: 14px;

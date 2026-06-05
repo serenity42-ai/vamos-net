@@ -1,5 +1,37 @@
 import type { Metadata } from "next";
+import { Archivo, Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+// next/font self-hosts the font files and inlines preload/preconnect headers
+// so we get zero render-blocking + zero runtime Google connection (GDPR win
+// for EU visitors). The CSS variables below feed --font-sans / --font-display
+// / --serif / --mono in globals.css.
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-archivo",
+  display: "swap",
+});
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   // metadataBase resolves any relative OG/Twitter image URLs at build.
@@ -76,7 +108,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_SCHEMA) }}
         />
       </head>
-      <body className="min-h-screen flex flex-col overflow-x-hidden">
+      <body
+        className={`${archivo.variable} ${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} min-h-screen flex flex-col overflow-x-hidden`}
+      >
         {children}
       </body>
     </html>

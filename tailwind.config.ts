@@ -44,8 +44,11 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        display: ["Archivo", "Inter", "system-ui", "sans-serif"],
+        // Sourced from next/font/google via layout.tsx (--font-inter,
+        // --font-archivo). Falls back to system fonts if the variable is
+        // missing (e.g. before hydration on a slow connection).
+        sans: ["var(--font-inter)", "system-ui", "-apple-system", "sans-serif"],
+        display: ["var(--font-archivo)", "var(--font-inter)", "system-ui", "sans-serif"],
       },
       fontSize: {
         // Token sizes mapped, line-height included
