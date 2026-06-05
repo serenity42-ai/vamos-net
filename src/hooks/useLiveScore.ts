@@ -20,6 +20,21 @@ export function useLiveScore(
   const [status, setStatus] = useState<string>(initialStatus);
   const channelRef = useRef<any>(null);
 
+  // Resync from props when the parent passes fresh data (ISR revalidation, or
+  // the same card slot now rendering a different match after list re-sort).
+  // For live matches Pusher is the source of truth, so we only resync the
+  // initial snapshot; mid-match prop changes won't clobber real-time updates.
+  // Stringify so a new array identity with identical contents doesn't churn.
+  const initialScoreKey = JSON.stringify(initialScore);
+  useEffect(() => {
+    setScore(initialScore);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchId, initialScoreKey]);
+
+  useEffect(() => {
+    setStatus(initialStatus);
+  }, [matchId, initialStatus]);
+
   useEffect(() => {
     if (!isLive) return;
 
