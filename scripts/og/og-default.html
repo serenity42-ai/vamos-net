@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>OG render</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; background: #0A0A0A; }
+    body { width: 1200px; height: 630px; overflow: hidden; }
+    .card {
+      width: 1200px;
+      height: 630px;
+      background: #0A0A0A;
+      color: #F3EEE4;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 56px 72px;
+      box-sizing: border-box;
+      position: relative;
+      font-family: 'Archivo', system-ui, sans-serif;
+    }
+    /* Subtle padel-court line graphic in dark gray */
+    .court {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.06;
+    }
+    .court svg { width: 100%; height: 100%; }
+    .eyebrow {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: #FE4C00;
+      margin: 0;
+      z-index: 2;
+      position: relative;
+    }
+    .word {
+      font-family: 'Archivo', sans-serif;
+      font-weight: 900;
+      font-size: 200px;
+      line-height: 0.85;
+      letter-spacing: -0.04em;
+      text-transform: lowercase;
+      color: #F3EEE4;
+      transform: skewX(-6deg);
+      transform-origin: left center;
+      margin: 0 0 0 24px;
+      z-index: 2;
+      position: relative;
+      white-space: nowrap;
+    }
+    .word .dot { color: #C1443A; }
+    .word .tld { color: #F3EEE4; opacity: 0.42; }
+    .tagline {
+      font-family: 'Archivo', sans-serif;
+      font-weight: 900;
+      font-size: 30px;
+      line-height: 1.05;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #F3EEE4;
+      margin: 0;
+      z-index: 2;
+      position: relative;
+    }
+    .tagline .accent { color: #FE4C00; }
+    .meta {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(243, 238, 228, 0.45);
+      z-index: 2;
+      position: relative;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="court">
+      <svg viewBox="0 0 1200 630" preserveAspectRatio="none">
+        <rect x="80" y="80" width="1040" height="470" fill="none" stroke="#FE4C00" stroke-width="2"/>
+        <line x1="600" y1="80" x2="600" y2="550" stroke="#FE4C00" stroke-width="2"/>
+        <line x1="80" y1="315" x2="1120" y2="315" stroke="#FE4C00" stroke-width="2"/>
+        <line x1="240" y1="80" x2="240" y2="550" stroke="#FE4C00" stroke-width="1"/>
+        <line x1="960" y1="80" x2="960" y2="550" stroke="#FE4C00" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <p class="eyebrow">vamos.net</p>
+
+    <h1 class="word">vamos<span class="dot">.</span><span class="tld">net</span></h1>
+
+    <div class="row">
+      <p class="tagline">Everything happens<br>at the net<span class="accent">.</span></p>
+      <p class="meta">Padel decoded</p>
+    </div>
+  </div>
+</body>
+</html>
