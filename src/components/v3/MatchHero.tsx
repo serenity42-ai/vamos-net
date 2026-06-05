@@ -20,6 +20,7 @@ import Image from "next/image";
 import type { Match, MatchPlayer, Player, SetScore } from "@/lib/padel-api";
 import type { DisplayStatus, NormalizedMatch } from "@/lib/normalize-match";
 import { displaySurname } from "@/lib/player-utils";
+import { scheduledMatchTime, formatScheduledTimeLong } from "@/lib/match-time";
 import { useLiveScore } from "@/hooks/useLiveScore";
 import StatusBadge from "./StatusBadge";
 import IconButton from "@/components/IconButton";
@@ -225,14 +226,18 @@ export default function MatchHero({ match, tournamentName, onBack }: MatchHeroPr
           .map(({ _empty, _isLast, ...rest }) => rest)
       : null;
 
-  const dateLabel = match.played_at
-    ? new Date(match.played_at).toLocaleString("en-GB", {
+  // Date stripped of time: schedule_label / scheduledMatchTime owns 'when'.
+  // For scheduled matches with no time data, just show the date; don't
+  // fabricate '02:00' from a date-only played_at string.
+  const dateOnly = match.played_at
+    ? new Date(match.played_at).toLocaleDateString("en-GB", {
         month: "short",
         day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
       })
     : null;
+  const scheduledTime = scheduledMatchTime(match, displayStatus);
+  const timeFragment = formatScheduledTimeLong(scheduledTime);
+  const dateLabel = [dateOnly, timeFragment].filter(Boolean).join(" · ") || null;
 
   const teams: Array<{
     players: MatchPlayer[];

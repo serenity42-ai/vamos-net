@@ -18,6 +18,7 @@ import type { Match, SetScore } from "@/lib/padel-api";
 import type { DisplayStatus, NormalizedMatch } from "@/lib/normalize-match";
 import { useLiveScore } from "@/hooks/useLiveScore";
 import { teamName } from "@/lib/player-utils";
+import { scheduledMatchTime, formatScheduledTimeShort } from "@/lib/match-time";
 import StatusBadge from "./StatusBadge";
 
 interface MatchCardDesktopProps {
@@ -26,16 +27,7 @@ interface MatchCardDesktopProps {
   onSelect?: (match: Match) => void;
 }
 
-function formatTime(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-  try {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return null;
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-  } catch {
-    return null;
-  }
-}
+// Time formatting lives in src/lib/match-time.ts (schedule_label-first).
 
 function isWin(a: string, b: string): boolean {
   const ai = parseInt(a, 10);
@@ -122,7 +114,8 @@ export default function MatchCardDesktop({
 
   const team1Label = teamName(match.players.team_1);
   const team2Label = teamName(match.players.team_2);
-  const timeLabel = formatTime(match.played_at);
+  const scheduledTime = scheduledMatchTime(match, displayStatus);
+  const timeLabel = formatScheduledTimeShort(scheduledTime);
 
   return (
     <button

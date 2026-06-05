@@ -19,6 +19,7 @@ import type { Match, SetScore } from "@/lib/padel-api";
 import type { DisplayStatus, NormalizedMatch } from "@/lib/normalize-match";
 import { useLiveScore } from "@/hooks/useLiveScore";
 import { teamName } from "@/lib/player-utils";
+import { scheduledMatchTime, formatScheduledTimeShort } from "@/lib/match-time";
 import StatusBadge from "./StatusBadge";
 
 interface MatchCardProps {
@@ -28,16 +29,9 @@ interface MatchCardProps {
   onSelect?: (match: Match) => void;
 }
 
-function formatTime(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-  try {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return null;
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-  } catch {
-    return null;
-  }
-}
+// Time formatting moved to src/lib/match-time.ts so every card pulls from
+// the same logic (schedule_label first, played_at only when it has a real
+// time component, no fabrication from date-only strings).
 
 function isWin(a: string, b: string): boolean {
   const ai = parseInt(a, 10);
@@ -139,7 +133,8 @@ export default function MatchCard({ match, tournamentName, onSelect }: MatchCard
   const team1Label = teamName(match.players.team_1);
   const team2Label = teamName(match.players.team_2);
 
-  const timeLabel = formatTime(match.played_at);
+  const scheduledTime = scheduledMatchTime(match, displayStatus);
+  const timeLabel = formatScheduledTimeShort(scheduledTime);
 
   return (
     <button

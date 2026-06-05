@@ -5,6 +5,7 @@ import { formatScore } from "@/lib/padel-api";
 import { useMatchModal } from "@/components/MatchModalProvider";
 import { useLiveScore } from "@/hooks/useLiveScore";
 import { teamName } from "@/lib/player-utils";
+import { scheduledMatchTime, formatScheduledTimeLong } from "@/lib/match-time";
 import StatusBadge from "@/components/StatusBadge";
 import type { NormalizedMatch, DisplayStatus } from "@/lib/normalize-match";
 
@@ -211,13 +212,23 @@ export default function MatchCard({
               letterSpacing: "0.05em",
             }}
           >
-            {match.schedule_label ? (
-              <span style={{ color: "var(--red)", fontWeight: 700 }}>
-                {match.schedule_label}
-              </span>
-            ) : (
-              <span style={{ color: "var(--mute)" }}>{match.played_at}</span>
-            )}
+            {(() => {
+              const t = scheduledMatchTime(match, displayStatus);
+              const label = formatScheduledTimeLong(t);
+              if (label) {
+                return (
+                  <span
+                    style={{
+                      color: t?.kind === "not-before" ? "var(--red)" : "var(--mute)",
+                      fontWeight: t?.kind === "not-before" ? 700 : 400,
+                    }}
+                  >
+                    {label}
+                  </span>
+                );
+              }
+              return null;
+            })()}
             {match.court && (
               <>
                 <span style={{ color: "var(--mute)" }}>·</span>
