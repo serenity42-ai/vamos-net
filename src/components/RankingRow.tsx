@@ -54,7 +54,7 @@ export default function RankingRow({
                 color: "var(--mute)",
               }}
             >
-              {player.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+              {(player?.name ?? "").split(" ").filter(Boolean).map((n) => n[0]).join("").slice(0, 2) || "—"}
             </div>
           )}
           <div className="min-w-0">

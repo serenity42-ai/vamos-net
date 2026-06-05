@@ -253,7 +253,10 @@ export default function MatchCard({ match, tournamentName, onSelect }: MatchCard
                           : "text-text-tertiary",
                       ].join(" ")}
                     >
-                      {players.map((p) => p.name.split(" ").slice(-1)[0]).join(" · ")}
+                      {players.map((p) => {
+                        const parts = (p?.name ?? "").trim().split(/\s+/).filter(Boolean);
+                        return parts.length ? parts[parts.length - 1] : "TBD";
+                      }).join(" · ")}
                     </p>
                   )}
                 </div>

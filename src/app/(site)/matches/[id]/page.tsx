@@ -22,12 +22,14 @@ export async function generateMetadata({
   if (!Number.isFinite(idNum)) return { title: "Match | VAMOS" };
   try {
     const match = await getMatch(idNum);
+    const lastWord = (n: string | null | undefined) => {
+      const parts = (n ?? "").trim().split(/\s+/).filter(Boolean);
+      return parts.length ? parts[parts.length - 1] : "TBD";
+    };
     const t1 =
-      match.players.team_1.map((p) => p.name.split(" ").slice(-1)[0]).join(" / ") ||
-      "TBD";
+      match.players.team_1.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
     const t2 =
-      match.players.team_2.map((p) => p.name.split(" ").slice(-1)[0]).join(" / ") ||
-      "TBD";
+      match.players.team_2.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
     return {
       title: `${t1} vs ${t2} | VAMOS`,
       description: `Match details, scores and stats for ${t1} vs ${t2}.`,

@@ -70,11 +70,12 @@ function PlayerCard({ player }: { player: Player }) {
           />
         ) : (
           <div className="flex h-56 w-56 shrink-0 items-center justify-center rounded-full border border-border-primary bg-bg-gray font-display text-16 font-semibold text-text-secondary">
-            {player.name
+            {(player?.name ?? "")
               .split(" ")
+              .filter(Boolean)
               .map((n) => n[0])
               .join("")
-              .slice(0, 2)}
+              .slice(0, 2) || "—"}
           </div>
         )}
         <div className="min-w-0 flex-1">

@@ -21,12 +21,13 @@ function PlayerAvatar({
   detail?: Player;
   size?: number;
 }) {
-  const initials = player.name
+  const initials = (player?.name ?? "")
     .split(" ")
+    .filter(Boolean)
     .map((n) => n[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase();
+    .toUpperCase() || "—";
   const photo = detail?.photo_url;
 
   return (

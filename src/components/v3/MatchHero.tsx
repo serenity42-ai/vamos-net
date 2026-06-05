@@ -54,8 +54,9 @@ function HeroAvatar({
   size?: number;
 }) {
   const initials =
-    player.name
+    (player?.name ?? "")
       .split(" ")
+      .filter(Boolean)
       .map((n) => n[0])
       .join("")
       .slice(0, 2)

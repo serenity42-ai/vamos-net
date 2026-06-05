@@ -4,6 +4,13 @@ import type { Match } from "@/lib/padel-api";
 const SURNAME_PREFIXES = new Set(["di", "de", "da", "do", "del", "van", "von", "le", "la", "el", "al"]);
 
 /**
+ * Fallback shown when a player's name is missing/empty. PadelAPI occasionally
+ * returns null names for byes, walkovers, or partially-published draws
+ * (see PADELAPI-BUGS.md). Surface a placeholder instead of crashing.
+ */
+const MISSING_NAME = "TBD";
+
+/**
  * Extract the display surname from a player's full name.
  * 
  * Spanish naming convention: FirstName Surname1 Surname2
@@ -17,8 +24,9 @@ const SURNAME_PREFIXES = new Set(["di", "de", "da", "do", "del", "van", "von", "
  *   "Fabio Da Costa Araujo" → "Da Costa"
  *   "Arturo Coello" → "Coello"
  */
-export function displaySurname(fullName: string): string {
-  const parts = fullName.trim().split(/\s+/);
+export function displaySurname(fullName: string | null | undefined): string {
+  const parts = (fullName ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return MISSING_NAME;
   if (parts.length <= 2) {
     return parts[parts.length - 1];
   }
@@ -32,10 +40,20 @@ export function displaySurname(fullName: string): string {
 }
 
 /**
+ * Compute 1–2 character initials from a full name.
+ * Returns "—" (em-dash) if name is missing/empty so avatar circles still render.
+ */
+export function initials(fullName: string | null | undefined): string {
+  const parts = (fullName ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "—";
+  return parts.map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+}
+
+/**
  * Get a team display name from player array.
  * Returns "Surname1 / Surname2" format.
  */
 export function teamName(players: Match["players"]["team_1"]): string {
-  if (!players || players.length === 0) return "TBD";
-  return players.map((p) => displaySurname(p.name)).join(" / ");
+  if (!players || players.length === 0) return MISSING_NAME;
+  return players.map((p) => displaySurname(p?.name)).join(" / ");
 }

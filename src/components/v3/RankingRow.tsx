@@ -79,11 +79,12 @@ export default function RankingRow({
             className="flex shrink-0 items-center justify-center rounded-full bg-bg-gray font-sans text-12 font-semibold text-text-secondary"
             style={{ width: photoSize, height: photoSize }}
           >
-            {player.name
+            {(player?.name ?? "")
               .split(" ")
+              .filter(Boolean)
               .map((n) => n[0])
               .join("")
-              .slice(0, 2)}
+              .slice(0, 2) || "—"}
           </div>
         )}
 

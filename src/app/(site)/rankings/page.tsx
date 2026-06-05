@@ -147,11 +147,12 @@ function PodiumCard({ player, place }: { player: Player; place: 1 | 2 | 3 }) {
               : "h-[96px] w-[96px] border-2 border-border-primary bg-bg-gray text-24 text-text-secondary",
           ].join(" ")}
         >
-          {player.name
+          {(player?.name ?? "")
             .split(" ")
+            .filter(Boolean)
             .map((n) => n[0])
             .join("")
-            .slice(0, 2)}
+            .slice(0, 2) || "—"}
         </div>
       )}
 
