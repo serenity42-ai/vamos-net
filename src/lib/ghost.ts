@@ -227,6 +227,49 @@ export async function fetchArticlesByPrimaryTag(
 }
 
 /**
+ * Slug + updated_at pair, used by app/sitemap.ts so search engines pick up
+ * edits to existing Ghost posts.
+ */
+export interface ArticleSitemapEntry {
+  slug: string;
+  updatedAt: string;
+}
+
+/**
+ * Like fetchAllSlugs but also returns the post's updated_at timestamp. Cheap
+ * to keep separate — only sitemap.ts cares about the timestamps.
+ */
+export async function fetchAllSlugsWithDates(): Promise<ArticleSitemapEntry[]> {
+  if (!isGhostConfigured()) {
+    return mockArticles.map((a) => ({ slug: a.slug, updatedAt: a.date }));
+  }
+  try {
+    const client = getClient();
+    const posts: PostsOrPages = await client.posts.browse({
+      limit: "all",
+      include: ["tags"],
+      filter: "status:published",
+      order: "updated_at DESC",
+    } as Params);
+    if (!Array.isArray(posts)) {
+      return mockArticles.map((a) => ({ slug: a.slug, updatedAt: a.date }));
+    }
+    return posts
+      .filter((p) => Boolean(p.slug))
+      .map((p) => ({
+        slug: p.slug as string,
+        updatedAt:
+          (p.updated_at as string | null) ??
+          (p.published_at as string | null) ??
+          new Date().toISOString(),
+      }));
+  } catch (err) {
+    console.error("[ghost] fetchAllSlugsWithDates failed, falling back:", err);
+    return mockArticles.map((a) => ({ slug: a.slug, updatedAt: a.date }));
+  }
+}
+
+/**
  * Fetch all published slugs (News + Hub) — used for generateStaticParams /
  * sitemap. Hub posts are excluded from /news listings but their detail pages
  * must still be statically generated and indexed.

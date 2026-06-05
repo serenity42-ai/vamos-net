@@ -9,9 +9,54 @@ import ShareActions from "@/components/v3/ShareActions";
 import TagsRow from "@/components/v3/TagsRow";
 import WhereToBuyList from "@/components/v3/WhereToBuyList";
 import { fetchArticleBySlug, fetchArticles } from "@/lib/ghost";
+import type { Metadata } from "next";
 
 // Revalidate every 60s so article edits in Ghost appear quickly.
 export const revalidate = 60;
+
+/**
+ * Per-article metadata for SEO + social previews (audit M1). Without this,
+ * every Hub article shared the root site's title/description/OG image — awful
+ * for a media site. Now each article ships its own OG title/description/image,
+ * Twitter card and canonical URL.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await fetchArticleBySlug(slug);
+  if (!article) {
+    return { title: "Article Not Found | VAMOS" };
+  }
+  const description = article.excerpt || `${article.title} — ${article.category} on VAMOS.`;
+  const images = article.imageUrl
+    ? [{ url: article.imageUrl, alt: article.title }]
+    : undefined;
+  return {
+    title: `${article.title} | VAMOS`,
+    description,
+    alternates: { canonical: `/hub/${article.slug}` },
+    openGraph: {
+      type: "article",
+      title: article.title,
+      description,
+      url: `/hub/${article.slug}`,
+      siteName: "VAMOS",
+      images,
+      publishedTime: article.date,
+      authors: article.author ? [article.author] : undefined,
+      section: article.category,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description,
+      images: article.imageUrl ? [article.imageUrl] : undefined,
+    },
+  };
+}
 
 function formatEditorialDate(input: string): string {
   if (!input) return "";
