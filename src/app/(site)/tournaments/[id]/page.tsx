@@ -18,6 +18,32 @@ import {
 import { normalizeMatches, buildContext, type NormalizedMatch } from "@/lib/normalize-match";
 import { getTourToday } from "@/lib/tour-date";
 
+// ---------------------------------------------------------------------------
+// Schema helpers
+// ---------------------------------------------------------------------------
+
+function stripEmpty<T extends object>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj, (_k, v) =>
+    v === undefined || v === null ? undefined : v
+  )) as T;
+}
+
+function tournamentEventStatus(status: Tournament["status"]): string {
+  switch (status) {
+    case "live": return "https://schema.org/EventScheduled";
+    case "finished": return "https://schema.org/EventScheduled";
+    case "pending": return "https://schema.org/EventScheduled";
+    default: return "https://schema.org/EventScheduled";
+  }
+}
+
+function organizerForLevel(level: string): { "@type": string; name: string } {
+  if (level.startsWith("premier_") || level === "p1" || level === "p2" || level === "major" || level === "finals") {
+    return { "@type": "SportsOrganization", name: "Premier Padel" };
+  }
+  return { "@type": "SportsOrganization", name: "FIP" };
+}
+
 // Tournament page shows live match state — short revalidate
 export const revalidate = 60;
 
@@ -201,8 +227,96 @@ export default async function TournamentDetailPage({
     },
   ];
 
+  // ---------------------------------------------------------------------------
+  // Schema.org JSON-LD
+  // ---------------------------------------------------------------------------
+
+  const lastWord = (n: string | null | undefined) => {
+    const parts = (n ?? "").trim().split(/\s+/).filter(Boolean);
+    return parts.length ? parts[parts.length - 1] : "TBD";
+  };
+
+  // Top 5 upcoming/live matches as nested SportsEvent
+  const subEventSchemas = scheduledMatches.slice(0, 5).map((m) => {
+    const mT1 = m.players.team_1.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
+    const mT2 = m.players.team_2.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
+    return stripEmpty({
+      "@type": "SportsEvent",
+      name: `${mT1} vs ${mT2}`,
+      startDate: m.played_at,
+      url: `https://vamos.net/matches/${m.id}`,
+      competitor: [
+        {
+          "@type": "SportsTeam",
+          name: mT1,
+          member: m.players.team_1.map((p) => ({ "@type": "Person", name: p.name })),
+        },
+        {
+          "@type": "SportsTeam",
+          name: mT2,
+          member: m.players.team_2.map((p) => ({ "@type": "Person", name: p.name })),
+        },
+      ],
+    });
+  });
+
+  const tournamentSchema = stripEmpty({
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: tournament.name,
+    sport: "Padel",
+    startDate: tournament.start_date,
+    endDate: tournament.end_date,
+    eventStatus: tournamentEventStatus(tournament.status),
+    url: `https://vamos.net/tournaments/${id}`,
+    description: `${levelLabel(tournament.level)} tournament in ${tournament.location}, ${tournament.country}.`,
+    location: {
+      "@type": "Place",
+      name: tournament.location,
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: tournament.country,
+      },
+    },
+    organizer: organizerForLevel(tournament.level),
+    subEvent: subEventSchemas.length > 0 ? subEventSchemas : undefined,
+  });
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://vamos.net",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Tournaments",
+        item: "https://vamos.net/tournaments",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: tournament.name,
+        item: `https://vamos.net/tournaments/${id}`,
+      },
+    ],
+  };
+
   return (
     <div className="bg-bg-page min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(tournamentSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <div className="mx-auto max-w-[1320px] px-16 py-24 sm:px-24 sm:py-32 lg:px-32">
         {/* Back link */}
         <Link
