@@ -9,6 +9,7 @@ import ShareActions from "@/components/v3/ShareActions";
 import TagsRow from "@/components/v3/TagsRow";
 import WhereToBuyList from "@/components/v3/WhereToBuyList";
 import { fetchArticleBySlug, fetchArticles } from "@/lib/ghost";
+import { stripEmpty } from "@/lib/schema/strip-empty";
 import type { Metadata } from "next";
 
 // Revalidate every 60s so article edits in Ghost appear quickly.
@@ -181,23 +182,128 @@ export default async function ArticlePage({
       ]
     : [];
 
-  // Schema.org Article
-  const articleSchema = {
+  // ── Publisher block (shared across schema types) ──────────────────────────
+  const publisher = {
+    "@type": "Organization",
+    name: "VAMOS",
+    url: "https://vamos.net",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://vamos.net/brand/vamos-net-mark.svg",
+    },
+  };
+
+  // ── Article image with fallback (required for News rich result eligibility) ─
+  const articleImage = article.imageUrl || "https://vamos.net/og-default.png";
+
+  // ── Strip product name prefix/suffix for Review itemReviewed ────────────────
+  // Remove common patterns like "Review:", "Review —", "Racket Review:", etc.
+  const reviewedProductName = article.title
+    .replace(/^review[:\s—–-]+/i, "")
+    .replace(/[\s—–-]+review$/i, "")
+    .trim();
+
+  // ── Review rating: use the highest shop rating from placeholderShops ────────
+  // Using "highest" so the schema reflects the best-case verified rating shown
+  // on the page. TODO: replace with real review score when Ghost carries it.
+  const reviewRatingValue = isReview && placeholderShops.length > 0
+    ? Math.max(...placeholderShops.map((s) => s.rating))
+    : undefined;
+
+  // ── Schema.org: Review (for review articles) or NewsArticle (for all else) ──
+  const articleSchema = isReview
+    ? stripEmpty({
+        "@context": "https://schema.org",
+        "@type": "Review",
+        url: shareUrl,
+        datePublished: article.date,
+        reviewBody: article.excerpt || undefined,
+        author: {
+          "@type": "Person",
+          name: article.author,
+        },
+        publisher,
+        itemReviewed: {
+          "@type": "Product",
+          name: reviewedProductName,
+          image: articleImage,
+          category: "Padel equipment",
+        },
+        reviewRating: reviewRatingValue !== undefined
+          ? {
+              "@type": "Rating",
+              ratingValue: reviewRatingValue,
+              bestRating: 5,
+              worstRating: 1,
+            }
+          : undefined,
+      })
+    : stripEmpty({
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: article.title,
+        description: article.excerpt || undefined,
+        image: articleImage,
+        datePublished: article.date,
+        // TODO: use a real dateModified when Ghost exposes it; using date for now
+        dateModified: article.date,
+        author: {
+          "@type": "Person",
+          name: article.author,
+        },
+        publisher,
+        articleSection: article.category,
+        mainEntityOfPage: shareUrl,
+        url: shareUrl,
+      });
+
+  // ── BreadcrumbList ──────────────────────────────────────────────────────────
+  // Category → hub sub-path mapping (lowercased category names).
+  // If a category maps to a known sub-page, we include a category crumb.
+  const categorySlugMap: Record<string, string> = {
+    reviews: "reviews",
+    training: "training",
+    business: "business",
+    lifestyle: "lifestyle",
+    clubs: "clubs",
+    rules: "rules",
+    // "Tour News", "Rankings", "Academy" etc. have no dedicated sub-page yet
+  };
+  const catKey = article.category.toLowerCase().replace(/\s+/g, "-");
+  const catPath = categorySlugMap[catKey];
+
+  const breadcrumbItems: Array<{ "@type": "ListItem"; position: number; name: string; item: string }> = [
+    { "@type": "ListItem", position: 1, name: "Home",  item: "https://vamos.net" },
+    { "@type": "ListItem", position: 2, name: "Hub",   item: "https://vamos.net/hub" },
+    ...(catPath
+      ? [
+          {
+            "@type": "ListItem" as const,
+            position: 3,
+            name: article.category,
+            item: `https://vamos.net/hub/${catPath}`,
+          },
+          {
+            "@type": "ListItem" as const,
+            position: 4,
+            name: article.title,
+            item: shareUrl,
+          },
+        ]
+      : [
+          {
+            "@type": "ListItem" as const,
+            position: 3,
+            name: article.title,
+            item: shareUrl,
+          },
+        ]),
+  ];
+
+  const breadcrumbSchema = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.excerpt,
-    author: {
-      "@type": "Organization",
-      name: article.author,
-    },
-    datePublished: article.date,
-    publisher: {
-      "@type": "Organization",
-      name: "VAMOS",
-      url: "https://vamos.net",
-    },
-    mainEntityOfPage: shareUrl,
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems,
   };
 
   return (
@@ -205,6 +311,10 @@ export default async function ArticlePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       {/* Article hero — split 2-col on desktop, stacked on mobile */}
