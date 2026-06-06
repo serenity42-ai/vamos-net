@@ -6,7 +6,7 @@ import {
   type LiveMatchData,
   type Tournament,
 } from "@/lib/padel-api";
-import { normalizeMatch, buildContext } from "@/lib/normalize-match";
+import { normalizeMatch, buildContext, type DisplayStatus } from "@/lib/normalize-match";
 import { fetchArticles } from "@/lib/ghost";
 import type { Article } from "@/data/mock";
 import MatchDetailClient from "./MatchDetailClient";
@@ -100,11 +100,178 @@ export default async function MatchDetailPage({
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Schema.org JSON-LD
+  // ---------------------------------------------------------------------------
+
+  const lastWord = (n: string | null | undefined) => {
+    const parts = (n ?? "").trim().split(/\s+/).filter(Boolean);
+    return parts.length ? parts[parts.length - 1] : "TBD";
+  };
+
+  const t1Name =
+    match.players.team_1.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
+  const t2Name =
+    match.players.team_2.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
+  const matchName = `${t1Name} vs ${t2Name}`;
+
+  const eventStatusMap: Record<DisplayStatus | string, string> = {
+    live: "https://schema.org/EventScheduled",
+    finished: "https://schema.org/EventScheduled",
+    cancelled: "https://schema.org/EventCancelled",
+    scheduled: "https://schema.org/EventScheduled",
+    walkover: "https://schema.org/EventScheduled",
+    unknown: "https://schema.org/EventScheduled",
+  };
+
+  const tournamentId = tournament?.id;
+
+  // Build location only when data is available
+  const locationSchema =
+    tournament?.location
+      ? {
+          "@type": "Place",
+          name: tournament.location,
+          address: {
+            "@type": "PostalAddress",
+            addressCountry: tournament.country,
+          },
+        }
+      : undefined;
+
+  // Build superEvent only when tournament is available
+  const superEventSchema =
+    tournament && tournamentId
+      ? {
+          "@type": "SportsEvent",
+          name: tournament.name,
+          url: `https://vamos.net/tournaments/${tournamentId}`,
+        }
+      : undefined;
+
+  // Compute endDate only for finished matches with duration
+  const endDateVal =
+    normalized.displayStatus === "finished" && normalized.duration && normalized.played_at
+      ? (() => {
+          try {
+            // duration is typically "HH:MM" — convert to milliseconds and add to startDate
+            const parts = normalized.duration.split(":");
+            const hours = parseInt(parts[0] ?? "0", 10);
+            const minutes = parseInt(parts[1] ?? "0", 10);
+            const start = new Date(normalized.played_at);
+            if (!isNaN(start.getTime())) {
+              start.setHours(start.getHours() + hours);
+              start.setMinutes(start.getMinutes() + minutes);
+              return start.toISOString();
+            }
+          } catch {
+            /* ignore */
+          }
+          return undefined;
+        })()
+      : undefined;
+
+  const descriptionVal =
+    tournament
+      ? `Padel match in ${tournament.name} – ${normalized.round_name}`
+      : `Padel match – ${normalized.round_name}`;
+
+  // Strip undefined / null values from schema
+  function stripEmpty<T extends object>(obj: T): T {
+    return JSON.parse(JSON.stringify(obj, (_k, v) =>
+      v === undefined || v === null ? undefined : v
+    )) as T;
+  }
+
+  const matchSchema = stripEmpty({
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: matchName,
+    sport: "Padel",
+    startDate: normalized.played_at,
+    endDate: endDateVal,
+    eventStatus: eventStatusMap[normalized.displayStatus] ?? "https://schema.org/EventScheduled",
+    url: `https://vamos.net/matches/${idNum}`,
+    description: descriptionVal,
+    location: locationSchema,
+    superEvent: superEventSchema,
+    competitor: [
+      {
+        "@type": "SportsTeam",
+        name: t1Name,
+        member: match.players.team_1.map((p) => ({
+          "@type": "Person",
+          name: p.name,
+        })),
+      },
+      {
+        "@type": "SportsTeam",
+        name: t2Name,
+        member: match.players.team_2.map((p) => ({
+          "@type": "Person",
+          name: p.name,
+        })),
+      },
+    ],
+  });
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://vamos.net",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Scores",
+        item: "https://vamos.net/scores",
+      },
+      ...(tournament
+        ? [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: tournament.name,
+              item: `https://vamos.net/tournaments/${tournamentId}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 4,
+              name: matchName,
+              item: `https://vamos.net/matches/${idNum}`,
+            },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: matchName,
+              item: `https://vamos.net/matches/${idNum}`,
+            },
+          ]),
+    ],
+  };
+
   return (
-    <MatchDetailClient
-      match={normalized}
-      tournamentName={tournament?.name}
-      relatedNews={relatedNews}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(matchSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <MatchDetailClient
+        match={normalized}
+        tournamentName={tournament?.name}
+        relatedNews={relatedNews}
+      />
+    </>
   );
 }
