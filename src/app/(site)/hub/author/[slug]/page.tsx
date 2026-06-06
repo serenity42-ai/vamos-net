@@ -43,8 +43,45 @@ export default async function AuthorPage({
     articles[0]?.author ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const initial = authorName.slice(0, 1).toUpperCase();
 
+  const authorPageUrl = `https://vamos.net/hub/author/${slug}`;
+
+  // ── ProfilePage schema ───────────────────────────────────────────────────────────
+  const profilePageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url: authorPageUrl,
+    name: `${authorName} | Padel Hub | VAMOS`,
+    mainEntity: {
+      "@type": "Person",
+      name: authorName,
+      url: authorPageUrl,
+      description:
+        "Editorial contributor at Vamos.net covering the world of padel — tournaments, players, gear, and culture.",
+    },
+  };
+
+  // ── BreadcrumbList ─────────────────────────────────────────────────────────────
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home",   item: "https://vamos.net" },
+      { "@type": "ListItem", position: 2, name: "Hub",    item: "https://vamos.net/hub" },
+      { "@type": "ListItem", position: 3, name: "Author", item: "https://vamos.net/hub/author" },
+      { "@type": "ListItem", position: 4, name: authorName, item: authorPageUrl },
+    ],
+  };
+
   return (
     <main className="bg-bg-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(profilePageSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Author header */}
       <section className="border-b border-border-primary">
         <div className="mx-auto max-w-[1320px] px-16 py-40 sm:px-24 md:py-64 lg:px-32">
