@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Tabs from "@/components/v3/Tabs";
+import HubMobileTabs from "@/components/v3/HubMobileTabs";
 import TournamentCard from "@/components/v3/TournamentCard";
 import TournamentCardDesktop from "@/components/v3/TournamentCardDesktop";
 import {
@@ -195,6 +196,12 @@ export default async function TournamentsPage({
 
   return (
     <div className="bg-bg-page min-h-screen">
+      {/* Hub tab strip — mobile only. Keeps the user oriented within Hub context.
+          Sticky under the mobile header (56px) so it scrolls with the page header. */}
+      <div className="sticky top-[56px] z-30 bg-bg-page">
+        <HubMobileTabs activeSlug="tour-calendar" />
+      </div>
+
       <div className="mx-auto max-w-[1320px] px-16 py-32 sm:px-24 lg:px-32">
         {/* Title */}
         <h1 className="mb-24 text-text-primary text-mobile-display-l md:text-desktop-display-l">

@@ -111,7 +111,7 @@ function ZapIcon({ active }: { active: boolean }) {
 
 const TABS: TabItem[] = [
   { href: "/", label: "Spotlight", matchPrefix: "/", icon: FlameIcon },
-  { href: "/hub", label: "Hub", matchPrefix: "/hub", icon: BallIcon },
+  { href: "/hub", label: "Hub", matchPrefix: "/hub", extraPrefixes: ["/tournaments"], icon: BallIcon },
   // Match detail pages live under /matches/[id] — include that prefix so
   // the Scores tab stays active when the user drills into a match.
   { href: "/scores", label: "Scores", matchPrefix: "/scores", extraPrefixes: ["/matches"], icon: ZapIcon },

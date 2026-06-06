@@ -237,11 +237,20 @@ export default function HubPageClient({ articles }: Props) {
     return () => observer.disconnect();
   }, [loadedCount, filtered.length]);
 
-  const tabItems = TYPE_FILTERS.map((f) => ({
-    label: f.label,
-    active: (activeType ?? null) === f.slug,
-    onClick: () => handleTypeChange(f.slug),
-  }));
+  const tabItems = [
+    ...TYPE_FILTERS.map((f) => ({
+      label: f.label,
+      active: (activeType ?? null) === f.slug,
+      onClick: () => handleTypeChange(f.slug),
+    })),
+    // Tour Calendar: navigation link to /tournaments — not a content-type filter.
+    // Rendered as an href tab so it navigates rather than filters the Hub feed.
+    {
+      label: "Tour Calendar",
+      href: "/tournaments",
+      active: false, // never active while on /hub
+    },
+  ];
 
   const activeTypeFilter = TYPE_FILTERS.find((f) => f.slug === activeType);
   const subOptions = activeTypeFilter?.subcategories;
