@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Analytics from "@/components/Analytics";
 
 export const metadata: Metadata = {
   // metadataBase resolves any relative OG/Twitter image URLs at build.
@@ -8,7 +9,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://vamos.net"),
   title: "VAMOS — Everything Happens at the Net",
   description: "Live padel scores, rankings, player profiles, tournament draws, and news. The definitive platform for professional padel.",
-  keywords: ["padel", "padel live scores", "padel rankings", "padel news", "vamos padel", "premier padel", "padel players", "padel tournaments"],
+  // meta-keywords is an obsolete signal that no major search engine reads.
+  // Removed per restructure spec §8.1.
+
   openGraph: {
     title: "VAMOS — Everything Happens at the Net",
     description: "Live padel scores, rankings, player profiles, tournament draws, and news.",
@@ -78,6 +81,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col overflow-x-hidden">
         {children}
+        <Analytics />
       </body>
     </html>
   );
