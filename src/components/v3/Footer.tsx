@@ -172,7 +172,7 @@ export default function Footer() {
           <p className="text-body-s" style={{ color: "var(--color-text-tertiary)" }}>
             © 2026 Vamos.net. All rights reserved.
           </p>
-          <ul className="flex items-center gap-24 list-none">
+          <ul className="flex flex-wrap items-center gap-x-24 gap-y-8 list-none">
             <li>
               <Link
                 href="/terms"
@@ -189,6 +189,24 @@ export default function Footer() {
                 style={{ color: "var(--color-text-tertiary)" }}
               >
                 Privacy policy
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/disclosure"
+                className="text-body-s hover:text-brand transition-colors"
+                style={{ color: "var(--color-text-tertiary)" }}
+              >
+                Affiliate disclosure
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/imprint"
+                className="text-body-s hover:text-brand transition-colors"
+                style={{ color: "var(--color-text-tertiary)" }}
+              >
+                Imprint
               </Link>
             </li>
           </ul>
