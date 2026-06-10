@@ -49,6 +49,8 @@ const FOOTER_LINKS: FooterLink[] = [
   { href: "/players", label: "Players" },
   { href: "/hub", label: "Padel Hub" },
   { href: "/hub?category=reviews", label: "Reviews" },
+  { href: "/hub/business", label: "Business of Padel" },
+  { href: "/services", label: "Advisory & services" },
   { href: "/about", label: "About" },
   { href: "/about#contribute", label: "Write for us" },
 ];
