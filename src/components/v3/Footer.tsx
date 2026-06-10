@@ -3,6 +3,19 @@ import VamosNetLogo from "@/components/VamosNetLogo";
 import NewsletterSignup from "@/components/v3/NewsletterSignup";
 
 /**
+ * Real Vamos.net social handles. Empty array = render no social row.
+ * Per restructure spec §8.5: "replace # placeholders with real profiles or
+ * remove icons until profiles exist (empty links look abandoned)."
+ * Restore entries once real handles exist.
+ */
+const SOCIAL_HANDLES = {
+  twitter: "",
+  instagram: "",
+  youtube: "",
+  tiktok: "",
+};
+
+/**
  * Vamos.net v3 Footer — desktop + mobile responsive footer block.
  *
  * Spec (from Figma /v1/files/nodes → FooterDesktop / FooterMobile):
@@ -76,11 +89,11 @@ function TikTokIcon() {
 }
 
 const SOCIALS: Social[] = [
-  { href: "https://twitter.com/", label: "Twitter / X", icon: <TwitterIcon /> },
-  { href: "https://instagram.com/", label: "Instagram", icon: <InstagramIcon /> },
-  { href: "https://youtube.com/", label: "YouTube", icon: <YouTubeIcon /> },
-  { href: "https://tiktok.com/", label: "TikTok", icon: <TikTokIcon /> },
-];
+  SOCIAL_HANDLES.twitter && { href: SOCIAL_HANDLES.twitter, label: "Twitter / X", icon: <TwitterIcon /> },
+  SOCIAL_HANDLES.instagram && { href: SOCIAL_HANDLES.instagram, label: "Instagram", icon: <InstagramIcon /> },
+  SOCIAL_HANDLES.youtube && { href: SOCIAL_HANDLES.youtube, label: "YouTube", icon: <YouTubeIcon /> },
+  SOCIAL_HANDLES.tiktok && { href: SOCIAL_HANDLES.tiktok, label: "TikTok", icon: <TikTokIcon /> },
+].filter(Boolean) as Social[];
 
 export default function Footer() {
   return (
@@ -97,31 +110,33 @@ export default function Footer() {
           gap: 48,
         }}
       >
-        {/* Social media row — 4 pill buttons */}
-        <ul
-          className="grid gap-8 list-none"
-          style={{
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-          }}
-        >
-          {SOCIALS.map((s) => (
-            <li key={s.href} className="flex">
-              <a
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={s.label}
-                className="flex items-center justify-center w-full rounded-full text-text-primary hover:text-brand transition-colors"
-                style={{
-                  background: "#EBEAE9", // exact Figma fill (not yet tokenised; --color-bg-gray is #EBE9E9 — close but distinct)
-                  height: 90,
-                }}
-              >
-                {s.icon}
-              </a>
-            </li>
-          ))}
-        </ul>
+        {SOCIALS.length > 0 && (
+          /* Social media row — pill buttons. Only renders when real handles exist. */
+          <ul
+            className="grid gap-8 list-none"
+            style={{
+              gridTemplateColumns: `repeat(${SOCIALS.length}, minmax(0, 1fr))`,
+            }}
+          >
+            {SOCIALS.map((s) => (
+              <li key={s.href} className="flex">
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="flex items-center justify-center w-full rounded-full text-text-primary hover:text-brand transition-colors"
+                  style={{
+                    background: "#EBEAE9", // exact Figma fill (not yet tokenised; --color-bg-gray is #EBE9E9 — close but distinct)
+                    height: 90,
+                  }}
+                >
+                  {s.icon}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {/* Logo + link grid */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-24 md:gap-40">
