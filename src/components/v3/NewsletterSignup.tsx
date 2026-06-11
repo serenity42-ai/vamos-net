@@ -40,17 +40,44 @@ function ArrowUpRight({ className }: { className?: string }) {
   );
 }
 
-// H3 (audit): newsletter backend not wired for Monday launch. Show the copy
-// with a 'Coming soon' badge instead of a black-hole form. Flip this flag
-// (or wire a provider) when ready — see BACKLOG.md.
-const NEWSLETTER_ENABLED = false;
+// Wired to /api/newsletter (Ghost Admin API) on 2026-06-11.
+const NEWSLETTER_ENABLED = true;
+
+type Status = "idle" | "loading" | "success" | "error";
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [message, setMessage] = useState<string>("");
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // No backend wired yet — placeholder for future hookup.
+    if (status === "loading") return;
+    setStatus("loading");
+    setMessage("");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, source: "footer" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setStatus("error");
+        setMessage(
+          typeof data.error === "string"
+            ? data.error
+            : "Something went wrong. Please try again.",
+        );
+        return;
+      }
+      setStatus("success");
+      setMessage("Thanks — check your inbox to confirm.");
+      setEmail("");
+    } catch {
+      setStatus("error");
+      setMessage("Network error. Please try again.");
+    }
   }
 
   return (
@@ -81,62 +108,68 @@ export default function NewsletterSignup() {
         </div>
 
         {/* Email form — flex row; input takes flex-1, button is fixed 56×56 */}
-        {!NEWSLETTER_ENABLED && (
+        {NEWSLETTER_ENABLED && status === "success" ? (
           <div
-            className="shrink-0 inline-flex items-center self-start rounded-full border border-white/20"
-            style={{
-              padding: "10px 18px",
-              fontFamily: "var(--mono)",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.7)",
-            }}
-            aria-label="Newsletter signup coming soon"
+            className="flex flex-col gap-4 w-full md:w-[376px] shrink-0"
+            role="status"
+            aria-live="polite"
           >
-            Coming soon
+            <p className="text-body-l text-text-contrast">{message}</p>
           </div>
-        )}
-        {NEWSLETTER_ENABLED && (
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-center gap-8 w-full md:w-[376px] shrink-0"
-        >
-          <label htmlFor="newsletter-email" className="sr-only">
-            Email address
-          </label>
-          <div
-            className="flex items-center bg-bg-white rounded-full flex-1 min-w-0"
-            style={{
-              height: 56,
-              paddingTop: 16,
-              paddingBottom: 16,
-              paddingLeft: 24,
-              paddingRight: 24,
-            }}
-          >
-            <input
-              id="newsletter-email"
-              type="email"
-              required
-              autoComplete="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full min-w-0 bg-transparent outline-none text-16 text-text-primary placeholder:text-text-tertiary"
-            />
-          </div>
-          {/* shrink-0 prevents the button from being squashed on narrow viewports */}
-          <IconButton
-            type="submit"
-            variant="primary"
-            size="lg"
-            label="Subscribe"
-            icon={<ArrowUpRight />}
-            className="shrink-0"
-          />
-        </form>
+        ) : (
+          NEWSLETTER_ENABLED && (
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-8 w-full md:w-[376px] shrink-0"
+              aria-busy={status === "loading"}
+            >
+              <div className="flex items-center gap-8">
+                <label htmlFor="newsletter-email" className="sr-only">
+                  Email address
+                </label>
+                <div
+                  className="flex items-center bg-bg-white rounded-full flex-1 min-w-0"
+                  style={{
+                    height: 56,
+                    paddingTop: 16,
+                    paddingBottom: 16,
+                    paddingLeft: 24,
+                    paddingRight: 24,
+                  }}
+                >
+                  <input
+                    id="newsletter-email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={status === "loading"}
+                    className="w-full min-w-0 bg-transparent outline-none text-16 text-text-primary placeholder:text-text-tertiary disabled:opacity-60"
+                  />
+                </div>
+                <IconButton
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  label={status === "loading" ? "Subscribing" : "Subscribe"}
+                  icon={<ArrowUpRight />}
+                  disabled={status === "loading"}
+                  className="shrink-0"
+                />
+              </div>
+              {status === "error" && message && (
+                <p
+                  role="alert"
+                  className="text-body-s"
+                  style={{ color: "#FF8A7A" }}
+                >
+                  {message}
+                </p>
+              )}
+            </form>
+          )
         )}
       </div>
     </section>

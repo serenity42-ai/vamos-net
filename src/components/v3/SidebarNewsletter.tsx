@@ -31,22 +31,43 @@ function ArrowUpRight() {
   );
 }
 
-// H3 (audit): newsletter backend not wired for Monday launch. Hide the form
-// to avoid a fake-confirmation black hole (previous code flipped a 'thanks'
-// state without actually sending anything). Flip this when backend is live
-// — see BACKLOG.md.
-const NEWSLETTER_ENABLED = false;
+// Wired to /api/newsletter (Ghost Admin API) on 2026-06-11.
+const NEWSLETTER_ENABLED = true;
+
+type Status = "idle" | "loading" | "success" | "error";
 
 export default function SidebarNewsletter() {
   const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
+  const [message, setMessage] = useState<string>("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    // Beehiiv wiring stays the same as the footer signup — log for now,
-    // the page-level newsletter component owns the real integration.
-    setSubmitted(true);
+    if (!email || status === "loading") return;
+    setStatus("loading");
+    setMessage("");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, source: "sidebar" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setStatus("error");
+        setMessage(
+          typeof data.error === "string"
+            ? data.error
+            : "Something went wrong. Please try again.",
+        );
+        return;
+      }
+      setStatus("success");
+      setEmail("");
+    } catch {
+      setStatus("error");
+      setMessage("Network error. Please try again.");
+    }
   };
 
   return (
@@ -69,51 +90,52 @@ export default function SidebarNewsletter() {
         what matters in padel.
       </p>
 
-      {!NEWSLETTER_ENABLED ? (
-        <div
-          className="inline-flex items-center rounded-full border border-white/20"
-          style={{
-            padding: "8px 14px",
-            fontFamily: "var(--mono)",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.7)",
-          }}
-          aria-label="Newsletter signup coming soon"
-        >
-          Coming soon
-        </div>
-      ) : submitted ? (
-        <p className="text-body-m text-text-contrast">
+      {status === "success" ? (
+        <p className="text-body-m text-text-contrast" role="status" aria-live="polite">
           Thanks — check your inbox to confirm.
         </p>
       ) : (
-        <form className="flex items-center gap-8" onSubmit={handleSubmit}>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-            aria-label="Email address"
-            className="flex-1 bg-bg-white rounded-full text-text-primary placeholder:text-text-tertiary outline-none"
-            style={{
-              height: 48,
-              paddingLeft: 16,
-              paddingRight: 16,
-              fontSize: 14,
-            }}
-          />
-          <IconButton
-            type="submit"
-            variant="primary"
-            size="md"
-            icon={<ArrowUpRight />}
-            label="Subscribe"
-            className="!h-48 !w-48 shrink-0"
-          />
+        <form
+          className="flex flex-col gap-8"
+          onSubmit={handleSubmit}
+          aria-busy={status === "loading"}
+        >
+          <div className="flex items-center gap-8">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+              disabled={status === "loading"}
+              aria-label="Email address"
+              className="flex-1 bg-bg-white rounded-full text-text-primary placeholder:text-text-tertiary outline-none disabled:opacity-60"
+              style={{
+                height: 48,
+                paddingLeft: 16,
+                paddingRight: 16,
+                fontSize: 14,
+              }}
+            />
+            <IconButton
+              type="submit"
+              variant="primary"
+              size="md"
+              icon={<ArrowUpRight />}
+              label={status === "loading" ? "Subscribing" : "Subscribe"}
+              disabled={status === "loading"}
+              className="!h-48 !w-48 shrink-0"
+            />
+          </div>
+          {status === "error" && message && (
+            <p
+              role="alert"
+              className="text-body-s"
+              style={{ color: "#FF8A7A" }}
+            >
+              {message}
+            </p>
+          )}
         </form>
       )}
     </section>
