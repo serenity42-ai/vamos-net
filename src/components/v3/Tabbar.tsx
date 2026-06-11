@@ -4,15 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 /**
- * Vamos.net v3 Mobile Tabbar — bottom navigation, 3 items (Favourites dropped for v1).
+ * Vamos.net v3 Mobile Tabbar — bottom navigation, 4 items (three-pillar pivot).
  *
  * Spec (from Figma /v1/files/nodes → Tabbar 390×72):
  *  - Container: h-72, white bg.
  *  - Items frame: padding 16t / 40r / 12b / 40l, horizontal gap 60.
  *  - Each item: 60×44, vertical stack, gap 4 (icon 24×24, label Inter/500/12/16).
  *
- * For v1 we have 3 items, so we evenly distribute across the bar instead of
- * locking to the original 4-item gap of 60px.
+ * Items: Spotlight (/), Business (/business), Pro Padel (/pro), Gear & Improve (/gear).
+ * Even distribution across the bar.
  *
  * Active state: brand orange icon + label. Inactive: ink (#181D27).
  *
@@ -83,38 +83,61 @@ function BallIcon({ active }: { active: boolean }) {
   );
 }
 
-function ZapIcon({ active }: { active: boolean }) {
-  // Classic lightning bolt.
-  if (active) {
-    return (
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
-        <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
-      </svg>
-    );
-  }
+function BriefcaseIcon({ active }: { active: boolean }) {
+  // Briefcase — Business pillar (Courts & Clubs).
+  const fill = active ? "currentColor" : "none";
   return (
     <svg
       viewBox="0 0 24 24"
       width="24"
       height="24"
-      fill="none"
+      fill={fill}
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" fill="none" stroke={active ? "var(--color-bg-white)" : "currentColor"} />
+      <path d="M3 12h18" stroke={active ? "var(--color-bg-white)" : "currentColor"} fill="none" />
+    </svg>
+  );
+}
+
+function RacketIcon({ active }: { active: boolean }) {
+  // Padel racket silhouette — Gear & Improve pillar.
+  const fill = active ? "currentColor" : "none";
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      fill={fill}
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <ellipse cx="9" cy="9" rx="6" ry="7" />
+      <path d="M13.5 13.5 21 21" stroke="currentColor" fill="none" />
+      <path d="M9 6v6M6 9h6" stroke={active ? "var(--color-bg-white)" : "currentColor"} fill="none" strokeWidth="1.5" />
     </svg>
   );
 }
 
 const TABS: TabItem[] = [
   { href: "/", label: "Spotlight", matchPrefix: "/", icon: FlameIcon },
-  { href: "/hub", label: "Hub", matchPrefix: "/hub", extraPrefixes: ["/tournaments"], icon: BallIcon },
-  // Match detail pages live under /matches/[id] — include that prefix so
-  // the Scores tab stays active when the user drills into a match.
-  { href: "/scores", label: "Scores", matchPrefix: "/scores", extraPrefixes: ["/matches"], icon: ZapIcon },
+  { href: "/business", label: "Business", matchPrefix: "/business", icon: BriefcaseIcon },
+  {
+    href: "/pro",
+    label: "Pro Padel",
+    matchPrefix: "/pro",
+    extraPrefixes: ["/news", "/scores", "/tournaments", "/rankings", "/matches", "/players", "/calendar", "/schedule"],
+    icon: BallIcon,
+  },
+  { href: "/gear", label: "Gear & Improve", matchPrefix: "/gear", icon: RacketIcon },
 ];
 
 function isActive(pathname: string, item: TabItem) {
@@ -136,8 +159,8 @@ export default function Tabbar() {
         height: 72,
         paddingTop: 16,
         paddingBottom: 12,
-        paddingLeft: 40,
-        paddingRight: 40,
+        paddingLeft: 16,
+        paddingRight: 16,
       }}
     >
       <div className="flex items-start justify-between h-full">

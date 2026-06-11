@@ -12,27 +12,34 @@ import VamosNetLogo from "@/components/VamosNetLogo";
  *  - Left cluster: Logo + vertical divider + nav menu (gap 40px).
  *  - Right: search input pill (white, h-56, rounded-full, leading search icon).
  *
- * Nav items (v1 — Favourites dropped):
- *   Spotlight (/), Padel Hub (/hub), Scores (/scores)
+ * Nav items (three-pillar pivot — locked 2026-06-11):
+ *   Spotlight (/), Business (/business), Pro Padel (/pro), Gear & Improve (/gear)
  *
  * Active state: orange (#FE4C00) text, no underline. Inactive: ink (#181D27).
  *
  * Mobile: this component hides on <md (Tabbar takes over at the bottom).
  */
 
-type NavItem = { href: string; label: string; matchPrefix?: string };
+type NavItem = { href: string; label: string; matchPrefix?: string; extraPrefixes?: string[] };
 
 const NAV: NavItem[] = [
   { href: "/", label: "Spotlight", matchPrefix: "/" },
-  { href: "/hub", label: "Padel Hub", matchPrefix: "/hub" },
-  { href: "/scores", label: "Scores", matchPrefix: "/scores" },
-  { href: "/tournaments", label: "Tournaments", matchPrefix: "/tournaments" },
-  { href: "/rankings", label: "Rankings", matchPrefix: "/rankings" },
+  { href: "/business", label: "Business", matchPrefix: "/business" },
+  {
+    href: "/pro",
+    label: "Pro Padel",
+    matchPrefix: "/pro",
+    // Pro Padel hub aggregates these existing surfaces — keep nav active when the
+    // user drills into News/Tournaments/Scores/Rankings/Matches/Players.
+    extraPrefixes: ["/news", "/scores", "/tournaments", "/rankings", "/matches", "/players", "/calendar", "/schedule"],
+  },
+  { href: "/gear", label: "Gear & Improve", matchPrefix: "/gear" },
 ];
 
 function isActive(pathname: string, item: NavItem) {
   if (item.matchPrefix === "/") return pathname === "/";
-  return pathname === item.href || pathname.startsWith(item.href + "/");
+  const prefixes = [item.href, ...(item.extraPrefixes ?? [])];
+  return prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
 function SearchIcon({ className }: { className?: string }) {
