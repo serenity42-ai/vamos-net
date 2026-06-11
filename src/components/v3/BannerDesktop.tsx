@@ -289,7 +289,7 @@ function BannerImage({
         fill
         priority={active}
         sizes="(min-width: 1280px) 1420px, 100vw"
-        className="object-cover"
+        className="object-cover object-[center_25%]"
       />
       <style jsx>{`
         @keyframes vamosBannerImageIn {

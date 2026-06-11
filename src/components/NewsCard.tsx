@@ -39,7 +39,7 @@ export default function NewsCard({ article }: { article: Article }) {
               alt={article.title}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              className="object-cover object-[center_25%] transition-transform duration-500 group-hover:scale-[1.03]"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center" style={{ transform: "skewX(-6deg)" }}>

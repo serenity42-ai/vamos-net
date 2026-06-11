@@ -50,7 +50,7 @@ export default function ArticleCardHero({
             fill
             sizes="(min-width: 1280px) 1200px, 100vw"
             priority
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            className="object-cover object-[center_25%] transition-transform duration-700 group-hover:scale-[1.02]"
           />
         ) : (
           <div

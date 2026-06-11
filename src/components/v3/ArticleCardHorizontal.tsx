@@ -47,7 +47,7 @@ export default function ArticleCardHorizontal({
               alt={article.title}
               fill
               sizes="120px"
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+              className="object-cover object-[center_25%] transition-transform duration-500 group-hover:scale-[1.05]"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-text-tertiary">
