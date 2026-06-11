@@ -41,15 +41,14 @@ const SOCIAL_HANDLES = {
 type FooterLink = { href: string; label: string };
 
 const FOOTER_LINKS: FooterLink[] = [
-  { href: "/", label: "Home" },
+  { href: "/", label: "Spotlight" },
+  { href: "/business", label: "Business" },
+  { href: "/pro", label: "Pro Padel" },
+  { href: "/gear", label: "Gear & Improve" },
   { href: "/scores", label: "Scores" },
-  { href: "/schedule", label: "Schedule" },
   { href: "/tournaments", label: "Tournament Calendar" },
   { href: "/rankings", label: "Rankings" },
   { href: "/players", label: "Players" },
-  { href: "/hub", label: "Padel Hub" },
-  { href: "/hub?category=reviews", label: "Reviews" },
-  { href: "/hub/business", label: "Business of Padel" },
   { href: "/services", label: "Advisory & services" },
   { href: "/about", label: "About" },
   { href: "/about#contribute", label: "Write for us" },

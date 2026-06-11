@@ -193,7 +193,7 @@ export default async function Home() {
               </h2>
               <Button
                 as={Link}
-                href="/hub"
+                href="/news"
                 variant="ghost"
                 size="sm"
                 trailingIcon="arrow"
@@ -249,7 +249,7 @@ export default async function Home() {
             <div className="mt-32 sm:hidden">
               <Button
                 as={Link}
-                href="/hub"
+                href="/news"
                 variant="ghost"
                 trailingIcon="arrow"
                 className="w-full justify-between"
@@ -337,7 +337,7 @@ export default async function Home() {
               </h2>
               <Button
                 as={Link}
-                href="/hub/review"
+                href="/gear"
                 variant="ghost"
                 size="sm"
                 trailingIcon="arrow"
@@ -418,7 +418,7 @@ export default async function Home() {
               </h2>
               <Button
                 as={Link}
-                href="/hub"
+                href="/news"
                 variant="ghost"
                 size="sm"
                 trailingIcon="arrow"
@@ -447,7 +447,7 @@ export default async function Home() {
               </h2>
               <Button
                 as={Link}
-                href="/hub"
+                href="/news"
                 variant="ghost"
                 size="sm"
                 trailingIcon="arrow"

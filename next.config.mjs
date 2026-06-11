@@ -44,11 +44,25 @@ const nextConfig = {
     ];
   },
 
-  // Permanent redirects: /business has SEO history; preserve it via 301 to
-  // the new /hub/business location (Player's Hub section, Apr 27 nav restructure).
+  // Permanent redirects.
+  //
+  // Three-pillar nav restructure (2026-06-11): /business, /gear, /pro are
+  // now the canonical pillar landings. Old /hub/* category stubs redirect
+  // INTO the new pillars (preserves any SEO juice they accumulated).
+  //
+  // Note: the previous /business -> /hub/business redirect (Apr 27 iteration)
+  // is GONE on purpose. The browser may still have it cached as a 301 — if you
+  // see /business landing on the Padel Hub, hard-refresh / clear site data once.
   async redirects() {
     return [
-      { source: "/business", destination: "/hub/business", permanent: true },
+      // Business pillar
+      { source: "/hub/business", destination: "/business", permanent: true },
+      { source: "/hub/clubs", destination: "/business", permanent: true },
+      // Gear & Improve pillar
+      { source: "/hub/reviews", destination: "/gear", permanent: true },
+      { source: "/hub/training", destination: "/gear", permanent: true },
+      { source: "/hub/rules", destination: "/gear", permanent: true },
+      { source: "/hub/lifestyle", destination: "/gear", permanent: true },
     ];
   },
 };
