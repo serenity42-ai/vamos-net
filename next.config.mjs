@@ -19,6 +19,13 @@ const nextConfig = {
         protocol: "https",
         hostname: "vamos-net.vercel.app",
       },
+      // Wikimedia Commons thumb endpoint — hero photos for tournament
+      // banners. CC-licensed; we attribute in-page (see tournament-photos.ts).
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+        pathname: "/wikipedia/commons/**",
+      },
     ],
   },
 

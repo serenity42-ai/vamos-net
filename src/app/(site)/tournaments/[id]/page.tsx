@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import TournamentBanner from "@/components/v3/TournamentBanner";
 import BestPlayersStrip, { type BestPlayer } from "@/components/v3/BestPlayersStrip";
 import TournamentDetailTabs from "@/components/v3/TournamentDetailTabs";
+import { getTournamentPhoto } from "@/lib/tournament-photos";
 import type { FilterOption } from "@/components/v3/TournamentMatchFilters";
 import {
   getTournament,
@@ -355,6 +356,16 @@ export default async function TournamentDetailPage({
         {/* Hero banner */}
         <TournamentBanner
           tournament={tournament}
+          imageUrl={
+            getTournamentPhoto({
+              location: tournament.location,
+              country: tournament.country,
+            })?.url ?? null
+          }
+          imageCredit={getTournamentPhoto({
+            location: tournament.location,
+            country: tournament.country,
+          })}
           ctaHref={`/tournaments/${id}?tab=schedule`}
         />
 

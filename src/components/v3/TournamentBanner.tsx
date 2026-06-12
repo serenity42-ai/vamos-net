@@ -101,10 +101,19 @@ function StatusBadge({ status }: { status: Tournament["status"] }) {
   );
 }
 
+export interface ImageCredit {
+  caption: string;
+  credit: string;
+  licence: string;
+  source?: string;
+}
+
 export interface TournamentBannerProps {
   tournament: Tournament;
   /** Background image — defaults to a tasteful CSS gradient if missing */
   imageUrl?: string | null;
+  /** Optional credit metadata rendered as a small attribution line. */
+  imageCredit?: ImageCredit | null;
   /** Optional explicit CTA override */
   ctaText?: string;
   ctaHref?: string;
@@ -118,6 +127,7 @@ export interface TournamentBannerProps {
 export default function TournamentBanner({
   tournament,
   imageUrl,
+  imageCredit,
   ctaText,
   ctaHref,
   collapsible = false,
@@ -145,7 +155,7 @@ export default function TournamentBanner({
         {imageUrl ? (
           <Image
             src={imageUrl}
-            alt=""
+            alt={imageCredit?.caption ?? ""}
             fill
             priority
             sizes="(min-width: 1280px) 1250px, 100vw"
@@ -258,6 +268,26 @@ export default function TournamentBanner({
             </Button>
           </div>
         </div>
+
+        {/* Image credit — only shown when we have a real background photo */}
+        {imageUrl && imageCredit && (
+          <p className="absolute bottom-8 right-12 z-10 max-w-[60%] truncate text-right font-sans text-10 text-text-contrast/60">
+            Photo:{" "}
+            {imageCredit.source ? (
+              <a
+                href={imageCredit.source}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-text-contrast/90 underline-offset-2 hover:underline"
+              >
+                {imageCredit.credit}
+              </a>
+            ) : (
+              imageCredit.credit
+            )}{" "}
+            ({imageCredit.licence})
+          </p>
+        )}
       </div>
     </section>
   );
