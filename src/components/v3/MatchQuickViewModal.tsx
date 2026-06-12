@@ -125,7 +125,7 @@ export default function MatchQuickViewModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="match-modal-title"
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+      className="fixed inset-0 z-50 flex items-start justify-center px-12 pt-16 sm:items-center sm:px-16 sm:pt-0"
     >
       {/* Backdrop */}
       <button
@@ -137,11 +137,15 @@ export default function MatchQuickViewModal({
 
       {/* Sheet */}
       <div
-        className="relative w-full max-w-[560px] overflow-hidden rounded-t-24 sm:rounded-24"
-        style={{ background: "#0F1420", color: "#fff" }}
+        className="relative w-full max-w-[460px] overflow-y-auto overflow-x-hidden rounded-20"
+        style={{
+          background: "#0F1420",
+          color: "#fff",
+          maxHeight: "calc(100dvh - 32px)",
+        }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-12 px-20 pt-20">
+        <div className="flex items-start justify-between gap-12 px-16 pt-16">
           <div className="min-w-0">
             <div className="flex items-center gap-12">
               {match.displayStatus === "live" && currentSetNumber > 0 && (
@@ -189,10 +193,10 @@ export default function MatchQuickViewModal({
           </div>
         </div>
 
-        <div className="mx-20 mt-16 h-px bg-white/10" />
+        <div className="mx-16 mt-12 h-px bg-white/10" />
 
         {/* Body grid: [team1 col] [middle scores col] [team2 col] */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-12 px-20 py-16">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-8 px-16 py-12">
           {/* Team 1 column */}
           <PlayerColumn
             players={match.players.team_1}
@@ -202,7 +206,7 @@ export default function MatchQuickViewModal({
           />
 
           {/* Centre column: current game + set scores + match score */}
-          <div className="flex min-w-[140px] flex-col items-center gap-12">
+          <div className="flex min-w-[120px] flex-col items-center gap-10">
             {match.displayStatus === "live" && currentGame && (
               <div className="text-center">
                 <p className="font-sans text-10 font-semibold uppercase tracking-[0.1em] text-white/60">
@@ -281,7 +285,7 @@ export default function MatchQuickViewModal({
         {tournament && (
           <Link
             href={`/tournaments/${tournament.id}`}
-            className="flex items-center gap-12 border-t border-white/10 px-20 py-16 transition-colors hover:bg-white/5"
+            className="flex items-center gap-12 border-t border-white/10 px-16 py-12 transition-colors hover:bg-white/5"
           >
             <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 font-display text-14 font-bold text-white">
               {tournament.name.slice(0, 2).toUpperCase()}
@@ -300,7 +304,7 @@ export default function MatchQuickViewModal({
 
         {/* Meta row: venue, ground, location */}
         {tournament && (
-          <div className="grid grid-cols-3 gap-12 border-t border-white/10 px-20 py-16">
+          <div className="grid grid-cols-3 gap-12 border-t border-white/10 px-16 py-12">
             <Meta label="Location" value={tournament.location} />
             <Meta label="Ground type" value="Outdoor hard" />
             <Meta label="Venue" value={match.court || "—"} />
@@ -368,18 +372,18 @@ function PlayerColumn({
               isRight ? "flex-row-reverse" : "flex-row",
             ].join(" ")}
           >
-            <div className="relative h-44 w-44 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5">
+            <div className="relative h-36 w-36 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5">
               {profile?.photo_url ? (
                 <Image
                   src={profile.photo_url}
                   alt={p.name}
                   fill
-                  sizes="44px"
+                  sizes="36px"
                   className="object-cover"
                   style={{ objectPosition: "center 25%" }}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center font-display text-14 font-bold text-white/80">
+                <div className="flex h-full w-full items-center justify-center font-display text-12 font-bold text-white/80">
                   {p.name.charAt(0)}
                 </div>
               )}
