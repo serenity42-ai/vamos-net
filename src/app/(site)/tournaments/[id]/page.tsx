@@ -5,10 +5,13 @@ import TournamentBanner from "@/components/v3/TournamentBanner";
 import MatchCard from "@/components/v3/MatchCard";
 import MatchCardDesktop from "@/components/v3/MatchCardDesktop";
 import Cell from "@/components/v3/Cell";
+import BestPlayersStrip, { type BestPlayer } from "@/components/v3/BestPlayersStrip";
+import TournamentMatchFilters, { type FilterOption } from "@/components/v3/TournamentMatchFilters";
 import {
   getTournament,
   getTournamentMatches,
   getLiveMatches,
+  getPlayer,
   levelLabel,
   type Tournament,
   type Match,
@@ -68,6 +71,9 @@ export async function generateMetadata({
 type DetailTab = "schedule" | "results" | "draw" | "players";
 
 const VALID_TABS: DetailTab[] = ["schedule", "results", "draw", "players"];
+
+/** How many top-ranked players to feature in the Best Players strip. */
+const BEST_PLAYERS_LIMIT = 10;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -142,6 +148,101 @@ function collectRoster(matchList: NormalizedMatch[]): MatchPlayer[] {
   return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/**
+ * Best players (S18): fetch profiles for the unique roster and pick the
+ * lowest-ranked (= highest world rank) players still entered in the
+ * tournament. Caps at BEST_PLAYERS_LIMIT to keep the API budget bounded
+ * and the strip scannable.
+ *
+ * Fails soft per-player — one bad fetch never kills the strip.
+ */
+async function loadBestPlayers(
+  roster: MatchPlayer[],
+): Promise<BestPlayer[]> {
+  if (roster.length === 0) return [];
+
+  const ids = roster.slice(0, 64).map((p) => p.id);
+  const profiles = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        return await getPlayer(id);
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  return profiles
+    .filter((p): p is NonNullable<typeof p> => p !== null)
+    .filter((p) => typeof p.ranking === "number" && p.ranking > 0)
+    .sort((a, b) => a.ranking - b.ranking)
+    .slice(0, BEST_PLAYERS_LIMIT)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      photoUrl: p.photo_url ?? null,
+      ranking: p.ranking,
+      nationality: p.nationality ?? null,
+    }));
+}
+
+/**
+ * Build the option lists for the S20 filter dropdowns.
+ */
+function buildFilterOptions(matchList: NormalizedMatch[]): {
+  dates: FilterOption[];
+  rounds: FilterOption[];
+  courts: FilterOption[];
+} {
+  const dateMap = new Map<string, string>();
+  const roundMap = new Map<string, { label: string; order: number }>();
+  const courtSet = new Set<string>();
+
+  for (const m of matchList) {
+    const key = dateKey(m.played_at);
+    if (key !== "9999-99-99" && !dateMap.has(key)) {
+      dateMap.set(key, formatMatchDay(m.played_at));
+    }
+    const roundKey = m.round_name || `Round ${m.round}`;
+    if (!roundMap.has(roundKey)) {
+      roundMap.set(roundKey, { label: roundKey, order: m.round ?? 99 });
+    }
+    if (m.court && m.court.trim().length > 0) {
+      courtSet.add(m.court.trim());
+    }
+  }
+
+  const dates: FilterOption[] = Array.from(dateMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([value, label]) => ({ value, label }));
+  const rounds: FilterOption[] = Array.from(roundMap.entries())
+    .sort(([, a], [, b]) => a.order - b.order)
+    .map(([value, info]) => ({ value, label: info.label }));
+  const courts: FilterOption[] = Array.from(courtSet)
+    .sort((a, b) => a.localeCompare(b))
+    .map((value) => ({ value, label: value }));
+
+  return { dates, rounds, courts };
+}
+
+/** Apply the active filter row to a match list. */
+function applyFilters(
+  list: NormalizedMatch[],
+  filters: { date?: string; round?: string; court?: string },
+): NormalizedMatch[] {
+  return list.filter((m) => {
+    if (filters.date && dateKey(m.played_at) !== filters.date) return false;
+    if (filters.round) {
+      const roundKey = m.round_name || `Round ${m.round}`;
+      if (roundKey !== filters.round) return false;
+    }
+    if (filters.court) {
+      if (!m.court || m.court.trim() !== filters.court) return false;
+    }
+    return true;
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -151,7 +252,7 @@ export default async function TournamentDetailPage({
   searchParams,
 }: {
   params: { id: string };
-  searchParams: { tab?: string };
+  searchParams: { tab?: string; date?: string; round?: string; court?: string };
 }) {
   const id = parseInt(params.id);
   if (Number.isNaN(id)) notFound();
@@ -200,9 +301,31 @@ export default async function TournamentDetailPage({
     (m) => m.displayStatus === "finished",
   );
 
-  const scheduleGroups = groupByDate(scheduledMatches);
-  const resultsGroups = groupByRound(finishedMatches);
+  // S19 — Today's Matches: scheduled-or-live matches whose date == tour today.
+  const todaysMatches = scheduledMatches.filter(
+    (m) => dateKey(m.played_at) === todayStr,
+  );
+
+  // S20 — active filter values from URL (date / round / court).
+  const filters = {
+    date: searchParams.date,
+    round: searchParams.round,
+    court: searchParams.court,
+  };
+
+  const filteredScheduled = applyFilters(scheduledMatches, filters);
+  const filteredFinished = applyFilters(finishedMatches, filters);
+
+  const scheduleGroups = groupByDate(filteredScheduled);
+  const resultsGroups = groupByRound(filteredFinished);
   const roster = collectRoster(validMatches);
+
+  // S18 — Best Players strip (top-ranked entrants). Server-fetched profiles.
+  const bestPlayers = await loadBestPlayers(roster);
+
+  // S20 — filter facets derived from the relevant match pool.
+  const scheduleFilterOptions = buildFilterOptions(scheduledMatches);
+  const resultsFilterOptions = buildFilterOptions(finishedMatches);
 
   const tabItems = [
     {
@@ -332,6 +455,9 @@ export default async function TournamentDetailPage({
           ctaHref={`/tournaments/${id}?tab=schedule`}
         />
 
+        {/* Best Players strip (S18) — sits between banner and tabs so it shows on every tab */}
+        <BestPlayersStrip players={bestPlayers} />
+
         {/* Tabs */}
         <div className="mt-24 mb-24 -mx-16 sm:-mx-24 lg:-mx-32 sm:mx-0">
           <Tabs items={tabItems} ariaLabel="Tournament section navigation" />
@@ -340,8 +466,42 @@ export default async function TournamentDetailPage({
         {/* ── Schedule ─────────────────────────────────────────────── */}
         {tab === "schedule" && (
           <section>
+            {/* S19 — Today's Matches strip (only when there are any) */}
+            {todaysMatches.length > 0 && (
+              <div className="mb-32">
+                <h2 className="mb-12 font-display text-16 font-bold uppercase tracking-[0.04em] text-text-primary">
+                  Today&rsquo;s matches
+                </h2>
+                <div className="grid grid-cols-1 gap-8 md:hidden">
+                  {todaysMatches.map((m) => (
+                    <MatchCard key={`today-${m.id}`} match={m} />
+                  ))}
+                </div>
+                <div className="hidden flex-col gap-8 md:flex">
+                  {todaysMatches.map((m) => (
+                    <MatchCardDesktop key={`today-${m.id}`} match={m} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* S20 — Filter row: date · round · court */}
+            <TournamentMatchFilters
+              dates={scheduleFilterOptions.dates}
+              rounds={scheduleFilterOptions.rounds}
+              courts={scheduleFilterOptions.courts}
+              selected={filters}
+              tab="schedule"
+            />
+
             {scheduleGroups.length === 0 ? (
-              <EmptyState message="No upcoming matches scheduled." />
+              <EmptyState
+                message={
+                  scheduledMatches.length > 0
+                    ? "No matches match the current filters."
+                    : "No upcoming matches scheduled."
+                }
+              />
             ) : (
               <div className="space-y-32">
                 {scheduleGroups.map(([day, dayMatches]) => {
@@ -379,8 +539,23 @@ export default async function TournamentDetailPage({
         {/* ── Results ──────────────────────────────────────────────── */}
         {tab === "results" && (
           <section>
+            {/* S20 — Filter row on Results too: date · round · court */}
+            <TournamentMatchFilters
+              dates={resultsFilterOptions.dates}
+              rounds={resultsFilterOptions.rounds}
+              courts={resultsFilterOptions.courts}
+              selected={filters}
+              tab="results"
+            />
+
             {resultsGroups.length === 0 ? (
-              <EmptyState message="No finished matches yet." />
+              <EmptyState
+                message={
+                  finishedMatches.length > 0
+                    ? "No matches match the current filters."
+                    : "No finished matches yet."
+                }
+              />
             ) : (
               <div className="space-y-24">
                 {resultsGroups.map(([roundName, roundMatches]) => (
