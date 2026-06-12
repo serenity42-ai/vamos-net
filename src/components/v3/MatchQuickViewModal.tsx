@@ -137,7 +137,7 @@ export default function MatchQuickViewModal({
 
       {/* Sheet */}
       <div
-        className="relative w-full max-w-[460px] overflow-y-auto overflow-x-hidden rounded-20"
+        className="relative w-full max-w-[520px] overflow-y-auto overflow-x-hidden rounded-20"
         style={{
           background: "#0F1420",
           color: "#fff",
@@ -349,7 +349,6 @@ function Meta({ label, value }: { label: string; value: string }) {
 function PlayerColumn({
   players,
   playerLookup,
-  align,
   isWinner,
 }: {
   players: NormalizedMatch["players"]["team_1"];
@@ -357,14 +356,8 @@ function PlayerColumn({
   align: "left" | "right";
   isWinner: boolean;
 }) {
-  const isRight = align === "right";
   return (
-    <div
-      className={[
-        "flex flex-col gap-12",
-        isRight ? "items-end text-right" : "items-start text-left",
-      ].join(" ")}
-    >
+    <div className="flex flex-col items-center gap-16">
       {players.map((p) => {
         const profile = playerLookup.get(p.id);
         const flag = profile?.nationality
@@ -374,42 +367,37 @@ function PlayerColumn({
         return (
           <div
             key={p.id}
-            className={[
-              "flex items-center gap-8",
-              isRight ? "flex-row-reverse" : "flex-row",
-            ].join(" ")}
+            className="flex flex-col items-center gap-6 text-center"
           >
-            <div className="relative h-36 w-36 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5">
+            <div className="relative h-72 w-72 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5 sm:h-80 sm:w-80">
               {profile?.photo_url ? (
                 <Image
                   src={profile.photo_url}
                   alt={p.name}
                   fill
-                  sizes="36px"
+                  sizes="80px"
                   className="object-cover"
-                  style={{ objectPosition: "center 25%" }}
+                  style={{ objectPosition: "center 22%" }}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center font-display text-12 font-bold text-white/80">
+                <div className="flex h-full w-full items-center justify-center font-display text-20 font-bold text-white/80">
                   {p.name.charAt(0)}
                 </div>
               )}
             </div>
-            <div className={isRight ? "text-right" : "text-left"}>
-              <p
-                className={[
-                  "font-sans text-13 leading-tight",
-                  isWinner ? "font-bold text-white" : "font-medium text-white/85",
-                ].join(" ")}
-              >
-                {flag && (
-                  <span aria-hidden className="mr-4">
-                    {flag}
-                  </span>
-                )}
-                {short}
-              </p>
-            </div>
+            <p
+              className={[
+                "flex items-center justify-center gap-4 font-sans text-13 leading-tight",
+                isWinner ? "font-bold text-white" : "font-semibold text-white/85",
+              ].join(" ")}
+            >
+              {flag && (
+                <span aria-hidden className="text-14">
+                  {flag}
+                </span>
+              )}
+              <span>{short}</span>
+            </p>
           </div>
         );
       })}
