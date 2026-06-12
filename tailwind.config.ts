@@ -48,8 +48,13 @@ const config: Config = {
         display: ["Archivo", "Inter", "system-ui", "sans-serif"],
       },
       fontSize: {
-        // Token sizes mapped, line-height included
+        // Token sizes mapped, line-height included.
+        // Includes some intermediate sizes (10/11/13) used by dense UI
+        // pieces — brackets, attribution credits, player chips.
+        "10": ["10px", { lineHeight: "14px" }],
+        "11": ["11px", { lineHeight: "14px" }],
         "12": ["12px", { lineHeight: "16px" }],
+        "13": ["13px", { lineHeight: "18px" }],
         "14": ["14px", { lineHeight: "20px" }],
         "16": ["16px", { lineHeight: "24px" }],
         "20": ["20px", { lineHeight: "28px" }],

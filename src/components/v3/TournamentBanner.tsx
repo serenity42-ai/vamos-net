@@ -269,23 +269,28 @@ export default function TournamentBanner({
           </div>
         </div>
 
-        {/* Image credit — only shown when we have a real background photo */}
+        {/* Image credit — only shown when we have a real background photo.
+            Tiny, low-opacity, tucked in the corner; not part of the editorial. */}
         {imageUrl && imageCredit && (
-          <p className="absolute bottom-8 right-12 z-10 max-w-[60%] truncate text-right font-sans text-10 text-text-contrast/60">
+          <p
+            className="absolute bottom-6 right-10 z-10 max-w-[60%] truncate text-right font-sans text-text-contrast"
+            style={{ fontSize: "10px", lineHeight: "12px", opacity: 0.45 }}
+          >
             Photo:{" "}
             {imageCredit.source ? (
               <a
                 href={imageCredit.source}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-text-contrast/90 underline-offset-2 hover:underline"
+                className="underline-offset-2 hover:underline"
+                style={{ color: "inherit" }}
               >
                 {imageCredit.credit}
               </a>
             ) : (
               imageCredit.credit
             )}{" "}
-            ({imageCredit.licence})
+            · {imageCredit.licence}
           </p>
         )}
       </div>

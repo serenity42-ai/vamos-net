@@ -66,7 +66,7 @@ export default function BestPlayersStrip({
               )}
               {p.ranking != null && (
                 <span
-                  className="absolute -right-2 -top-2 flex h-22 min-w-[22px] items-center justify-center rounded-full bg-brand px-[6px] font-sans text-11 font-bold leading-none text-text-contrast"
+                  className="absolute -right-2 -top-2 flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-brand px-[6px] font-sans text-11 font-bold leading-none text-text-contrast"
                   aria-label={`Ranking ${p.ranking}`}
                 >
                   #{p.ranking}
