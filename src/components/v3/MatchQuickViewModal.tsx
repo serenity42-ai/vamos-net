@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Tournament, Player, LiveMatchData } from "@/lib/padel-api";
 import type { NormalizedMatch } from "@/lib/normalize-match";
-import { countryFlag } from "@/lib/padel-api";
+import { countryFlag, liveDataToScore } from "@/lib/padel-api";
 
 /**
  * MatchQuickViewModal — bottom-anchored dark dialog that opens when a user
@@ -118,6 +118,11 @@ export default function MatchQuickViewModal({
 
   const currentSetNumber = live?.sets?.length ?? match.score?.length ?? 0;
   const currentGame = computeCurrentGame(live);
+  // Prefer live set scores (so the in-progress set shows its current games,
+  // e.g. S2 5-4, instead of the stale 0-0 that ships in the initial prop).
+  const liveScore = live ? liveDataToScore(live) : null;
+  const displayScore =
+    liveScore && liveScore.length > 0 ? liveScore : match.score ?? [];
 
   return (
     <div
@@ -224,16 +229,16 @@ export default function MatchQuickViewModal({
               </div>
             )}
 
-            {(match.score?.length ?? 0) > 0 && (
+            {displayScore.length > 0 && (
               <div className="w-full text-center">
                 <p className="font-sans text-10 font-semibold uppercase tracking-[0.1em] text-white/60">
                   Set score
                 </p>
                 <div className="mt-6 space-y-3">
-                  {(match.score ?? []).map((s, i) => {
+                  {displayScore.map((s, i) => {
                     const isCurrent =
                       match.displayStatus === "live" &&
-                      i === (match.score?.length ?? 0) - 1;
+                      i === displayScore.length - 1;
                     return (
                       <div
                         key={i}
@@ -423,9 +428,19 @@ function computeCurrentGame(
   if (!live?.sets || live.sets.length === 0) return null;
   const lastSet = live.sets[live.sets.length - 1];
   const lastGame = lastSet?.games?.[lastSet.games.length - 1];
-  if (!lastGame?.game_score) return null;
-  const [t1, t2] = lastGame.game_score.split("-");
-  return { team1: t1 ?? "0", team2: t2 ?? "0" };
+  if (!lastGame) return null;
+  // CURRENT GAME is the live point score (15/30/40/Ad), which lives in the
+  // points[] array, NOT game_score (game_score is the cumulative games in the
+  // set, e.g. "5-4", which belongs in the set-score row). The last entry of
+  // points is the score of the point currently being played, formatted "40:15".
+  const pts = lastGame.points;
+  if (Array.isArray(pts) && pts.length > 0) {
+    const last = pts[pts.length - 1];
+    const [t1, t2] = last.split(/\s*[:|-]\s*/);
+    return { team1: t1 ?? "0", team2: t2 ?? "0" };
+  }
+  // No point data yet (game just started): show love-all rather than games.
+  return { team1: "0", team2: "0" };
 }
 
 function CloseIcon() {
