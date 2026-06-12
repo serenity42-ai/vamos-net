@@ -104,7 +104,7 @@ export default async function BusinessPage() {
               className="font-display text-mobile-heading-m md:text-desktop-heading-m mb-24"
               style={{ lineHeight: 1.1 }}
             >
-              Latest in courts & clubs
+              Latest in business
             </h2>
             <div className="grid gap-24 md:grid-cols-2 lg:grid-cols-3">
               {rest.map((a) => (
