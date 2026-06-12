@@ -105,24 +105,34 @@ function BriefcaseIcon({ active }: { active: boolean }) {
   );
 }
 
-function RacketIcon({ active }: { active: boolean }) {
-  // Padel racket silhouette — Gear & Improve pillar.
-  const fill = active ? "currentColor" : "none";
+function TrendingUpIcon({ active }: { active: boolean }) {
+  // Bar chart with rising trend arrow — 'Gear & Improve' pillar.
+  // Reads as "progress / level up", which is what the pillar is about.
   return (
     <svg
       viewBox="0 0 24 24"
       width="24"
       height="24"
-      fill={fill}
+      fill="none"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <ellipse cx="9" cy="9" rx="6" ry="7" />
-      <path d="M13.5 13.5 21 21" stroke="currentColor" fill="none" />
-      <path d="M9 6v6M6 9h6" stroke={active ? "var(--color-bg-white)" : "currentColor"} fill="none" strokeWidth="1.5" />
+      {/* Rising trend line + arrowhead */}
+      <path d="M3 17l6-6 4 4 8-8" />
+      <path d="M14 7h7v7" />
+      {/* Active fill: subtle baseline dots to feel anchored when selected */}
+      {active && (
+        <g
+          stroke={"var(--color-bg-white)"}
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <path d="M3 21h18" />
+        </g>
+      )}
     </svg>
   );
 }
@@ -137,7 +147,7 @@ const TABS: TabItem[] = [
     extraPrefixes: ["/news", "/scores", "/tournaments", "/rankings", "/matches", "/players", "/calendar", "/schedule"],
     icon: BallIcon,
   },
-  { href: "/gear", label: "Gear & Improve", matchPrefix: "/gear", icon: RacketIcon },
+  { href: "/gear", label: "Gear & Improve", matchPrefix: "/gear", icon: TrendingUpIcon },
 ];
 
 function isActive(pathname: string, item: TabItem) {
