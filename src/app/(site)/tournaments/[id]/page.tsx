@@ -363,6 +363,7 @@ export default async function TournamentDetailPage({
           scheduledMatches={scheduledMatches}
           finishedMatches={finishedMatches}
           todaysMatches={todaysMatches}
+          allMatches={validMatches}
           roster={roster}
           scheduleFilterOptions={scheduleFilterOptions}
           resultsFilterOptions={resultsFilterOptions}

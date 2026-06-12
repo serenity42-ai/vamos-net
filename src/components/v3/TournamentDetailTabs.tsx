@@ -1,14 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import Tabs from "@/components/v3/Tabs";
 import MatchCard from "@/components/v3/MatchCard";
 import MatchCardDesktop from "@/components/v3/MatchCardDesktop";
 import Cell from "@/components/v3/Cell";
-import TournamentMatchFilters, {
-  type FilterOption,
-} from "@/components/v3/TournamentMatchFilters";
+import TournamentBracket from "@/components/v3/TournamentBracket";
+import { type FilterOption } from "@/components/v3/TournamentMatchFilters";
 import type { NormalizedMatch } from "@/lib/normalize-match";
 import type { MatchPlayer } from "@/lib/padel-api";
 
@@ -34,6 +32,8 @@ export type TournamentDetailTabsProps = {
   scheduledMatches: NormalizedMatch[];
   finishedMatches: NormalizedMatch[];
   todaysMatches: NormalizedMatch[];
+  /** Full match list (any status) — the bracket needs this to render. */
+  allMatches: NormalizedMatch[];
   roster: MatchPlayer[];
   scheduleFilterOptions: {
     dates: FilterOption[];
@@ -122,11 +122,11 @@ function applyFilters(
 }
 
 export default function TournamentDetailTabs({
-  tournamentId,
   initialTab,
   scheduledMatches,
   finishedMatches,
   todaysMatches,
+  allMatches,
   roster,
   scheduleFilterOptions,
   resultsFilterOptions,
@@ -295,33 +295,7 @@ export default function TournamentDetailTabs({
       {/* ── Draw (v1 stub) ───────────────────────────────────────── */}
       {tab === "draw" && (
         <section>
-          <div className="rounded-24 border border-border-primary bg-bg-white p-48 text-center">
-            <p className="font-display text-20 font-bold uppercase tracking-[0.02em] text-text-primary">
-              Bracket coming soon
-            </p>
-            <p className="mt-8 font-sans text-14 text-text-secondary">
-              We&rsquo;re building a visual bracket view for this tournament.
-            </p>
-            <p className="mt-4 font-sans text-12 text-text-tertiary">
-              In the meantime, check the{" "}
-              <button
-                type="button"
-                onClick={() => setTab("results")}
-                className="text-brand hover:underline"
-              >
-                Results
-              </button>{" "}
-              or{" "}
-              <button
-                type="button"
-                onClick={() => setTab("schedule")}
-                className="text-brand hover:underline"
-              >
-                Schedule
-              </button>{" "}
-              tab.
-            </p>
-          </div>
+          <TournamentBracket matches={allMatches} />
         </section>
       )}
 
