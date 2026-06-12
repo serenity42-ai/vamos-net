@@ -17,6 +17,7 @@ import {
 } from "@/lib/padel-api";
 import {
   normalizeMatches,
+  normalizeMatchesIncludingByes,
   buildContext,
   type NormalizedMatch,
 } from "@/lib/normalize-match";
@@ -225,6 +226,10 @@ export default async function TournamentDetailPage({
     (m) => m.players.team_1.length > 0 || m.players.team_2.length > 0,
   );
 
+  // Bracket needs the full structural shape of the draw, including byes
+  // (one team auto-advances). Don't filter those out.
+  const bracketMatches = normalizeMatchesIncludingByes(matches, ctx);
+
   const scheduledMatches = validMatches.filter(
     (m) => m.displayStatus === "scheduled" || m.displayStatus === "live",
   );
@@ -363,7 +368,7 @@ export default async function TournamentDetailPage({
           scheduledMatches={scheduledMatches}
           finishedMatches={finishedMatches}
           todaysMatches={todaysMatches}
-          allMatches={validMatches}
+          allMatches={bracketMatches}
           roster={roster}
           scheduleFilterOptions={scheduleFilterOptions}
           resultsFilterOptions={resultsFilterOptions}

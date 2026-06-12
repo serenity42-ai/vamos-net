@@ -270,3 +270,16 @@ export function normalizeMatches(
     .map((m) => normalizeMatch(m, ctx))
     .filter((m) => m.visible);
 }
+
+/**
+ * Normalize without dropping byes / phantom matches. Used by views that
+ * need the structural shape of the draw (bracket) to be complete — a bye
+ * is a real slot that auto-advances one pair, and the bracket needs to
+ * render it as such.
+ */
+export function normalizeMatchesIncludingByes(
+  matches: Match[],
+  ctx: NormalizeContext,
+): NormalizedMatch[] {
+  return matches.map((m) => normalizeMatch(m, ctx));
+}
