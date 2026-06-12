@@ -1,15 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Tabs from "@/components/v3/Tabs";
 import TournamentBanner from "@/components/v3/TournamentBanner";
-import MatchCard from "@/components/v3/MatchCard";
-import MatchCardDesktop from "@/components/v3/MatchCardDesktop";
-import Cell from "@/components/v3/Cell";
 import BestPlayersStrip, { type BestPlayer } from "@/components/v3/BestPlayersStrip";
-import TournamentMatchFilters, { type FilterOption } from "@/components/v3/TournamentMatchFilters";
+import TournamentDetailTabs from "@/components/v3/TournamentDetailTabs";
+import type { FilterOption } from "@/components/v3/TournamentMatchFilters";
 import {
   getTournament,
-  getTournamentMatches,
+  getAllTournamentMatches,
   getLiveMatches,
   getPlayer,
   levelLabel,
@@ -18,7 +15,11 @@ import {
   type MatchPlayer,
   type LiveMatchData,
 } from "@/lib/padel-api";
-import { normalizeMatches, buildContext, type NormalizedMatch } from "@/lib/normalize-match";
+import {
+  normalizeMatches,
+  buildContext,
+  type NormalizedMatch,
+} from "@/lib/normalize-match";
 import { getTourToday } from "@/lib/tour-date";
 
 // ---------------------------------------------------------------------------
@@ -26,22 +27,28 @@ import { getTourToday } from "@/lib/tour-date";
 // ---------------------------------------------------------------------------
 
 function stripEmpty<T extends object>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj, (_k, v) =>
-    v === undefined || v === null ? undefined : v
-  )) as T;
+  return JSON.parse(
+    JSON.stringify(obj, (_k, v) =>
+      v === undefined || v === null ? undefined : v,
+    ),
+  ) as T;
 }
 
-function tournamentEventStatus(status: Tournament["status"]): string {
-  switch (status) {
-    case "live": return "https://schema.org/EventScheduled";
-    case "finished": return "https://schema.org/EventScheduled";
-    case "pending": return "https://schema.org/EventScheduled";
-    default: return "https://schema.org/EventScheduled";
-  }
+function tournamentEventStatus(_status: Tournament["status"]): string {
+  return "https://schema.org/EventScheduled";
 }
 
-function organizerForLevel(level: string): { "@type": string; name: string } {
-  if (level.startsWith("premier_") || level === "p1" || level === "p2" || level === "major" || level === "finals") {
+function organizerForLevel(level: string): {
+  "@type": string;
+  name: string;
+} {
+  if (
+    level.startsWith("premier_") ||
+    level === "p1" ||
+    level === "p2" ||
+    level === "major" ||
+    level === "finals"
+  ) {
     return { "@type": "SportsOrganization", name: "Premier Padel" };
   }
   return { "@type": "SportsOrganization", name: "FIP" };
@@ -67,10 +74,6 @@ export async function generateMetadata({
     return { title: "Tournament Not Found | VAMOS" };
   }
 }
-
-type DetailTab = "schedule" | "results" | "draw" | "players";
-
-const VALID_TABS: DetailTab[] = ["schedule", "results", "draw", "players"];
 
 /** How many top-ranked players to feature in the Best Players strip. */
 const BEST_PLAYERS_LIMIT = 10;
@@ -105,39 +108,6 @@ function dateKey(iso: string | null): string {
   }
 }
 
-/**
- * Groups matches by round, preserving the original numerical round order.
- */
-function groupByRound(matchList: NormalizedMatch[]): Array<[string, NormalizedMatch[]]> {
-  const groups = new Map<string, NormalizedMatch[]>();
-  for (const m of matchList) {
-    const key = m.round_name || `Round ${m.round}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(m);
-  }
-  return Array.from(groups.entries()).sort((a, b) => {
-    const aRound = a[1][0]?.round ?? 99;
-    const bRound = b[1][0]?.round ?? 99;
-    return aRound - bRound;
-  });
-}
-
-/**
- * Groups matches by ISO date string, oldest first.
- */
-function groupByDate(matchList: NormalizedMatch[]): Array<[string, NormalizedMatch[]]> {
-  const groups = new Map<string, NormalizedMatch[]>();
-  for (const m of matchList) {
-    const key = dateKey(m.played_at);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(m);
-  }
-  return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
-}
-
-/**
- * Returns a unique roster (player id → player) extracted from every match.
- */
 function collectRoster(matchList: NormalizedMatch[]): MatchPlayer[] {
   const map = new Map<number, MatchPlayer>();
   for (const m of matchList) {
@@ -148,19 +118,10 @@ function collectRoster(matchList: NormalizedMatch[]): MatchPlayer[] {
   return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/**
- * Best players (S18): fetch profiles for the unique roster and pick the
- * lowest-ranked (= highest world rank) players still entered in the
- * tournament. Caps at BEST_PLAYERS_LIMIT to keep the API budget bounded
- * and the strip scannable.
- *
- * Fails soft per-player — one bad fetch never kills the strip.
- */
 async function loadBestPlayers(
   roster: MatchPlayer[],
 ): Promise<BestPlayer[]> {
   if (roster.length === 0) return [];
-
   const ids = roster.slice(0, 64).map((p) => p.id);
   const profiles = await Promise.all(
     ids.map(async (id) => {
@@ -171,7 +132,6 @@ async function loadBestPlayers(
       }
     }),
   );
-
   return profiles
     .filter((p): p is NonNullable<typeof p> => p !== null)
     .filter((p) => typeof p.ranking === "number" && p.ranking > 0)
@@ -186,9 +146,6 @@ async function loadBestPlayers(
     }));
 }
 
-/**
- * Build the option lists for the S20 filter dropdowns.
- */
 function buildFilterOptions(matchList: NormalizedMatch[]): {
   dates: FilterOption[];
   rounds: FilterOption[];
@@ -225,24 +182,6 @@ function buildFilterOptions(matchList: NormalizedMatch[]): {
   return { dates, rounds, courts };
 }
 
-/** Apply the active filter row to a match list. */
-function applyFilters(
-  list: NormalizedMatch[],
-  filters: { date?: string; round?: string; court?: string },
-): NormalizedMatch[] {
-  return list.filter((m) => {
-    if (filters.date && dateKey(m.played_at) !== filters.date) return false;
-    if (filters.round) {
-      const roundKey = m.round_name || `Round ${m.round}`;
-      if (roundKey !== filters.round) return false;
-    }
-    if (filters.court) {
-      if (!m.court || m.court.trim() !== filters.court) return false;
-    }
-    return true;
-  });
-}
-
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -252,7 +191,7 @@ export default async function TournamentDetailPage({
   searchParams,
 }: {
   params: { id: string };
-  searchParams: { tab?: string; date?: string; round?: string; court?: string };
+  searchParams: { tab?: string };
 }) {
   const id = parseInt(params.id);
   if (Number.isNaN(id)) notFound();
@@ -263,15 +202,14 @@ export default async function TournamentDetailPage({
 
   try {
     tournament = await getTournament(id);
-    const [matchesRes, liveRes] = await Promise.all([
-      getTournamentMatches(id, {
-        per_page: "100",
+    const [matchesAll, liveRes] = await Promise.all([
+      getAllTournamentMatches(id, {
         sort_by: "played_at",
         order_by: "asc",
       }),
       getLiveMatches().catch(() => ({ data: [] as LiveMatchData[] })),
     ]);
-    matches = matchesRes.data;
+    matches = matchesAll;
     liveData = liveRes.data;
   } catch {
     notFound();
@@ -284,15 +222,8 @@ export default async function TournamentDetailPage({
   const normalized = normalizeMatches(matches, ctx);
 
   const validMatches = normalized.filter(
-    (m) =>
-      m.players.team_1.length > 0 || m.players.team_2.length > 0,
+    (m) => m.players.team_1.length > 0 || m.players.team_2.length > 0,
   );
-
-  const tab = (
-    VALID_TABS.includes(searchParams.tab as DetailTab)
-      ? searchParams.tab
-      : "schedule"
-  ) as DetailTab;
 
   const scheduledMatches = validMatches.filter(
     (m) => m.displayStatus === "scheduled" || m.displayStatus === "live",
@@ -301,54 +232,14 @@ export default async function TournamentDetailPage({
     (m) => m.displayStatus === "finished",
   );
 
-  // S19 — Today's Matches: scheduled-or-live matches whose date == tour today.
   const todaysMatches = scheduledMatches.filter(
     (m) => dateKey(m.played_at) === todayStr,
   );
 
-  // S20 — active filter values from URL (date / round / court).
-  const filters = {
-    date: searchParams.date,
-    round: searchParams.round,
-    court: searchParams.court,
-  };
-
-  const filteredScheduled = applyFilters(scheduledMatches, filters);
-  const filteredFinished = applyFilters(finishedMatches, filters);
-
-  const scheduleGroups = groupByDate(filteredScheduled);
-  const resultsGroups = groupByRound(filteredFinished);
   const roster = collectRoster(validMatches);
-
-  // S18 — Best Players strip (top-ranked entrants). Server-fetched profiles.
   const bestPlayers = await loadBestPlayers(roster);
-
-  // S20 — filter facets derived from the relevant match pool.
   const scheduleFilterOptions = buildFilterOptions(scheduledMatches);
   const resultsFilterOptions = buildFilterOptions(finishedMatches);
-
-  const tabItems = [
-    {
-      label: "Schedule",
-      href: `/tournaments/${id}`,
-      active: tab === "schedule",
-    },
-    {
-      label: "Results",
-      href: `/tournaments/${id}?tab=results`,
-      active: tab === "results",
-    },
-    {
-      label: "Draw",
-      href: `/tournaments/${id}?tab=draw`,
-      active: tab === "draw",
-    },
-    {
-      label: "Players",
-      href: `/tournaments/${id}?tab=players`,
-      active: tab === "players",
-    },
-  ];
 
   // ---------------------------------------------------------------------------
   // Schema.org JSON-LD
@@ -359,10 +250,11 @@ export default async function TournamentDetailPage({
     return parts.length ? parts[parts.length - 1] : "TBD";
   };
 
-  // Top 5 upcoming/live matches as nested SportsEvent
   const subEventSchemas = scheduledMatches.slice(0, 5).map((m) => {
-    const mT1 = m.players.team_1.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
-    const mT2 = m.players.team_2.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
+    const mT1 =
+      m.players.team_1.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
+    const mT2 =
+      m.players.team_2.map((p) => lastWord(p?.name)).join(" / ") || "TBD";
     return stripEmpty({
       "@type": "SportsEvent",
       name: `${mT1} vs ${mT2}`,
@@ -372,12 +264,18 @@ export default async function TournamentDetailPage({
         {
           "@type": "SportsTeam",
           name: mT1,
-          member: m.players.team_1.map((p) => ({ "@type": "Person", name: p.name })),
+          member: m.players.team_1.map((p) => ({
+            "@type": "Person",
+            name: p.name,
+          })),
         },
         {
           "@type": "SportsTeam",
           name: mT2,
-          member: m.players.team_2.map((p) => ({ "@type": "Person", name: p.name })),
+          member: m.players.team_2.map((p) => ({
+            "@type": "Person",
+            name: p.name,
+          })),
         },
       ],
     });
@@ -455,196 +353,21 @@ export default async function TournamentDetailPage({
           ctaHref={`/tournaments/${id}?tab=schedule`}
         />
 
-        {/* Best Players strip (S18) — sits between banner and tabs so it shows on every tab */}
+        {/* Best Players strip (S18) — sits between banner and tabs */}
         <BestPlayersStrip players={bestPlayers} />
 
-        {/* Tabs */}
-        <div className="mt-24 mb-24 -mx-16 sm:-mx-24 lg:-mx-32 sm:mx-0">
-          <Tabs items={tabItems} ariaLabel="Tournament section navigation" />
-        </div>
-
-        {/* ── Schedule ─────────────────────────────────────────────── */}
-        {tab === "schedule" && (
-          <section>
-            {/* S19 — Today's Matches strip (only when there are any) */}
-            {todaysMatches.length > 0 && (
-              <div className="mb-32">
-                <h2 className="mb-12 font-display text-16 font-bold uppercase tracking-[0.04em] text-text-primary">
-                  Today&rsquo;s matches
-                </h2>
-                <div className="grid grid-cols-1 gap-8 md:hidden">
-                  {todaysMatches.map((m) => (
-                    <MatchCard key={`today-${m.id}`} match={m} />
-                  ))}
-                </div>
-                <div className="hidden flex-col gap-8 md:flex">
-                  {todaysMatches.map((m) => (
-                    <MatchCardDesktop key={`today-${m.id}`} match={m} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* S20 — Filter row: date · round · court */}
-            <TournamentMatchFilters
-              dates={scheduleFilterOptions.dates}
-              rounds={scheduleFilterOptions.rounds}
-              courts={scheduleFilterOptions.courts}
-              selected={filters}
-              tab="schedule"
-            />
-
-            {scheduleGroups.length === 0 ? (
-              <EmptyState
-                message={
-                  scheduledMatches.length > 0
-                    ? "No matches match the current filters."
-                    : "No upcoming matches scheduled."
-                }
-              />
-            ) : (
-              <div className="space-y-32">
-                {scheduleGroups.map(([day, dayMatches]) => {
-                  const byRound = groupByRound(dayMatches);
-                  return (
-                    <div key={day}>
-                      <h2 className="mb-12 font-display text-20 font-bold uppercase tracking-[0.02em] text-text-primary">
-                        {formatMatchDay(dayMatches[0]?.played_at ?? null)}
-                      </h2>
-                      {byRound.map(([roundName, roundMatches]) => (
-                        <div key={roundName} className="mb-20">
-                          <p className="mb-8 font-sans text-12 font-semibold uppercase tracking-[0.06em] text-text-secondary">
-                            {roundName}
-                          </p>
-                          <div className="grid grid-cols-1 gap-8 md:hidden">
-                            {roundMatches.map((m) => (
-                              <MatchCard key={m.id} match={m} />
-                            ))}
-                          </div>
-                          <div className="hidden flex-col gap-8 md:flex">
-                            {roundMatches.map((m) => (
-                              <MatchCardDesktop key={m.id} match={m} />
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* ── Results ──────────────────────────────────────────────── */}
-        {tab === "results" && (
-          <section>
-            {/* S20 — Filter row on Results too: date · round · court */}
-            <TournamentMatchFilters
-              dates={resultsFilterOptions.dates}
-              rounds={resultsFilterOptions.rounds}
-              courts={resultsFilterOptions.courts}
-              selected={filters}
-              tab="results"
-            />
-
-            {resultsGroups.length === 0 ? (
-              <EmptyState
-                message={
-                  finishedMatches.length > 0
-                    ? "No matches match the current filters."
-                    : "No finished matches yet."
-                }
-              />
-            ) : (
-              <div className="space-y-24">
-                {resultsGroups.map(([roundName, roundMatches]) => (
-                  <div key={roundName}>
-                    <h2 className="mb-12 font-display text-20 font-bold uppercase tracking-[0.02em] text-text-primary">
-                      {roundName}
-                    </h2>
-                    <div className="grid grid-cols-1 gap-8 md:hidden">
-                      {roundMatches.map((m) => (
-                        <MatchCard key={m.id} match={m} />
-                      ))}
-                    </div>
-                    <div className="hidden flex-col gap-8 md:flex">
-                      {roundMatches.map((m) => (
-                        <MatchCardDesktop key={m.id} match={m} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* ── Draw (v1 stub) ───────────────────────────────────────── */}
-        {tab === "draw" && (
-          <section>
-            <div className="rounded-24 border border-border-primary bg-bg-white p-48 text-center">
-              <p className="font-display text-20 font-bold uppercase tracking-[0.02em] text-text-primary">
-                Bracket coming soon
-              </p>
-              <p className="mt-8 font-sans text-14 text-text-secondary">
-                We&rsquo;re building a visual bracket view for this tournament.
-              </p>
-              <p className="mt-4 font-sans text-12 text-text-tertiary">
-                In the meantime, check the{" "}
-                <Link
-                  href={`/tournaments/${id}?tab=results`}
-                  className="text-brand hover:underline"
-                >
-                  Results
-                </Link>{" "}
-                or{" "}
-                <Link
-                  href={`/tournaments/${id}?tab=schedule`}
-                  className="text-brand hover:underline"
-                >
-                  Schedule
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </section>
-        )}
-
-        {/* ── Players ──────────────────────────────────────────────── */}
-        {tab === "players" && (
-          <section>
-            {roster.length === 0 ? (
-              <EmptyState message="No players listed yet for this tournament." />
-            ) : (
-              <>
-                <p className="mb-16 font-sans text-12 font-semibold uppercase tracking-[0.06em] text-text-secondary">
-                  {roster.length} player{roster.length === 1 ? "" : "s"}
-                </p>
-                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                  {roster.map((p) => (
-                    <Cell
-                      key={p.id}
-                      title={p.name}
-                      subtitle={p.side ? `Side: ${p.side}` : undefined}
-                      href={`/players/${p.id}`}
-                      chevron
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </section>
-        )}
+        {/* Tabs + tab content — client-side so switching is instant */}
+        <TournamentDetailTabs
+          tournamentId={id}
+          initialTab={searchParams.tab}
+          scheduledMatches={scheduledMatches}
+          finishedMatches={finishedMatches}
+          todaysMatches={todaysMatches}
+          roster={roster}
+          scheduleFilterOptions={scheduleFilterOptions}
+          resultsFilterOptions={resultsFilterOptions}
+        />
       </div>
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="rounded-16 border border-border-primary bg-bg-white p-48 text-center">
-      <p className="font-sans text-14 text-text-secondary">{message}</p>
     </div>
   );
 }

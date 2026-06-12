@@ -372,6 +372,7 @@ export async function getTournamentMatches(
     sort_by?: string;
     order_by?: string;
     per_page?: string;
+    page?: string;
   }
 ): Promise<PaginatedResponse<Match>> {
   return get(
@@ -379,6 +380,35 @@ export async function getTournamentMatches(
     params as Record<string, string>,
     60
   );
+}
+
+/**
+ * Fetch every match in a tournament, paginating through PadelAPI's 50-per-page
+ * response. The flat /tournaments/{id}/matches endpoint returns the FIRST round
+ * of 64 on page 1; later rounds (quarters / semis / finals) live on page 2+,
+ * which is exactly the upcoming-match data the tournament page needs.
+ */
+export async function getAllTournamentMatches(
+  tournamentId: number,
+  params?: { category?: string; round?: string; sort_by?: string; order_by?: string },
+): Promise<Match[]> {
+  const perPage = "50";
+  const first = await getTournamentMatches(tournamentId, { ...params, per_page: perPage, page: "1" });
+  let all: Match[] = first.data;
+  if (first.meta.last_page > 1) {
+    const pages = Array.from({ length: first.meta.last_page - 1 }, (_, i) => i + 2);
+    const extras = await Promise.all(
+      pages.map((p) =>
+        getTournamentMatches(tournamentId, {
+          ...params,
+          per_page: perPage,
+          page: String(p),
+        }).catch(() => ({ data: [] as Match[] } as PaginatedResponse<Match>)),
+      ),
+    );
+    for (const e of extras) all = all.concat(e.data);
+  }
+  return all;
 }
 
 // ---------------------------------------------------------------------------
