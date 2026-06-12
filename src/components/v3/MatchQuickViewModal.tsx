@@ -281,26 +281,33 @@ export default function MatchQuickViewModal({
           />
         </div>
 
-        {/* Tournament strip */}
-        {tournament && (
-          <Link
-            href={`/tournaments/${tournament.id}`}
-            className="flex items-center gap-12 border-t border-white/10 px-16 py-12 transition-colors hover:bg-white/5"
-          >
+        {/* Open-match strip — click anywhere on the row to drill into the
+            full match detail page. onClick closes the modal so the new
+            page is visible after Next's soft navigation. */}
+        <Link
+          href={`/matches/${match.id}`}
+          onClick={onClose}
+          className="flex items-center gap-12 border-t border-white/10 px-16 py-12 transition-colors hover:bg-white/5"
+        >
+          {tournament ? (
             <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 font-display text-14 font-bold text-white">
               {tournament.name.slice(0, 2).toUpperCase()}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-14 font-bold text-white">
-                {tournament.name}
-              </p>
-              <p className="truncate font-sans text-12 text-white/60">
-                {match.round_name || "View tournament"}
-              </p>
+          ) : (
+            <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5">
+              <ChevronRight />
             </div>
-            <ChevronRight />
-          </Link>
-        )}
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-14 font-bold text-white">
+              {tournament?.name ?? "Match details"}
+            </p>
+            <p className="truncate font-sans text-12 text-white/60">
+              Open full match page
+            </p>
+          </div>
+          <ChevronRight />
+        </Link>
 
         {/* Meta row: venue, ground, location */}
         {tournament && (
