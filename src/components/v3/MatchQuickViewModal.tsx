@@ -118,7 +118,6 @@ export default function MatchQuickViewModal({
 
   const currentSetNumber = live?.sets?.length ?? match.score?.length ?? 0;
   const currentGame = computeCurrentGame(live);
-  const matchScore = computeMatchScore(match);
 
   return (
     <div
@@ -260,16 +259,7 @@ export default function MatchQuickViewModal({
               </div>
             )}
 
-            {matchScore && (
-              <div className="text-center">
-                <p className="font-sans text-10 font-semibold uppercase tracking-[0.1em] text-white/60">
-                  Match score
-                </p>
-                <p className="mt-4 font-display text-24 font-bold tabular-nums">
-                  {matchScore.team1} - {matchScore.team2}
-                </p>
-              </div>
-            )}
+
           </div>
 
           {/* Team 2 column */}
@@ -436,22 +426,6 @@ function computeCurrentGame(
   if (!lastGame?.game_score) return null;
   const [t1, t2] = lastGame.game_score.split("-");
   return { team1: t1 ?? "0", team2: t2 ?? "0" };
-}
-
-function computeMatchScore(
-  match: NormalizedMatch,
-): { team1: number; team2: number } | null {
-  if (!match.score || match.score.length === 0) return null;
-  let t1 = 0;
-  let t2 = 0;
-  for (const s of match.score) {
-    const a = parseInt(String(s.team_1).replace(/\(.*\)/, ""), 10);
-    const b = parseInt(String(s.team_2).replace(/\(.*\)/, ""), 10);
-    if (!Number.isFinite(a) || !Number.isFinite(b)) continue;
-    if (a > b) t1++;
-    else if (b > a) t2++;
-  }
-  return { team1: t1, team2: t2 };
 }
 
 function CloseIcon() {
