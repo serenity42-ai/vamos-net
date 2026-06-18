@@ -13,8 +13,18 @@ import type { NextRequest } from "next/server";
 // extra setup; deploy environments MUST set PREVIEW_SECRET.
 const PREVIEW_SECRET = process.env.PREVIEW_SECRET || "vamos2026";
 
+// Public launch switch. When the site is live, the coming-soon gate is fully
+// bypassed for everyone. Default is LIVE. To re-enable the gate (re-hide the
+// site), set SITE_LIVE="false" in Vercel project env and redeploy.
+const SITE_LIVE = (process.env.SITE_LIVE ?? "true").toLowerCase() !== "false";
+
 export function middleware(request: NextRequest) {
   const { pathname, hostname, searchParams } = request.nextUrl;
+
+  // Site is live: let all traffic through, no coming-soon gate.
+  if (SITE_LIVE) {
+    return NextResponse.next();
+  }
 
   // Always allow these paths through
   if (
