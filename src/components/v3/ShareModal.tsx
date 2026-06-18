@@ -8,8 +8,10 @@
  *  - Backdrop blur, centered card, rounded-32 on desktop, full-width sheet on mobile
  *  - Closes on backdrop click + ESC
  *  - "Copy Link" copies window.location.href and shows a toast for 2s
- *  - Instagram has no public web share endpoint → uses Twitter intent as the
- *    universal-link fallback per the spec
+ *  - Instagram has no public web share endpoint. We do NOT redirect to another
+ *    network. On mobile we open the native share sheet (which surfaces the real
+ *    Instagram app); otherwise we copy the link so the user can paste it into
+ *    Instagram. Never open X/Twitter from the Instagram button.
  *
  * Reusable: pass { url, title, onClose }.
  */
@@ -151,11 +153,31 @@ export default function ShareModal({ url, title, onClose }: ShareModalProps) {
     window.setTimeout(() => setToast(null), 2000);
   }
 
+  // Instagram has no public web share-intent URL. On devices with the native
+  // share sheet (mobile), invoke it so the real Instagram app shows up. On
+  // desktop, copy the link and tell the user to paste it into Instagram.
+  // We never redirect to X/Twitter from the Instagram button.
+  async function handleInstagram() {
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title, url: shareUrl });
+        return;
+      } catch {
+        // user cancelled or share failed — fall through to copy
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setToast("Link copied — paste it into Instagram");
+    } catch {
+      setToast("Could not copy");
+    }
+    window.setTimeout(() => setToast(null), 2500);
+  }
+
   const encoded = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encoded}`;
-  // Instagram has no public web share endpoint; per spec, fall back to Twitter intent.
-  const instagramFallback = `https://twitter.com/intent/tweet?url=${encoded}&text=${encodedTitle}`;
   const mailto = `mailto:?subject=${encodedTitle}&body=${encoded}`;
 
   return (
@@ -187,7 +209,7 @@ export default function ShareModal({ url, title, onClose }: ShareModalProps) {
           <ShareButton
             label="Instagram"
             icon={<InstagramIcon />}
-            href={instagramFallback}
+            onClick={handleInstagram}
           />
           <ShareButton
             label="Facebook"

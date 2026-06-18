@@ -149,6 +149,16 @@ export default function BannerDesktop({
         ))}
       </div>
 
+      {/* Full-card click target — makes the whole banner open the article,
+          not just the "Read article" button. Sits above the images (z-0) but
+          below the interactive controls (dots/arrows/button at z-[5]+/z-10),
+          which stop propagation / sit on top so they still work. */}
+      <Link
+        href={href}
+        aria-label={slide.title}
+        className="absolute inset-0 z-[2]"
+      />
+
       {/* Orange ellipse decoration — bottom-right (static).
           Softened with blur + reduced opacity so it reads as a brand glow
           rather than a hard disc that fights the headline + CTA above it.
@@ -202,7 +212,7 @@ export default function BannerDesktop({
           replays the fade + slide-up animation on slide change. */}
       <div
         key={index}
-        className="relative z-[5] flex h-full items-end p-32 lg:p-48 motion-reduce:!animate-none"
+        className="pointer-events-none relative z-[5] flex h-full items-end p-32 lg:p-48 motion-reduce:!animate-none"
         style={{
           animation:
             "vamosBannerContentIn 400ms ease 200ms both",
@@ -224,7 +234,7 @@ export default function BannerDesktop({
               </p>
             )}
           </div>
-          <div>
+          <div className="pointer-events-auto relative z-[6] inline-flex">
             <Button
               as={Link}
               href={href}

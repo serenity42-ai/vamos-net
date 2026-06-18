@@ -168,11 +168,20 @@ export default function BannerMobile({
         ))}
       </div>
 
+      {/* Full-card tap target — opens the article when tapping the image/text.
+          Sits above the image (z-0) and below the content controls (z-[5]).
+          Touch events bubble to the section, so swipe still works. */}
+      <Link
+        href={href}
+        aria-label={slide.title}
+        className="absolute inset-0 z-[2]"
+      />
+
       {/* Content — bottom stack. KEYED on index so it remounts and
           replays the fade + slide-up animation on slide change. */}
       <div
         key={index}
-        className="relative z-[5] flex h-full flex-col justify-end gap-12 p-16 motion-reduce:!animate-none"
+        className="pointer-events-none relative z-[5] flex h-full flex-col justify-end gap-12 p-16 motion-reduce:!animate-none"
         style={{ animation: "vamosBannerMobileContentIn 350ms ease 150ms both" }}
       >
         <div className="flex flex-col gap-8">
@@ -193,7 +202,7 @@ export default function BannerMobile({
 
         {/* Pagination dots — centered */}
         {count > 1 && (
-          <div className="flex items-center justify-center gap-12">
+          <div className="pointer-events-auto flex items-center justify-center gap-12">
             {slides.map((_, i) => (
               <button
                 key={i}
@@ -217,7 +226,7 @@ export default function BannerMobile({
           href={href}
           variant="outline"
           trailingIcon="arrow"
-          className="w-full justify-between"
+          className="pointer-events-auto w-full justify-between"
         >
           {cta}
         </Button>
