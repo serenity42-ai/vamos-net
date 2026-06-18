@@ -104,5 +104,10 @@
     "primary": "tour-news",
     "secondary": [],
     "hubSection": null
+  },
+  "reserve-cup-marbella-2026": {
+    "primary": "tour-news",
+    "secondary": ["business"],
+    "hubSection": null
   }
 }
