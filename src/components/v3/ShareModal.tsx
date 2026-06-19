@@ -3,7 +3,8 @@
 /**
  * ShareModal (v3) — generic share dialog.
  *
- * Annotation A7: share modal with Instagram, Facebook, Copy Link, Email.
+ * Annotation A7: share modal with LinkedIn, Instagram, X, Copy Link, Email.
+ * LinkedIn leads — it's our primary B2B / newsletter-conversion channel.
  *
  *  - Backdrop blur, centered card, rounded-32 on desktop, full-width sheet on mobile
  *  - Closes on backdrop click + ESC
@@ -54,6 +55,22 @@ function FacebookIcon() {
         d="M14 9V7a1 1 0 011-1h2V3h-3a4 4 0 00-4 4v2H7v3h2v8h3v-8h2.5l.5-3H14z"
         fill="currentColor"
       />
+    </svg>
+  );
+}
+
+function LinkedInIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z" />
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M18.244 2H21.5l-7.59 8.67L23 22h-6.7l-5.24-6.85L4.92 22H1.66l8.13-9.29L1 2h6.86l4.74 6.27L18.244 2Zm-1.18 18.02h1.86L7.04 3.86H5.04l12.024 16.16Z" />
     </svg>
   );
 }
@@ -178,6 +195,10 @@ export default function ShareModal({ url, title, onClose }: ShareModalProps) {
   const encoded = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encoded}`;
+  // LinkedIn deprecated the title/summary params, but the feed share intent
+  // still pre-fills from the URL's OG tags (which our articles set).
+  const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`;
+  const xUrl = `https://twitter.com/intent/tweet?url=${encoded}&text=${encodedTitle}`;
   const mailto = `mailto:?subject=${encodedTitle}&body=${encoded}`;
 
   return (
@@ -205,7 +226,13 @@ export default function ShareModal({ url, title, onClose }: ShareModalProps) {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-12 sm:grid-cols-4">
+        <div className="grid grid-cols-3 gap-12 sm:grid-cols-6">
+          <ShareButton
+            label="LinkedIn"
+            icon={<LinkedInIcon />}
+            href={linkedInUrl}
+          />
+          <ShareButton label="X" icon={<XIcon />} href={xUrl} />
           <ShareButton
             label="Instagram"
             icon={<InstagramIcon />}

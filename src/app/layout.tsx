@@ -66,6 +66,23 @@ const WEBSITE_SCHEMA = {
   },
 };
 
+// Organization schema — declares the brand identity + verified social
+// profiles (sameAs). Helps search engines connect vamos.net to the LinkedIn
+// and Instagram presence, which strengthens the "are these people legit"
+// credibility signal that matters for our B2B / industry audience.
+const ORGANIZATION_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "VAMOS",
+  alternateName: "Vamos.net",
+  url: "https://vamos.net",
+  logo: "https://vamos.net/brand/vamos-net-mark.svg",
+  sameAs: [
+    "https://www.linkedin.com/company/vamos-net/",
+    "https://www.instagram.com/vamos_net",
+  ],
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -77,6 +94,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_SCHEMA) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_SCHEMA) }}
         />
       </head>
       <body className="min-h-screen flex flex-col overflow-x-hidden">
