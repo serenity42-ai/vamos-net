@@ -31,6 +31,20 @@ const VALID_SOURCES = new Set([
   "gear",
   "article",
   "services",
+  "newsletter",
+  "other",
+]);
+
+// Optional self-reported audience segment from the /newsletter landing form.
+// Tagging members by role turns the list into a routable pipeline: an
+// `operator` with a club in the red is an advisory lead, an `investor` is a
+// future LP. Anything not in this set is dropped (never trust client input).
+const VALID_ROLES = new Set([
+  "operator",
+  "builder",
+  "investor",
+  "organizer",
+  "brand",
   "other",
 ]);
 
@@ -116,11 +130,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
   }
 
-  const data = (body ?? {}) as { email?: unknown; source?: unknown };
+  const data = (body ?? {}) as {
+    email?: unknown;
+    source?: unknown;
+    role?: unknown;
+  };
   const email =
     typeof data.email === "string" ? data.email.trim().toLowerCase() : "";
   const sourceRaw =
     typeof data.source === "string" ? data.source.trim().toLowerCase() : "";
+  const roleRaw =
+    typeof data.role === "string" ? data.role.trim().toLowerCase() : "";
 
   if (!email || email.length > EMAIL_MAX || !EMAIL_RE.test(email)) {
     return NextResponse.json(
@@ -133,6 +153,8 @@ export async function POST(req: NextRequest) {
     sourceRaw && sourceRaw.length <= SOURCE_MAX && VALID_SOURCES.has(sourceRaw)
       ? sourceRaw
       : "other";
+
+  const role = VALID_ROLES.has(roleRaw) ? roleRaw : "";
 
   if (!GHOST_URL || !GHOST_ADMIN_API_KEY) {
     console.error("[newsletter] Ghost env vars missing — signup not persisted");
@@ -150,10 +172,14 @@ export async function POST(req: NextRequest) {
     // Ghost auto-subscribes new members to any newsletter with
     // `subscribe_on_signup: true`. We've confirmed the "Vamos.net" default
     // newsletter has that flag enabled.
+    const labels = [`source:${source}`, "newsletter-signup"];
+    if (role) labels.push(`role:${role}`);
     await api.members.add({
       email,
-      labels: [`source:${source}`, "newsletter-signup"],
-      note: `Signed up via vamos.net (${source}) on ${new Date().toISOString()}`,
+      labels,
+      note: `Signed up via vamos.net (${source}${
+        role ? `, role:${role}` : ""
+      }) on ${new Date().toISOString()}`,
     });
     console.log(
       `[newsletter] subscribed ${redactEmail(email)} via ${source}`,
