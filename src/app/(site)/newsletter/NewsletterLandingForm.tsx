@@ -131,7 +131,7 @@ export default function NewsletterLandingForm() {
         Your angle on padel
       </label>
       <div
-        className="flex items-center bg-bg-white rounded-full w-full min-w-0"
+        className="flex items-center gap-8 bg-bg-white rounded-full w-full min-w-0"
         style={{ height: 64, paddingLeft: 24, paddingRight: 24 }}
       >
         <select
@@ -148,6 +148,21 @@ export default function NewsletterLandingForm() {
             </option>
           ))}
         </select>
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.25"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="shrink-0 pointer-events-none"
+          style={{ color: "var(--color-text-tertiary)" }}
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
       </div>
 
       <button
