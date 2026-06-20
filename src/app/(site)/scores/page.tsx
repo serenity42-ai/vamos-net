@@ -12,9 +12,8 @@ import { getTourToday } from "@/lib/tour-date";
 import { getActiveSeasonIds } from "@/lib/seasons";
 import ScoresClient from "./ScoresClient";
 
-// Live scores: render on-demand, not at build (PadelAPI can 429 during static
-// generation and time out the build). Edge-cached via next.config headers.
-export const dynamic = "force-dynamic";
+// ISR. padel-api client fails fast (timeout + deadline); no build/runtime hang.
+export const revalidate = 30;
 
 export const metadata = {
   title: "Live Scores | VAMOS",

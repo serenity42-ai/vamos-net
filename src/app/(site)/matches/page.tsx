@@ -11,10 +11,9 @@ import { getTourToday } from "@/lib/tour-date";
 import { getActiveSeasonIds } from "@/lib/seasons";
 import MatchesClient from "./MatchesClient";
 
-// Render on-demand, not at build. This page fetches live padel data that can
-// rate-limit (PadelAPI 429) during static generation and time out the build.
-// Edge caching is handled by Cache-Control headers in next.config.mjs.
-export const dynamic = "force-dynamic";
+// ISR. The padel-api client fails fast (timeout + deadline) so a rate-limited
+// API can't hang static generation or runtime; callers fall back gracefully.
+export const revalidate = 60;
 
 export const metadata = {
   title: "Matches | VAMOS",

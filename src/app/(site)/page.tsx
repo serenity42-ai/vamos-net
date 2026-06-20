@@ -25,11 +25,10 @@ import { getTourToday } from "@/lib/tour-date";
 import { getActiveSeasonIds } from "@/lib/seasons";
 import type { Article } from "@/data/mock";
 
-// Render on-demand, not at build. The homepage pulls live padel data that can
-// rate-limit (PadelAPI 429) during static generation and time out the Vercel
-// build. Edge caching (s-maxage=30) in next.config.mjs keeps it fast and fresh
-// without prerendering it at build time.
-export const dynamic = "force-dynamic";
+// ISR: prerender + revalidate every 30s. The padel-api client now fails fast
+// (per-request timeout + total deadline) and callers fall back to last-known
+// data, so a rate-limited API can't hang this page at build OR at runtime.
+export const revalidate = 30;
 
 async function fetchHomeData() {
   // Pull matches around today (±1 day) so live + about-to-start matches show

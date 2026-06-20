@@ -167,37 +167,75 @@ async function get<T>(
     });
   }
 
-  // Retry on 429 (rate limit) and 5xx with exponential backoff.
-  // PadelAPI Pro tier = 60 req/min; burst during SSR can trip this.
-  const maxAttempts = 4;
+  // Retry on 429 (rate limit) and 5xx — but with a HARD CEILING on total time.
+  // PadelAPI Pro tier = 60 req/min; burst during SSR/ISR can trip this.
+  //
+  // Two guarantees this function must keep, learned the hard way 2026-06-20:
+  //  1. No single fetch hangs forever  -> per-attempt AbortController timeout.
+  //  2. The whole call fails fast       -> total deadline across all retries.
+  // Without these, a rate-limited API made the homepage take 60s (force-dynamic)
+  // and timed out the Vercel build's 60s static-generation worker. Fail fast,
+  // let callers fall back to last-known data instead of blocking a page load.
+  const PER_ATTEMPT_TIMEOUT_MS = 5000;
+  const TOTAL_DEADLINE_MS = 9000;
+  const maxAttempts = 3;
+  const startedAt = Date.now();
   let lastErr: Error | null = null;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const res = await fetch(url.toString(), {
-      headers: headers(),
-      next: { revalidate },
-    });
+    const remaining = TOTAL_DEADLINE_MS - (Date.now() - startedAt);
+    if (remaining <= 0) break;
 
-    if (res.ok) return res.json();
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      Math.min(PER_ATTEMPT_TIMEOUT_MS, remaining),
+    );
+    try {
+      const res = await fetch(url.toString(), {
+        headers: headers(),
+        next: { revalidate },
+        signal: controller.signal,
+      });
 
-    const isRateLimit = res.status === 429;
-    const isServerError = res.status >= 500 && res.status < 600;
+      if (res.ok) return res.json();
 
-    if ((isRateLimit || isServerError) && attempt < maxAttempts - 1) {
-      // Honor Retry-After if present, else exponential: 1s, 2s, 4s
-      const retryAfter = res.headers.get("retry-after");
-      const delayMs = retryAfter
-        ? Math.min(parseInt(retryAfter) * 1000, 10000)
-        : Math.min(1000 * Math.pow(2, attempt), 8000);
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-      lastErr = new Error(`PadelAPI ${res.status}: ${res.statusText} — ${url.pathname}`);
-      continue;
+      const isRateLimit = res.status === 429;
+      const isServerError = res.status >= 500 && res.status < 600;
+      lastErr = new Error(
+        `PadelAPI ${res.status}: ${res.statusText} — ${url.pathname}`,
+      );
+
+      if ((isRateLimit || isServerError) && attempt < maxAttempts - 1) {
+        // Short backoff, but never exceed the total deadline. Cap any
+        // Retry-After so a hostile/large value can't stall the request.
+        const retryAfter = res.headers.get("retry-after");
+        const want = retryAfter
+          ? Math.min(parseInt(retryAfter) * 1000, 3000)
+          : Math.min(500 * Math.pow(2, attempt), 2000);
+        const budget = TOTAL_DEADLINE_MS - (Date.now() - startedAt);
+        if (budget <= 0) break;
+        await new Promise((resolve) => setTimeout(resolve, Math.min(want, budget)));
+        continue;
+      }
+
+      throw lastErr;
+    } catch (err) {
+      // AbortError (timeout) or network error — record and retry within deadline.
+      lastErr =
+        err instanceof Error
+          ? err
+          : new Error(`PadelAPI request failed — ${url.pathname}`);
+      if (attempt < maxAttempts - 1 && Date.now() - startedAt < TOTAL_DEADLINE_MS) {
+        continue;
+      }
+      throw lastErr;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    throw new Error(`PadelAPI ${res.status}: ${res.statusText} — ${url.pathname}`);
   }
 
-  throw lastErr ?? new Error(`PadelAPI failed after ${maxAttempts} attempts — ${url.pathname}`);
+  throw lastErr ?? new Error(`PadelAPI failed (deadline) — ${url.pathname}`);
 }
 
 async function post<T>(

@@ -10,8 +10,8 @@ import {
 import { getActiveSeasonIds, getCurrentYear } from "@/lib/seasons";
 
 // Tournament list changes weekly when events start/finish
-// Render on-demand, not at build (PadelAPI 429s can time out static generation).
-export const dynamic = "force-dynamic";
+// ISR. padel-api client fails fast (timeout + deadline); no build/runtime hang.
+export const revalidate = 1800;
 
 export const metadata = {
   title: "Tournaments | VAMOS",

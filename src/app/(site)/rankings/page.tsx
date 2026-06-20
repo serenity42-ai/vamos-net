@@ -9,8 +9,8 @@ import {
 } from "@/lib/padel-api";
 
 // Rankings update weekly post-tournament; 1h is plenty
-// Render on-demand, not at build (PadelAPI 429s can time out static generation).
-export const dynamic = "force-dynamic";
+// ISR. padel-api client fails fast (timeout + deadline); no build/runtime hang.
+export const revalidate = 3600;
 
 export const metadata = {
   title: "Rankings | VAMOS",
