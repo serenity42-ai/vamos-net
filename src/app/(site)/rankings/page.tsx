@@ -9,7 +9,8 @@ import {
 } from "@/lib/padel-api";
 
 // Rankings update weekly post-tournament; 1h is plenty
-export const revalidate = 3600;
+// Render on-demand, not at build (PadelAPI 429s can time out static generation).
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Rankings | VAMOS",

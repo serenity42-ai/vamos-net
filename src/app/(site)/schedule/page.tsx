@@ -11,7 +11,8 @@ import { getTourToday } from "@/lib/tour-date";
 import { getActiveSeasonIds } from "@/lib/seasons";
 import ScheduleClient from "./ScheduleClient";
 
-export const revalidate = 60;
+// Render on-demand, not at build (PadelAPI 429s can time out static generation).
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Schedule | VAMOS",

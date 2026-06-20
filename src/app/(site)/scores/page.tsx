@@ -12,7 +12,9 @@ import { getTourToday } from "@/lib/tour-date";
 import { getActiveSeasonIds } from "@/lib/seasons";
 import ScoresClient from "./ScoresClient";
 
-export const revalidate = 30;
+// Live scores: render on-demand, not at build (PadelAPI can 429 during static
+// generation and time out the build). Edge-cached via next.config headers.
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Live Scores | VAMOS",

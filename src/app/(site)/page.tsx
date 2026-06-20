@@ -25,10 +25,11 @@ import { getTourToday } from "@/lib/tour-date";
 import { getActiveSeasonIds } from "@/lib/seasons";
 import type { Article } from "@/data/mock";
 
-// Revalidate the homepage every 30s so live scores/tournaments don't go stale
-// beyond a half-minute. Individual API fetches keep their own shorter windows
-// (15s for /live) inside padel-api.ts.
-export const revalidate = 30;
+// Render on-demand, not at build. The homepage pulls live padel data that can
+// rate-limit (PadelAPI 429) during static generation and time out the Vercel
+// build. Edge caching (s-maxage=30) in next.config.mjs keeps it fast and fresh
+// without prerendering it at build time.
+export const dynamic = "force-dynamic";
 
 async function fetchHomeData() {
   // Pull matches around today (±1 day) so live + about-to-start matches show
