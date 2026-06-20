@@ -1,3 +1,5 @@
+import withSerwistInit from "@serwist/next";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -73,4 +75,17 @@ const nextConfig = {
     ];
   },
 };
-export default nextConfig;
+
+// PWA service worker (Serwist). Source lives at src/app/sw.ts; the compiled
+// worker is emitted to public/sw.js at build time (gitignored). Disabled in
+// dev so hot-reload isn't fighting a cached service worker — set
+// `disable: false` only if you specifically need to test SW behaviour locally.
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  cacheOnNavigation: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV === "development",
+});
+
+export default withSerwist(nextConfig);

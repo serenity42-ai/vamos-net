@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
 
@@ -11,6 +11,18 @@ export const metadata: Metadata = {
   description: "Live padel scores, rankings, player profiles, tournament draws, and news. The definitive platform for professional padel.",
   // meta-keywords is an obsolete signal that no major search engine reads.
   // Removed per restructure spec §8.1.
+
+  // PWA: link the web manifest so the browser offers "Add to Home Screen"
+  // and treats the site as an installable app.
+  manifest: "/manifest.webmanifest",
+  // iOS standalone behaviour (no Safari chrome once installed) + status-bar
+  // styling + home-screen title. Android reads this from the manifest, but
+  // iOS still needs these apple-specific hints.
+  appleWebApp: {
+    capable: true,
+    title: "VAMOS",
+    statusBarStyle: "black-translucent",
+  },
 
   openGraph: {
     title: "VAMOS — Everything Happens at the Net",
@@ -43,8 +55,20 @@ export const metadata: Metadata = {
       { url: "/favicon.svg", type: "image/svg+xml" },
     ],
     shortcut: "/favicon.svg",
-    apple: "/brand/vamos-net-mark.svg",
+    // Apple touch icon must be a non-transparent PNG; the SVG mark won't
+    // render on the iOS home screen. This is the brand mark on the dark field.
+    apple: "/icons/apple-touch-icon.png",
   },
+};
+
+// Viewport-level metadata. themeColor paints the Android status bar / PWA
+// title bar in brand dark; the viewport-fit handles iOS notch insets so the
+// standalone PWA can draw edge-to-edge.
+export const viewport: Viewport = {
+  themeColor: "#181D27",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 // Static JSON-LD block — declared at module scope so the layout stays a

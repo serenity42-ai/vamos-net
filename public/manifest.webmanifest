@@ -1,0 +1,55 @@
+{
+  "name": "VAMOS — Padel Scores & Rankings",
+  "short_name": "VAMOS",
+  "description": "Live padel scores, tournament calendar, rankings, and player profiles. The platform for professional padel.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#181D27",
+  "theme_color": "#181D27",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["sports", "news"],
+  "icons": [
+    {
+      "src": "/icons/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/pwa-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Scores",
+      "short_name": "Scores",
+      "url": "/scores?source=pwa-shortcut",
+      "icons": [{ "src": "/icons/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Calendar",
+      "short_name": "Calendar",
+      "url": "/calendar?source=pwa-shortcut",
+      "icons": [{ "src": "/icons/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Rankings",
+      "short_name": "Rankings",
+      "url": "/rankings?source=pwa-shortcut",
+      "icons": [{ "src": "/icons/pwa-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
