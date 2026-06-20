@@ -206,15 +206,28 @@ async function get<T>(
         `PadelAPI ${res.status}: ${res.statusText} — ${url.pathname}`,
       );
 
-      if ((isRateLimit || isServerError) && attempt < maxAttempts - 1) {
-        // Short backoff, but never exceed the total deadline. Cap any
-        // Retry-After so a hostile/large value can't stall the request.
-        const retryAfter = res.headers.get("retry-after");
-        const want = retryAfter
-          ? Math.min(parseInt(retryAfter) * 1000, 3000)
-          : Math.min(500 * Math.pow(2, attempt), 2000);
+      // 429 rate-limit: the API tells us exactly how long to wait via
+      // Retry-After. During SSR/ISR we cannot sit and block a page load for
+      // tens of seconds, so if the wait is non-trivial we DO NOT retry — we
+      // bail immediately and let the caller fall back to cached/empty data.
+      // (This was the cause of 20s /scores loads: remaining=0, retry-after=37,
+      // and we were sleeping through backoff across ~5 chained calls.)
+      if (isRateLimit) {
+        const retryAfter = parseInt(res.headers.get("retry-after") || "0", 10);
+        // Only a very short, sub-second-ish wait is worth one quick retry.
+        if (retryAfter > 1 || attempt >= maxAttempts - 1) {
+          throw lastErr;
+        }
+        const budget = TOTAL_DEADLINE_MS - (Date.now() - startedAt);
+        if (budget <= 0) throw lastErr;
+        await new Promise((r) => setTimeout(r, Math.min(retryAfter * 1000 || 400, budget)));
+        continue;
+      }
+
+      if (isServerError && attempt < maxAttempts - 1) {
         const budget = TOTAL_DEADLINE_MS - (Date.now() - startedAt);
         if (budget <= 0) break;
+        const want = Math.min(500 * Math.pow(2, attempt), 2000);
         await new Promise((resolve) => setTimeout(resolve, Math.min(want, budget)));
         continue;
       }
